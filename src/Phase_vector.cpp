@@ -1,7 +1,3 @@
-//Functions to extract mean Phase and Rho vector from wavelet transform (phase)
-//use flattened list of trials as input vector x
-//DIM_X, DIM_Y, DIM_Z are dimensions of original list
-
 #include <RcppArmadillo.h>
 #include <omp.h>
 #define ARMA_NO_DEBUG
