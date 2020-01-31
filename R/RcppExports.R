@@ -124,6 +124,23 @@ PhaseListAnalysisResample <- function(x, DIM_X, DIM_Y, SHUFFLES, CORES) {
     .Call('_InVivoR_PhaseListAnalysisResample', PACKAGE = 'InVivoR', x, DIM_X, DIM_Y, SHUFFLES, CORES)
 }
 
+#' Stimulus sequence
+#' 
+#' This function analyses stimulus time series and extracts features which 
+#' are returned in a list. Part of the output is the single stimulus feature
+#' and the second part is a stimulus block summary.
+#'
+#' @param raw A numeric vector which is the stimulation over time as continues series.
+#' @param filt A numeric vector as filtered version of raw stimulus trace.
+#' @param sampling_frequency An integer indicating the sampling frequency.
+#' @param threshold A double indicating the threshold of stimulus detection.
+#' @param max_time_gap A double indicating the maximum time between blocks.
+#' @return Returns a list with a matrix showing single pulse properperties and a matrix with block properties.
+#' @export
+StimulusSequence <- function(raw, filt, sampling_frequency, threshold, max_time_gap) {
+    .Call('_InVivoR_StimulusSequence', PACKAGE = 'InVivoR', raw, filt, sampling_frequency, threshold, max_time_gap)
+}
+
 #' Maximum Amplitude Channel
 #' 
 #' This function uses the median spike shape to find channel with maximum amplitude.

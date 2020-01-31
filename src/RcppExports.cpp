@@ -187,6 +187,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// StimulusSequence
+Rcpp::List StimulusSequence(Rcpp::NumericVector& raw, Rcpp::NumericVector& filt, int& sampling_frequency, double& threshold, const double& max_time_gap);
+RcppExport SEXP _InVivoR_StimulusSequence(SEXP rawSEXP, SEXP filtSEXP, SEXP sampling_frequencySEXP, SEXP thresholdSEXP, SEXP max_time_gapSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type raw(rawSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type filt(filtSEXP);
+    Rcpp::traits::input_parameter< int& >::type sampling_frequency(sampling_frequencySEXP);
+    Rcpp::traits::input_parameter< double& >::type threshold(thresholdSEXP);
+    Rcpp::traits::input_parameter< const double& >::type max_time_gap(max_time_gapSEXP);
+    rcpp_result_gen = Rcpp::wrap(StimulusSequence(raw, filt, sampling_frequency, threshold, max_time_gap));
+    return rcpp_result_gen;
+END_RCPP
+}
 // max_channel
 arma::rowvec max_channel(arma::mat median_input_mat);
 RcppExport SEXP _InVivoR_max_channel(SEXP median_input_matSEXP) {
@@ -366,6 +381,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_InVivoR_PhaseListAnalysis", (DL_FUNC) &_InVivoR_PhaseListAnalysis, 5},
     {"_InVivoR_PhaseListAnalysisShuffle", (DL_FUNC) &_InVivoR_PhaseListAnalysisShuffle, 5},
     {"_InVivoR_PhaseListAnalysisResample", (DL_FUNC) &_InVivoR_PhaseListAnalysisResample, 5},
+    {"_InVivoR_StimulusSequence", (DL_FUNC) &_InVivoR_StimulusSequence, 5},
     {"_InVivoR_max_channel", (DL_FUNC) &_InVivoR_max_channel, 1},
     {"_InVivoR_arma_apply_median", (DL_FUNC) &_InVivoR_arma_apply_median, 1},
     {"_InVivoR_arma_spike_extraction_loop", (DL_FUNC) &_InVivoR_arma_spike_extraction_loop, 2},

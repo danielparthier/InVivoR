@@ -31,8 +31,8 @@ Returns a list containing counts per bin, axis, random bin count, confidence-int
 }
 \description{
 This function computes the cross-correlation for spike trains.
-In case of a cross-correlation of the same time series an auto-
-correlation will be computed and with 0 correlation correction.
+In case of a cross-correlation of the same time series an auto-correlation 
+will be computed and with 0 correlation correction.
 The function has the capability to output the corresponding confidence-
 interval based on an inverse gaussian lamda approximation. Further a random
 distribution of spike occurence is computed based on spike number and time.

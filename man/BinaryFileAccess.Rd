@@ -16,6 +16,8 @@ BinaryFileAccess(
 \arguments{
 \item{FILENAME}{A string as path to file with single "/".}
 
+\item{spikePoints}{An integer vector for time points which correspond to sampling points.}
+
 \item{WINDOW}{An integer indicating points taken before and after time point (default = 40).}
 
 \item{CHANNELCOUNT}{An integer indicating number of channels in recording (default = 32).}
@@ -23,8 +25,6 @@ BinaryFileAccess(
 \item{CACHESIZE}{An integer indicating the size of cache used for buffering file in bytes (default = 512000).}
 
 \item{BYTECODE}{An integer indicating number of bytes coding for bit rate (8bit = 1, 16bit = 2 etc.) (default = 2).}
-
-\item{SpikePoints}{An integer vector for time points which correspond to sampling points.}
 }
 \value{
 Returns an armadillo cube with extracted spikes.

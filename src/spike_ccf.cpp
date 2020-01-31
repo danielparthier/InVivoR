@@ -1,9 +1,3 @@
-// spike_cff is a function to compute the "auto/cross-correlation" of spikes.
-// It returns the count of spikes in a given window relative to the reference spike.
-// This calculation is performed for all the spikes in the vectors presented to the function
-// The input required: Vector x and Vector y (both consist of spike timepoints), length of the window to check for spike to reference spike, bin size for count of spikes.
-
-
 #include <RcppArmadillo.h>
 
 // [[Rcpp::depends(RcppArmadillo)]]
