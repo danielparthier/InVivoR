@@ -17,33 +17,36 @@
 //' @return Complex armadillo column vector.
 //' @export
 // [[Rcpp::export]]
-arma::cx_vec BWFilter(arma::cx_vec& InputFFT,
+arma::cx_vec BWFilterCpp(arma::cx_vec& InputFFT,
                       const double& SamplingFrequency,
                       const int& ORDER = 2,
                       const double& f0 = 10,
                       const std::string type = "low",
                       const int& CORES = 1) {
   omp_set_num_threads(CORES);
+  int OrderTerm = ORDER*2;
   int SignalLength = InputFFT.size();
   if (f0 > 0) {
     int HalfLength = SignalLength/2;
     double BinWidth = SamplingFrequency/SignalLength;
     if(type == "low") {
-#pragma omp parallel for shared(f0, HalfLength, InputFFT, BinWidth, ORDER, SignalLength) schedule(dynamic) default(none)
+      BinWidth = BinWidth/f0;
+#pragma omp parallel for shared(f0, HalfLength, InputFFT, BinWidth, OrderTerm, SignalLength) schedule(dynamic) default(none)
       for (int i=0; i<HalfLength; ++i) {
-        double gain = 1/std::sqrt(1+std::pow((BinWidth * i)/f0, 2*ORDER));
+        double gain = 1/std::sqrt(1+std::pow((BinWidth * i), OrderTerm));
         InputFFT.at(i) *= gain;
         InputFFT.at(SignalLength-(i)) *= gain;
       } 
     } if(type == "high") {
-#pragma omp parallel for shared(f0, HalfLength, InputFFT, BinWidth, ORDER, SignalLength) schedule(dynamic) default(none)
+      BinWidth = f0/BinWidth;
+#pragma omp parallel for shared(f0, HalfLength, InputFFT, BinWidth, OrderTerm, SignalLength) schedule(dynamic) default(none)
       for (int i=0; i<HalfLength; ++i) {
-        double gain = 1/std::sqrt(1+std::pow(f0/(BinWidth * (i+1)), 2*ORDER));
+        double gain = 1/std::sqrt(1+std::pow(f0/(BinWidth * (i+1)), OrderTerm));
         InputFFT.at(i) *= gain;
         InputFFT.at(SignalLength-(i)) *= gain;
       }
-    } if(type == "high") {
-      
+    } else {
+      Rcpp::stop("No valid type parameter.");
     }
   }
   return InputFFT;
