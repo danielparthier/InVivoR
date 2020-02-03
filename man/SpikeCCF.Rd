@@ -22,9 +22,21 @@ SpikeCCF(
 
 \item{y}{A numeric vector of times which has to be sorted in ascending order.}
 
-\item{WINDOW_LENGTH}{An int as filtering order (default = 2).}
+\item{WINDOW_LENGTH}{An int as total window length in seconds (default = 1).}
 
-\item{BIN_SIZE}{A double as cutoff frequency.}
+\item{BIN_SIZE}{A double indicating the size of bins in seconds (default = 0.001).}
+
+\item{BaselineFrequency}{A bool to indicate whether base line activity should be estimated (default = TRUE).}
+
+\item{ConfidenceInterval}{A bool to indicate whether confidence interval should be estimated (default = TRUE).}
+
+\item{ConfLevel}{A double indicating the confidence-level (default = 0.95).}
+
+\item{SD}{A double as standard deviation for a gaussian shape parameter (default = 0.6).}
+
+\item{CENTREMIN}{A double as shape parameter determining the strength of centre exclusion (default = 0.6).}
+
+\item{KERNELSIZE}{A double as length parameter for gaussian kernel (2*KERNELSIZE+1, default = 20).}
 }
 \value{
 Returns a list containing counts per bin, axis, random bin count, confidence-intervals with counts per bin.

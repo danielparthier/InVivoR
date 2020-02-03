@@ -19,9 +19,9 @@ ConfIntPoisson(
 
 \item{SD}{A double as standard deviation for a gaussian shape parameter (default = 0.6).}
 
-\item{CENTREMIN}{A double as shape parameter determining the strength of centre exclusion.}
+\item{CENTREMIN}{A double as shape parameter determining the strength of centre exclusion (default = 0.6).}
 
-\item{KERNELSIZE}{A double as length parameter for gaussian kernel (2*KERNELSIZE+1).}
+\item{KERNELSIZE}{A double as length parameter for gaussian kernel (2*KERNELSIZE+1, default = 20).}
 }
 \value{
 Returns a list containing counts per bin, axis, random bin count, confidence-intervals with counts per bin.

@@ -4,16 +4,16 @@
 \alias{spike_ccf_batch}
 \title{Spike cross-correlation wrapper function for batch use}
 \usage{
-spike_ccf_batch(Time, UnitNr, WINDOW_LENGTH, BIN_SIZE)
+spike_ccf_batch(Time, UnitNr, WINDOW_LENGTH = 1, BIN_SIZE = 0.001)
 }
 \arguments{
 \item{Time}{A numeric vector of times sorted in ascending order containing all time points.}
 
 \item{UnitNr}{An integer vector containing the unit numbers in order of time occurence.}
 
-\item{WINDOW_LENGTH}{A double as shape parameter determining the strength of centre exclusion.}
+\item{WINDOW_LENGTH}{An int as total window length in seconds (default = 1).}
 
-\item{BIN_SIZE}{A double as length parameter for gaussian kernel (2*KERNELSIZE+1).}
+\item{BIN_SIZE}{A double indicating the size of bins in seconds (default = 0.001).}
 }
 \value{
 Returns a list containing the unit number, the counts per bin and the random expected count.

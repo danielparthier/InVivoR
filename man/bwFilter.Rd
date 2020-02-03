@@ -30,7 +30,7 @@ bwFilter(
 \item{PaddingType}{Padding type can be set by as "zero" (zero-padding), "edge" (values of edge are used for padding), "none" (no padding). The default value is set "zero"}
 }
 \value{
-
+Returns a filtered signal as numeric vector.
 }
 \description{
 This function filters the data based on the butterworth filter. It uses an FFTW implementation to accelerate the filtering process.

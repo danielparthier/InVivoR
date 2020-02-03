@@ -4,16 +4,16 @@
 \alias{spike_ccf}
 \title{Spike cross-correlation}
 \usage{
-spike_ccf(x, y, WINDOW_LENGTH, BIN_SIZE)
+spike_ccf(x, y, WINDOW_LENGTH = 1, BIN_SIZE = 0.001)
 }
 \arguments{
 \item{x}{A numeric vector of times which has to be sorted in ascending order.}
 
 \item{y}{A numeric vector of times which has to be sorted in ascending order.}
 
-\item{WINDOW_LENGTH}{An int as filtering order (default = 2).}
+\item{WINDOW_LENGTH}{An int as total window length in seconds (default = 1).}
 
-\item{BIN_SIZE}{A double as cutoff frequency.}
+\item{BIN_SIZE}{A double indicating the size of bins in seconds (default = 0.001).}
 }
 \value{
 Integer vector with counts per bin.

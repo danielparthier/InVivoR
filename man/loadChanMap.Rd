@@ -11,7 +11,7 @@ loadChanMap(FileName)
 \item{FileName}{Complete filename including path and file ending.}
 }
 \value{
-
+Returns a data frame containing the coordinates of the channels.
 }
 \description{
 Load channel map

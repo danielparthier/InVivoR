@@ -12,7 +12,7 @@ MITable(MIList, GapFill)
 \item{GapFill}{double indicating the frequency gap in seconds (inverse of frequency).}
 }
 \value{
-
+Returns a data table with x/y coordinates and their corresponding modulation indeces.
 }
 \description{
 A function to compute a data.table of the modulation index.

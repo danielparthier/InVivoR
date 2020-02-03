@@ -16,7 +16,7 @@ MIPlot(MITab, Colour = "magma", VLine = NULL, HLine = NULL)
 \item{HLine}{Optional double for plotting horizontal line.}
 }
 \value{
-
+Returns a ggplot of the modulation index.
 }
 \description{
 Plot modulation index from table

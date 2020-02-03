@@ -3,7 +3,6 @@
 export(BWFilterCpp)
 export(BinaryFileAccess)
 export(ConfIntPoisson)
-export(ConfIntPoissonR)
 export(FirFiltering)
 export(GetChanMap)
 export(MI)

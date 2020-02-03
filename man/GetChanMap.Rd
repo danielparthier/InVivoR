@@ -12,7 +12,7 @@ GetChanMap(directory, FileName = "chanMap")
 \item{FileName}{Name of file without ".mat".}
 }
 \value{
-
+Returns a data frame containing the coordinates of the channels.
 }
 \description{
 Function wrapper to load channel map from a given directory.
