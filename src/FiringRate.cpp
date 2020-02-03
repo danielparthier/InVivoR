@@ -1,7 +1,6 @@
 // [[Rcpp::depends(BH)]]
 #include <RcppArmadillo.h>
 #include <omp.h>
-//#include <boost/math/special_functions/expint.hpp>
 #define ARMA_NO_DEBUG
 #include <Rcpp/Benchmark/Timer.h>
 
@@ -25,23 +24,6 @@ arma::vec arma_gaussian_kernel(double& sd, double& width, int& SamplingRateOut) 
   arma::vec kernel = arma::normpdf(arma::linspace(-width/2,width/2,SamplingRateOut*width), 0, sd);
   return kernel;
 }
-
-// 
-// arma::vec arma_rate(double& bin_size, double& window, int& SamplingRateOut, arma::vec& SpikeTimings, double& StartTime, double& EndTime) {
-//   //make gaussian kernel based on mu=0, sd=input, width=input in ms
-//   arma::uvec SpikeIdx = arma::conv_to<arma::uvec>::from(arma::round(SpikeTimings*SamplingRateOut));
-//   arma::vec tmp_trace = arma::zeros((EndTime-StartTime)*SamplingRateOut);
-//   arma::vec trace_out = arma::zeros((EndTime-StartTime)*SamplingRateOut);
-//   tmp_trace.elem(SpikeIdx) += 1;
-//   arma::vec::iterator i_it = SpikeTimings.begin();
-//   arma::vec::iterator i_it_end = SpikeTimings.end();
-//   for(; i_it != i_it_end; ++i_it) {
-//     if(*i_it > window and *i_it < (tmp_trace.size()-window)) {
-//       trace_out.subvec(*i_it-window, *i_it+window) = 1/(arma::sum(tmp_trace.subvec(*i_it-window, *i_it+window))*arma::datum::sqrt2pi*bin_size)*arma::exp(-)
-//     }
-//   }
-//   return arma::conv(tmp_trace, kernel, "same");
-// }
 
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::export]]
@@ -82,24 +64,6 @@ arma::vec arma_gaussian_loop(double& sd, int& SamplingRateOut, arma::vec& SpikeT
   return trace_out;
 }
 
-
-// BAKS_R <- function(SpikeTimes, Time, galpha, gbeta) {
-//   numeratorSum <- vector(length = length(Time))
-//   denumeratorSum <- vector(length = length(Time))
-//   for(i in SpikeTimes) {
-//     numerator <- ((Time-i)^2/2+1/gbeta)^-galpha
-//     numeratorSum <- numeratorSum+numerator
-//     denumerator <- ((Time-i)^2/2+1/gbeta)^(-galpha-1/2)
-//     denumeratorSum <- denumeratorSum+denumerator
-//   }
-//   h <- (gamma(galpha)/gamma(galpha+0.5))*(numeratorSum/denumeratorSum)
-//     FiringRate <- vector(length = length(Time))
-//     for(i in SpikeTimes) {
-//       K <- 1/(sqrt(2*pi)*h)*exp(-(Time-i)^2/(2*h^2))
-//       FiringRate <- FiringRate+K 
-//     }
-//     return(FiringRate)
-// }
 
 // [[Rcpp::export]]
 arma::vec BAKS(arma::vec& SpikeTimings, arma::vec& Time, double& alpha, double& beta){

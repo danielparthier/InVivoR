@@ -4,10 +4,8 @@
 #' sampling rate, spike groups.
 #' @param FileName String to input directory including complete file name.
 #'
-#' @return
+#' @return Returns a list which includes the number of channels, sampling rate, number of spike groups, and spike groups.
 #' @export
-#'
-#' @examples
 MetaData <- function(FileName) {
   OutputList <- list()
   if(file.exists(FileName)) {

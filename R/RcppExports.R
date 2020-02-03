@@ -237,11 +237,11 @@ FirFiltering <- function(SIGNAL, FIR_FILTER) {
 #'
 #' @param x A numeric vector of times which has to be sorted in ascending order.
 #' @param y A numeric vector of times which has to be sorted in ascending order.
-#' @param WINDOW_LENGTH An int as filtering order (default = 2).
-#' @param BIN_SIZE A double as cutoff frequency.
+#' @param WINDOW_LENGTH An int as total window length in seconds (default = 1).
+#' @param BIN_SIZE A double indicating the size of bins in seconds (default = 0.001).
 #' @return Integer vector with counts per bin.
 #' @export
-spike_ccf <- function(x, y, WINDOW_LENGTH, BIN_SIZE) {
+spike_ccf <- function(x, y, WINDOW_LENGTH = 1, BIN_SIZE = 0.001) {
     .Call('_InVivoR_spike_ccf', PACKAGE = 'InVivoR', x, y, WINDOW_LENGTH, BIN_SIZE)
 }
 
@@ -254,11 +254,11 @@ spike_ccf <- function(x, y, WINDOW_LENGTH, BIN_SIZE) {
 #'
 #' @param Time A numeric vector of times sorted in ascending order containing all time points.
 #' @param UnitNr An integer vector containing the unit numbers in order of time occurence.
-#' @param WINDOW_LENGTH A double as shape parameter determining the strength of centre exclusion.
-#' @param BIN_SIZE A double as length parameter for gaussian kernel (2*KERNELSIZE+1).
+#' @param WINDOW_LENGTH An int as total window length in seconds (default = 1).
+#' @param BIN_SIZE A double indicating the size of bins in seconds (default = 0.001).
 #' @return Returns a list containing the unit number, the counts per bin and the random expected count.
 #' @export
-spike_ccf_batch <- function(Time, UnitNr, WINDOW_LENGTH, BIN_SIZE) {
+spike_ccf_batch <- function(Time, UnitNr, WINDOW_LENGTH = 1, BIN_SIZE = 0.001) {
     .Call('_InVivoR_spike_ccf_batch', PACKAGE = 'InVivoR', Time, UnitNr, WINDOW_LENGTH, BIN_SIZE)
 }
 
@@ -272,8 +272,8 @@ spike_ccf_batch <- function(Time, UnitNr, WINDOW_LENGTH, BIN_SIZE) {
 #' @param CountVector An integer vector of counts estimated by Spike CCF.
 #' @param CONFLEVEL A double indicating the confidence-level (default = 0.95).
 #' @param SD A double as standard deviation for a gaussian shape parameter (default = 0.6).
-#' @param CENTREMIN A double as shape parameter determining the strength of centre exclusion.
-#' @param KERNELSIZE A double as length parameter for gaussian kernel (2*KERNELSIZE+1).
+#' @param CENTREMIN A double as shape parameter determining the strength of centre exclusion (default = 0.6).
+#' @param KERNELSIZE A double as length parameter for gaussian kernel (2*KERNELSIZE+1, default = 20).
 #' @return Returns a list containing counts per bin, axis, random bin count, confidence-intervals with counts per bin.
 #' @export
 ConfIntPoisson <- function(CountVector, CONFLEVEL = 0.95, SD = 0.6, CENTREMIN = 0.6, KERNELSIZE = 20L) {
@@ -291,8 +291,14 @@ ConfIntPoisson <- function(CountVector, CONFLEVEL = 0.95, SD = 0.6, CENTREMIN = 
 #'
 #' @param x A numeric vector of times which has to be sorted in ascending order.
 #' @param y A numeric vector of times which has to be sorted in ascending order.
-#' @param WINDOW_LENGTH An int as filtering order (default = 2).
-#' @param BIN_SIZE A double as cutoff frequency.
+#' @param WINDOW_LENGTH An int as total window length in seconds (default = 1).
+#' @param BIN_SIZE A double indicating the size of bins in seconds (default = 0.001).
+#' @param BaselineFrequency A bool to indicate whether base line activity should be estimated (default = TRUE).
+#' @param ConfidenceInterval A bool to indicate whether confidence interval should be estimated (default = TRUE).
+#' @param ConfLevel A double indicating the confidence-level (default = 0.95).
+#' @param SD A double as standard deviation for a gaussian shape parameter (default = 0.6).
+#' @param CENTREMIN A double as shape parameter determining the strength of centre exclusion (default = 0.6).
+#' @param KERNELSIZE A double as length parameter for gaussian kernel (2*KERNELSIZE+1, default = 20).
 #' @return Returns a list containing counts per bin, axis, random bin count, confidence-intervals with counts per bin.
 #' @export
 SpikeCCF <- function(x, y, WINDOW_LENGTH = 1, BIN_SIZE = 0.001, BaselineFrequency = TRUE, ConfidenceInterval = TRUE, ConfLevel = 0.95, SD = 0.6, CENTREMIN = 0.6, KERNELSIZE = 20L) {

@@ -5,10 +5,8 @@
 #' @param directory String to input directory.
 #' @param FileName Name of file without ".mat".
 #'
-#' @return
+#' @return Returns a data frame containing the coordinates of the channels.
 #' @export
-#'
-#' @examples
 GetChanMap <- function(directory, FileName = "chanMap") {
   FileString <- paste0(directory,"/",FileName, ".mat")
   OutputFrame <- loadChanMap(FileString)
@@ -19,10 +17,8 @@ GetChanMap <- function(directory, FileName = "chanMap") {
 #' Function to load channel
 #' @param FileName Complete filename including path and file ending.
 #'
-#' @return
+#' @return Returns a data frame containing the coordinates of the channels.
 #' @export
-#'
-#' @examples
 loadChanMap <- function(FileName) {
   if(file.exists(FileName)) {
     channelMap <- R.matlab::readMat(FileName)

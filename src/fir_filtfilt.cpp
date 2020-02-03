@@ -4,7 +4,6 @@
 #define ARMA_NO_DEBUG
 
 // [[Rcpp::depends(RcppArmadillo)]]
-
 //' FIR filtering
 //' 
 //' This function applies an FIR filter to a signal an returns the filtered trace.

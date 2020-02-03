@@ -9,10 +9,8 @@
 #' @param type Type of filtering can be set as "low", "high" for low-pass and high-pass filtering.
 #' @param PaddingType Padding type can be set by as "zero" (zero-padding), "edge" (values of edge are used for padding), "none" (no padding). The default value is set "zero"
 #'
-#' @return
+#' @return Returns a filtered signal as numeric vector.
 #' @export
-#'
-#' @examples
 bwFilter <- function(Signal,
                      order = 2,
                      SamplingFrequency = 2e4,
