@@ -33,7 +33,8 @@ Rcpp::List PhaseListAnalysis(arma::vec& x,
       arma::rowvec tmp_vec = TmpMat.tube(i, j);
       double tmpX = arma::mean(arma::sin(tmp_vec));
       double tmpY = arma::mean(arma::cos(tmp_vec));
-      OutputRho(i, j) = sqrt((pow(tmpX, 2)+pow(tmpY, 2)));
+      // changed from OutputRho(i, j) = sqrt((pow(tmpX, 2)+pow(tmpY, 2)));
+      OutputRho(i, j) = sqrt(tmpX*tmpX+tmpY*tmpY);
       OutputMean(i, j) = atan2(tmpX, tmpY);
     }  
   }
