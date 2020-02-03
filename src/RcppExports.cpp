@@ -22,6 +22,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// decimate
+Rcpp::NumericVector decimate(arma::vec& SIGNAL, const arma::vec& FIR_FILTER, const int& M);
+RcppExport SEXP _InVivoR_decimate(SEXP SIGNALSEXP, SEXP FIR_FILTERSEXP, SEXP MSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec& >::type SIGNAL(SIGNALSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type FIR_FILTER(FIR_FILTERSEXP);
+    Rcpp::traits::input_parameter< const int& >::type M(MSEXP);
+    rcpp_result_gen = Rcpp::wrap(decimate(SIGNAL, FIR_FILTER, M));
+    return rcpp_result_gen;
+END_RCPP
+}
 // arma_gaussian
 arma::vec arma_gaussian(double& sd, double& width, int& SamplingRateOut, arma::vec& SpikeTimings, double& StartTime, double& EndTime);
 RcppExport SEXP _InVivoR_arma_gaussian(SEXP sdSEXP, SEXP widthSEXP, SEXP SamplingRateOutSEXP, SEXP SpikeTimingsSEXP, SEXP StartTimeSEXP, SEXP EndTimeSEXP) {
@@ -248,9 +261,9 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// BWFilter
-arma::cx_vec BWFilter(arma::cx_vec& InputFFT, const double& SamplingFrequency, const int& ORDER, const double& f0, const std::string type, const int& CORES);
-RcppExport SEXP _InVivoR_BWFilter(SEXP InputFFTSEXP, SEXP SamplingFrequencySEXP, SEXP ORDERSEXP, SEXP f0SEXP, SEXP typeSEXP, SEXP CORESSEXP) {
+// BWFilterCpp
+arma::cx_vec BWFilterCpp(arma::cx_vec& InputFFT, const double& SamplingFrequency, const int& ORDER, const double& f0, const std::string type, const int& CORES);
+RcppExport SEXP _InVivoR_BWFilterCpp(SEXP InputFFTSEXP, SEXP SamplingFrequencySEXP, SEXP ORDERSEXP, SEXP f0SEXP, SEXP typeSEXP, SEXP CORESSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -260,7 +273,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const double& >::type f0(f0SEXP);
     Rcpp::traits::input_parameter< const std::string >::type type(typeSEXP);
     Rcpp::traits::input_parameter< const int& >::type CORES(CORESSEXP);
-    rcpp_result_gen = Rcpp::wrap(BWFilter(InputFFT, SamplingFrequency, ORDER, f0, type, CORES));
+    rcpp_result_gen = Rcpp::wrap(BWFilterCpp(InputFFT, SamplingFrequency, ORDER, f0, type, CORES));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -370,6 +383,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_InVivoR_BinaryFileAccess", (DL_FUNC) &_InVivoR_BinaryFileAccess, 6},
+    {"_InVivoR_decimate", (DL_FUNC) &_InVivoR_decimate, 3},
     {"_InVivoR_arma_gaussian", (DL_FUNC) &_InVivoR_arma_gaussian, 6},
     {"_InVivoR_arma_gaussian_kernel", (DL_FUNC) &_InVivoR_arma_gaussian_kernel, 3},
     {"_InVivoR_arma_gaussian_loop", (DL_FUNC) &_InVivoR_arma_gaussian_loop, 5},
@@ -386,7 +400,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_InVivoR_arma_apply_median", (DL_FUNC) &_InVivoR_arma_apply_median, 1},
     {"_InVivoR_arma_spike_extraction_loop", (DL_FUNC) &_InVivoR_arma_spike_extraction_loop, 2},
     {"_InVivoR_chan_out", (DL_FUNC) &_InVivoR_chan_out, 2},
-    {"_InVivoR_BWFilter", (DL_FUNC) &_InVivoR_BWFilter, 6},
+    {"_InVivoR_BWFilterCpp", (DL_FUNC) &_InVivoR_BWFilterCpp, 6},
     {"_InVivoR_FirFiltering", (DL_FUNC) &_InVivoR_FirFiltering, 2},
     {"_InVivoR_spike_ccf", (DL_FUNC) &_InVivoR_spike_ccf, 4},
     {"_InVivoR_spike_ccf_batch", (DL_FUNC) &_InVivoR_spike_ccf_batch, 4},

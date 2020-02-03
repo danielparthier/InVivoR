@@ -30,7 +30,7 @@ bwFilter <- function(Signal,
     PaddingLength <- 0
   }
   
-  return(Re(fftw::IFFT(BWFilter(InputFFT = FFTMatrix,
+  return(Re(fftw::IFFT(BWFilterCpp(InputFFT = FFTMatrix,
                                 SamplingFrequency = SamplingFrequency,
                                 ORDER = order,
                                 f0 = f0,
@@ -57,12 +57,4 @@ convFilter <- function(x,
   } else if (type=="filter") {
     return(rev(convCent(x = c(rep(0, Ly), rev(convCent(x = c(rep(0, Ly), x, rep(0, Ly)), y = y)[(Ly+1):(Ly+Lx)]), rep(0, Ly)), y = y)[(Ly+1):(Ly+Lx)]))
   }
-}
-
-deconv <- function(x, y) {
-  Lx <- length(x)
-  Ly <- length(y)
-  ConvLength <- 2^ceiling(log2(Lx+Ly-1))
-  FFTPlan <- fftw::planFFT(n = ConvLength)
-  return(Re(fftw::IFFT(fftw::FFT(x = c(x, rep(0, ConvLength-Lx)), plan = FFTPlan)/fftw::FFT(x = c(y, rep(0, ConvLength-Ly)), plan = FFTPlan)))[(Ly/2+1):(Lx+(Ly/2))])
 }

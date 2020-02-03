@@ -18,6 +18,19 @@ BinaryFileAccess <- function(FILENAME, spikePoints, WINDOW = 40L, CHANNELCOUNT =
     .Call('_InVivoR_BinaryFileAccess', PACKAGE = 'InVivoR', FILENAME, spikePoints, WINDOW, CHANNELCOUNT, CACHESIZE, BYTECODE)
 }
 
+#' Decimate
+#' 
+#' This function downsamples a signal using a preset FIR filter which should be filtering at half the target frequency.
+#'
+#' @param SIGNAL A numeric vector with length N.
+#' @param FIR_FILTER A predefined FIR filter as numeric vector (low-pass filter for <= target frequency).
+#' @param M An int representing downsampling factor.
+#' @return Returns a numeric vector with length N/M.
+#' @export
+decimate <- function(SIGNAL, FIR_FILTER, M) {
+    .Call('_InVivoR_decimate', PACKAGE = 'InVivoR', SIGNAL, FIR_FILTER, M)
+}
+
 arma_gaussian <- function(sd, width, SamplingRateOut, SpikeTimings, StartTime, EndTime) {
     .Call('_InVivoR_arma_gaussian', PACKAGE = 'InVivoR', sd, width, SamplingRateOut, SpikeTimings, StartTime, EndTime)
 }
@@ -200,8 +213,8 @@ chan_out <- function(spike_shape_list, channel_nr) {
 #' @param CORES An int indicating the number of threads used (default = 1).
 #' @return Complex armadillo column vector.
 #' @export
-BWFilter <- function(InputFFT, SamplingFrequency, ORDER = 2L, f0 = 10, type = "low", CORES = 1L) {
-    .Call('_InVivoR_BWFilter', PACKAGE = 'InVivoR', InputFFT, SamplingFrequency, ORDER, f0, type, CORES)
+BWFilterCpp <- function(InputFFT, SamplingFrequency, ORDER = 2L, f0 = 10, type = "low", CORES = 1L) {
+    .Call('_InVivoR_BWFilterCpp', PACKAGE = 'InVivoR', InputFFT, SamplingFrequency, ORDER, f0, type, CORES)
 }
 
 #' FIR filtering
