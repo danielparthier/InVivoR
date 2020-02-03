@@ -5,9 +5,23 @@ Version: 0.0.2
 Date: 2020-01-27
 Author: Daniel Parthier
 Maintainer: Daniel Parthier <your@email.com>
-Description: The InVivoR Package provides functions in R and Rcpp to analyse local field potentials of in-vivo electrophysiological recordings and unit recordings. Meta data can be read from XML files which are provided by the ND-Manager tool and will be used to automatically map the probes and location of recording or stimulation. 
+Description: The InVivoR Package provides functions in R and Rcpp to analyse local field potentials 
+    of in-vivo electrophysiological recordings and unit recordings. Meta data can be read from XML files 
+    which are provided by the ND-Manager tool and will be used to automatically map the probes and location 
+    of recording or stimulation. 
 License: GPL (>= 2)
-Imports: Rcpp (>= 1.0.3), RcppArmadillo, stats, data.table (>= 1.12.8), ggplot2, R.matlab, dbscan, fftw, reshape2, viridis, xml2
-LinkingTo: Rcpp, RcppArmadillo
+Imports: Rcpp (>= 1.0.3),
+    RcppArmadillo,
+    stats,
+    data.table (>= 1.12.8),
+    ggplot2,
+    R.matlab,
+    dbscan,
+    fftw,
+    reshape2,
+    viridis,
+    xml2
+LinkingTo: Rcpp,
+    RcppArmadillo
 RoxygenNote: 7.0.2
 Encoding: UTF-8
