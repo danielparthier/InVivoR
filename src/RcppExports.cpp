@@ -6,6 +6,22 @@
 
 using namespace Rcpp;
 
+// BWFiltCpp
+Rcpp::NumericVector BWFiltCpp(arma::vec& InputSignal, const double& SamplingFrequency, const int& ORDER, const double& f0, const std::string type, const int& CORES);
+RcppExport SEXP _InVivoR_BWFiltCpp(SEXP InputSignalSEXP, SEXP SamplingFrequencySEXP, SEXP ORDERSEXP, SEXP f0SEXP, SEXP typeSEXP, SEXP CORESSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec& >::type InputSignal(InputSignalSEXP);
+    Rcpp::traits::input_parameter< const double& >::type SamplingFrequency(SamplingFrequencySEXP);
+    Rcpp::traits::input_parameter< const int& >::type ORDER(ORDERSEXP);
+    Rcpp::traits::input_parameter< const double& >::type f0(f0SEXP);
+    Rcpp::traits::input_parameter< const std::string >::type type(typeSEXP);
+    Rcpp::traits::input_parameter< const int& >::type CORES(CORESSEXP);
+    rcpp_result_gen = Rcpp::wrap(BWFiltCpp(InputSignal, SamplingFrequency, ORDER, f0, type, CORES));
+    return rcpp_result_gen;
+END_RCPP
+}
 // BinaryFileAccess
 arma::cube BinaryFileAccess(const std::string& FILENAME, arma::vec& spikePoints, const int& WINDOW, const unsigned int& CHANNELCOUNT, const unsigned int& CACHESIZE, const unsigned int& BYTECODE);
 RcppExport SEXP _InVivoR_BinaryFileAccess(SEXP FILENAMESEXP, SEXP spikePointsSEXP, SEXP WINDOWSEXP, SEXP CHANNELCOUNTSEXP, SEXP CACHESIZESEXP, SEXP BYTECODESEXP) {
@@ -382,6 +398,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_InVivoR_BWFiltCpp", (DL_FUNC) &_InVivoR_BWFiltCpp, 6},
     {"_InVivoR_BinaryFileAccess", (DL_FUNC) &_InVivoR_BinaryFileAccess, 6},
     {"_InVivoR_decimate", (DL_FUNC) &_InVivoR_decimate, 3},
     {"_InVivoR_arma_gaussian", (DL_FUNC) &_InVivoR_arma_gaussian, 6},
