@@ -160,7 +160,6 @@ BWFiltCpp <- function(InputSignal, SamplingFrequency, ORDER = 2L, f0 = 10, type 
 #' and the second part is a stimulus block summary.
 #'
 #' @param raw A numeric vector which is the stimulation over time as continues series.
-#' @param filt A numeric vector as filtered version of raw stimulus trace.
 #' @param sampling_frequency An integer indicating the sampling frequency.
 #' @param threshold A double indicating the threshold of stimulus detection.
 #' @param max_time_gap A double indicating the maximum time between blocks.

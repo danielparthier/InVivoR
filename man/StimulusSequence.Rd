@@ -14,8 +14,6 @@ StimulusSequence(raw, sampling_frequency, threshold, max_time_gap)
 \item{threshold}{A double indicating the threshold of stimulus detection.}
 
 \item{max_time_gap}{A double indicating the maximum time between blocks.}
-
-\item{filt}{A numeric vector as filtered version of raw stimulus trace.}
 }
 \value{
 Returns a list with a matrix showing single pulse properperties and a matrix with block properties.
