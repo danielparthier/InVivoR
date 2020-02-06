@@ -6,22 +6,6 @@
 
 using namespace Rcpp;
 
-// BWFiltCpp
-Rcpp::NumericVector BWFiltCpp(arma::vec& InputSignal, const double& SamplingFrequency, const int& ORDER, const double& f0, const std::string type, const int& CORES);
-RcppExport SEXP _InVivoR_BWFiltCpp(SEXP InputSignalSEXP, SEXP SamplingFrequencySEXP, SEXP ORDERSEXP, SEXP f0SEXP, SEXP typeSEXP, SEXP CORESSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::vec& >::type InputSignal(InputSignalSEXP);
-    Rcpp::traits::input_parameter< const double& >::type SamplingFrequency(SamplingFrequencySEXP);
-    Rcpp::traits::input_parameter< const int& >::type ORDER(ORDERSEXP);
-    Rcpp::traits::input_parameter< const double& >::type f0(f0SEXP);
-    Rcpp::traits::input_parameter< const std::string >::type type(typeSEXP);
-    Rcpp::traits::input_parameter< const int& >::type CORES(CORESSEXP);
-    rcpp_result_gen = Rcpp::wrap(BWFiltCpp(InputSignal, SamplingFrequency, ORDER, f0, type, CORES));
-    return rcpp_result_gen;
-END_RCPP
-}
 // BinaryFileAccess
 arma::cube BinaryFileAccess(const std::string& FILENAME, arma::vec& spikePoints, const int& WINDOW, const unsigned int& CHANNELCOUNT, const unsigned int& CACHESIZE, const unsigned int& BYTECODE);
 RcppExport SEXP _InVivoR_BinaryFileAccess(SEXP FILENAMESEXP, SEXP spikePointsSEXP, SEXP WINDOWSEXP, SEXP CHANNELCOUNTSEXP, SEXP CACHESIZESEXP, SEXP BYTECODESEXP) {
@@ -216,18 +200,33 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// BWFiltCpp
+Rcpp::NumericVector BWFiltCpp(arma::vec& InputSignal, const double& SamplingFrequency, const int& ORDER, const double& f0, const std::string type, const int& CORES);
+RcppExport SEXP _InVivoR_BWFiltCpp(SEXP InputSignalSEXP, SEXP SamplingFrequencySEXP, SEXP ORDERSEXP, SEXP f0SEXP, SEXP typeSEXP, SEXP CORESSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec& >::type InputSignal(InputSignalSEXP);
+    Rcpp::traits::input_parameter< const double& >::type SamplingFrequency(SamplingFrequencySEXP);
+    Rcpp::traits::input_parameter< const int& >::type ORDER(ORDERSEXP);
+    Rcpp::traits::input_parameter< const double& >::type f0(f0SEXP);
+    Rcpp::traits::input_parameter< const std::string >::type type(typeSEXP);
+    Rcpp::traits::input_parameter< const int& >::type CORES(CORESSEXP);
+    rcpp_result_gen = Rcpp::wrap(BWFiltCpp(InputSignal, SamplingFrequency, ORDER, f0, type, CORES));
+    return rcpp_result_gen;
+END_RCPP
+}
 // StimulusSequence
-Rcpp::List StimulusSequence(Rcpp::NumericVector& raw, Rcpp::NumericVector& filt, int& sampling_frequency, double& threshold, const double& max_time_gap);
-RcppExport SEXP _InVivoR_StimulusSequence(SEXP rawSEXP, SEXP filtSEXP, SEXP sampling_frequencySEXP, SEXP thresholdSEXP, SEXP max_time_gapSEXP) {
+Rcpp::List StimulusSequence(Rcpp::NumericVector& raw, int& sampling_frequency, double& threshold, const double& max_time_gap);
+RcppExport SEXP _InVivoR_StimulusSequence(SEXP rawSEXP, SEXP sampling_frequencySEXP, SEXP thresholdSEXP, SEXP max_time_gapSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type raw(rawSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type filt(filtSEXP);
     Rcpp::traits::input_parameter< int& >::type sampling_frequency(sampling_frequencySEXP);
     Rcpp::traits::input_parameter< double& >::type threshold(thresholdSEXP);
     Rcpp::traits::input_parameter< const double& >::type max_time_gap(max_time_gapSEXP);
-    rcpp_result_gen = Rcpp::wrap(StimulusSequence(raw, filt, sampling_frequency, threshold, max_time_gap));
+    rcpp_result_gen = Rcpp::wrap(StimulusSequence(raw, sampling_frequency, threshold, max_time_gap));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -398,7 +397,6 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_InVivoR_BWFiltCpp", (DL_FUNC) &_InVivoR_BWFiltCpp, 6},
     {"_InVivoR_BinaryFileAccess", (DL_FUNC) &_InVivoR_BinaryFileAccess, 6},
     {"_InVivoR_decimate", (DL_FUNC) &_InVivoR_decimate, 3},
     {"_InVivoR_arma_gaussian", (DL_FUNC) &_InVivoR_arma_gaussian, 6},
@@ -412,7 +410,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_InVivoR_PhaseListAnalysis", (DL_FUNC) &_InVivoR_PhaseListAnalysis, 5},
     {"_InVivoR_PhaseListAnalysisShuffle", (DL_FUNC) &_InVivoR_PhaseListAnalysisShuffle, 5},
     {"_InVivoR_PhaseListAnalysisResample", (DL_FUNC) &_InVivoR_PhaseListAnalysisResample, 5},
-    {"_InVivoR_StimulusSequence", (DL_FUNC) &_InVivoR_StimulusSequence, 5},
+    {"_InVivoR_BWFiltCpp", (DL_FUNC) &_InVivoR_BWFiltCpp, 6},
+    {"_InVivoR_StimulusSequence", (DL_FUNC) &_InVivoR_StimulusSequence, 4},
     {"_InVivoR_max_channel", (DL_FUNC) &_InVivoR_max_channel, 1},
     {"_InVivoR_arma_apply_median", (DL_FUNC) &_InVivoR_arma_apply_median, 1},
     {"_InVivoR_arma_spike_extraction_loop", (DL_FUNC) &_InVivoR_arma_spike_extraction_loop, 2},
