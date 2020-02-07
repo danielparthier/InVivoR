@@ -1,7 +1,14 @@
 ### function to cluster channels of the channel map
 ### input: channel_map which includes the x/y coordinates, channel_numbers starting at 0, channel_cluster dist which is the distance in µm used to cluster channels
-
-channel_clustering <- function(channel_map, channel_numbers, channel_cluster_dist) {
+#' Channel clustering
+#' 
+#' Function to extract electrode clusters from channel map.
+#' @param channel_map Data.frame with with x, y coordinates and channel numbers.
+#' @param channel_cluster_dist Double indicating minimal istance between clusters.
+#' @return Returns a list which includes the number of channels, sampling rate, number of spike groups, and spike groups, number of anatomical groups, and anatomical groups.
+#' @export
+channel_clustering <- function(channel_map, channel_cluster_dist) {
+  channel_numbers <- channel_map$ChanInd-1
   channel_out_vec <- vector(mode = "integer", length = length(channel_numbers))
   channel_cluster <- dbscan::dbscan(x = channel_map, eps = channel_cluster_dist, borderPoints = F, minPts = 2)
   for(i in 0:max(channel_cluster$cluster)) {
@@ -32,5 +39,5 @@ channel_clustering <- function(channel_map, channel_numbers, channel_cluster_dis
     }
     channel_out_vec[channel_numbers %in% channel_in_cluster] <- channel_out
   }
-  return(data.frame(ChannelNr = channel_numbers+1, ChannelCluster = channel_cluster$cluster, RefChannel = channel_out_vec+1, x_coord = channel_map[,1], y_coord = channel_map[,2]))
+  return(data.frame(ChannelNr = channel_map$ChanInd, ChannelCluster = channel_cluster$cluster, RefChannel = channel_out_vec+1, x_coord = channel_map[,1], y_coord = channel_map[,2]))
 }
