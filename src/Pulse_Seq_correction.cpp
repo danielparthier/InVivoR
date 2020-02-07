@@ -94,6 +94,7 @@ Rcpp::List StimulusSequence(Rcpp::NumericVector& raw,
   arma::vec rawArma = Rcpp::as<arma::vec>(raw);
   Rcpp::NumericVector filt = BWFiltCpp(rawArma, sampling_frequency, 2, 1000, "low", 1);
   // thresholding of raw, filtered stimulus trace & finding primary onsets and ends of stimuli
+  int CorrectionCount = 1;
   new_try:
   int end_p = raw.size();
   std::vector<int> out_vec_onset_raw;
@@ -151,7 +152,13 @@ Rcpp::List StimulusSequence(Rcpp::NumericVector& raw,
       Rcpp::warning("Start and end of detection cause conflict! ... Check stim_trace and adjust threshold if necessary");
       if(threshold*1.5<Rcpp::max(raw)) {
         threshold=threshold*1.5;
-        Rcpp::Rcout << "New Threshold = " << threshold << std::endl;
+        std::string WarningString = "New Threshold = ";
+        WarningString += std::to_string(threshold);
+        Rcpp::warning(WarningString);
+        if(CorrectionCount == 10) {
+          Rcpp::stop("Threshold adjustment failed");
+        }
+        ++CorrectionCount;
       } else {
         Rcpp::stop("Threshold adjustment failed");
       }
@@ -205,7 +212,7 @@ Rcpp::List StimulusSequence(Rcpp::NumericVector& raw,
         found50 = true;
         ++back_run;
       } else if((back_run_tmp<tmp_25) & (found25 == false)){
-        shape_mat(1,1) = back_run;
+        shape_mat(1,1) = back_run+1;
         found25 = true;
         ++back_run;
       } else if((back_run_tmp<zero_threshold) & (found0 == false)){
@@ -465,7 +472,6 @@ Rcpp::List StimulusSequence(Rcpp::NumericVector& raw,
   double first_hyper_freq = -1;
   double second_hyper_freq = -1;
   double future_hyper_freq = -1;
-
   for(R_xlen_t i = l_stim_pulse_start-1; i > -1; --i) {
     // enter detection 
     if(stim_mat(i, 12) == 1 and i > 0 and stim_mat(i, 14) == 0) {
@@ -521,6 +527,7 @@ Rcpp::List StimulusSequence(Rcpp::NumericVector& raw,
       }
       if(stim_mat(i, 16) == stim_mat(i+1, 16)){
         int recover_i = i;
+        
         //backtrack frequencies to avoid gaps or overlap
         while(stim_mat(recover_i, 16) == stim_mat(recover_i+1, 16)) {
           ++recover_i;
@@ -540,23 +547,28 @@ Rcpp::List StimulusSequence(Rcpp::NumericVector& raw,
       stim_mat(i, 16) = stim_mat(i+1, 16)-1;
       --hyper_block_number;
     } else {
+      
       stim_mat(i, 15) = current_hyper_freq;
       stim_mat(i, 16) = hyper_block_number;
-      
     }
     if(stim_mat(i, 12)==2){
       stim_mat(i-1, 15) = current_hyper_freq;
       stim_mat(i-1, 16) = hyper_block_number;
     }
   }
+
   //fix end frequency
   if(stim_mat(l_stim_pulse_start-1, 15) == -1) {
     int i = l_stim_pulse_start-1;
-    while(stim_mat(i, 15) == -1){
+    while((stim_mat(i, 15) == -1)){
       stim_mat(i, 15) = stim_mat(i, 10);
-      --i;
+      if(i > 0) {
+        --i;
+      } else {
+        break;
+      }
     }
-    int pulse_count = 0;
+    int pulse_count = 1;
     for(R_xlen_t fix_i = i; fix_i < l_stim_pulse_start; ++fix_i){
       stim_mat(fix_i, 17) = pulse_count;
       ++pulse_count;
@@ -571,7 +583,7 @@ Rcpp::List StimulusSequence(Rcpp::NumericVector& raw,
   /// loop over hyper blocks --> use as index and vec[hyperblock] check for ones in block --> if more than one stick with freq otherwise use single freq as hyper
   int max_hyper_block = Rcpp::max(stim_mat(Rcpp::_, 16));
   int block_id = 0;
-  for(R_xlen_t hyper_block_i = 1; hyper_block_i < max_hyper_block; ++hyper_block_i){
+  for(R_xlen_t hyper_block_i = 1; hyper_block_i < max_hyper_block+1; ++hyper_block_i){
     int old_start = block_id;
     int inside_block_count = 0;
     int hyper_pulse_nr = 1;
@@ -669,7 +681,7 @@ Rcpp::List StimulusSequence(Rcpp::NumericVector& raw,
       block_i = end_pulse;
     }
   }
-  
+
   for(R_xlen_t i = 0; i < block_pos.nrow(); ++i) {
     //finding block length
     //center
@@ -685,7 +697,7 @@ Rcpp::List StimulusSequence(Rcpp::NumericVector& raw,
       //right edge
       block_pos(i, 6) = stim_mat(block_pos(i, 3)-1,2)-stim_mat(block_pos(i, 3)-1,6)/2+sampling_frequency*max_time_gap/2;
     } else {
-      Rcpp::Rcout << "Block edge error" << std::endl;
+      Rcpp::warning("Block edge error");
     }
     if(i>0 and block_pos(i, 5)  <  block_pos(i-1, 6)) {
       //corrected egde for overlap
