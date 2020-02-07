@@ -10,7 +10,7 @@ MetaData(FileName)
 \item{FileName}{String to input directory including complete file name.}
 }
 \value{
-Returns a list which includes the number of channels, sampling rate, number of spike groups, and spike groups.
+Returns a list which includes the number of channels, sampling rate, number of spike groups, and spike groups, number of anatomical groups, and anatomical groups.
 }
 \description{
 Function to extract meta data from xml file provided by the ND-Manager. Includes channel number,
