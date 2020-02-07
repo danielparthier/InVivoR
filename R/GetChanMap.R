@@ -22,7 +22,7 @@ GetChanMap <- function(directory, FileName = "chanMap") {
 loadChanMap <- function(FileName) {
   if(file.exists(FileName)) {
     channelMap <- R.matlab::readMat(FileName)
-    return(data.frame(x = as.vector(channelMap$xcoords), y = as.vector(channelMap$ycoords)))  
+    return(data.frame(x = as.vector(channelMap$xcoords), y = as.vector(channelMap$ycoords), ChanInd = as.vector(channelMap$chanMap)))  
   } else {
     warning("Could not find Channel Map! \nPlease choose.", immediate. = T)
     if(dir.exists(dirname(FileName))) {
