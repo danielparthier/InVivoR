@@ -53,8 +53,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // ERPList
-Rcpp::List ERPList(const arma::vec& Trace, const arma::mat BlockMat, const double& SamplingFreqStim, const double& SamplingFreqTrace, const bool& PrePhase, const bool& PostPhase);
-RcppExport SEXP _InVivoR_ERPList(SEXP TraceSEXP, SEXP BlockMatSEXP, SEXP SamplingFreqStimSEXP, SEXP SamplingFreqTraceSEXP, SEXP PrePhaseSEXP, SEXP PostPhaseSEXP) {
+Rcpp::List ERPList(const arma::vec& Trace, const arma::mat BlockMat, const double& SamplingFreqStim, const double& SamplingFreqTrace, bool PrePhase, bool PostPhase, const double& FixStartLength, const double& WindowLength);
+RcppExport SEXP _InVivoR_ERPList(SEXP TraceSEXP, SEXP BlockMatSEXP, SEXP SamplingFreqStimSEXP, SEXP SamplingFreqTraceSEXP, SEXP PrePhaseSEXP, SEXP PostPhaseSEXP, SEXP FixStartLengthSEXP, SEXP WindowLengthSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -62,9 +62,11 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::mat >::type BlockMat(BlockMatSEXP);
     Rcpp::traits::input_parameter< const double& >::type SamplingFreqStim(SamplingFreqStimSEXP);
     Rcpp::traits::input_parameter< const double& >::type SamplingFreqTrace(SamplingFreqTraceSEXP);
-    Rcpp::traits::input_parameter< const bool& >::type PrePhase(PrePhaseSEXP);
-    Rcpp::traits::input_parameter< const bool& >::type PostPhase(PostPhaseSEXP);
-    rcpp_result_gen = Rcpp::wrap(ERPList(Trace, BlockMat, SamplingFreqStim, SamplingFreqTrace, PrePhase, PostPhase));
+    Rcpp::traits::input_parameter< bool >::type PrePhase(PrePhaseSEXP);
+    Rcpp::traits::input_parameter< bool >::type PostPhase(PostPhaseSEXP);
+    Rcpp::traits::input_parameter< const double& >::type FixStartLength(FixStartLengthSEXP);
+    Rcpp::traits::input_parameter< const double& >::type WindowLength(WindowLengthSEXP);
+    rcpp_result_gen = Rcpp::wrap(ERPList(Trace, BlockMat, SamplingFreqStim, SamplingFreqTrace, PrePhase, PostPhase, FixStartLength, WindowLength));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -433,7 +435,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_InVivoR_BinaryFileAccess", (DL_FUNC) &_InVivoR_BinaryFileAccess, 6},
     {"_InVivoR_decimate", (DL_FUNC) &_InVivoR_decimate, 3},
     {"_InVivoR_ERPMat", (DL_FUNC) &_InVivoR_ERPMat, 7},
-    {"_InVivoR_ERPList", (DL_FUNC) &_InVivoR_ERPList, 6},
+    {"_InVivoR_ERPList", (DL_FUNC) &_InVivoR_ERPList, 8},
     {"_InVivoR_arma_gaussian", (DL_FUNC) &_InVivoR_arma_gaussian, 6},
     {"_InVivoR_arma_gaussian_kernel", (DL_FUNC) &_InVivoR_arma_gaussian_kernel, 3},
     {"_InVivoR_arma_gaussian_loop", (DL_FUNC) &_InVivoR_arma_gaussian_loop, 5},

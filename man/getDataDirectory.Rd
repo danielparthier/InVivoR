@@ -4,7 +4,12 @@
 \alias{getDataDirectory}
 \title{Get Data Directory}
 \usage{
-getDataDirectory(mainDirectory, recLabels, stimLabels, stimRecIdentical)
+getDataDirectory(
+  mainDirectory = NULL,
+  recLabels = NULL,
+  stimLabels = NULL,
+  stimRecIdentical = NULL
+)
 }
 \arguments{
 \item{mainDirectory}{A string locating the path.}

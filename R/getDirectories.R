@@ -9,9 +9,10 @@
 getDirectory <- function(mainDirectory, Labels) {
   directoryFrame <- data.frame(row.names = Labels)
   for(i in 1:length(Labels)) {
-    directoryFrame[i,1] <- tcltk::tk_choose.dir(default = mainDirectory, caption = paste0("choose data folder for ", Labels[i]))
+    directoryFrame[i,1] <- Labels[i]
+    directoryFrame[i,2] <- tcltk::tk_choose.dir(default = mainDirectory, caption = paste0("choose data folder for ", Labels[i]))
   }
-  colnames(directoryFrame) <- "dataPath"
+  colnames(directoryFrame) <- c("Label", "dataPath")
   return(directoryFrame)
 }
 
@@ -27,10 +28,10 @@ getDirectory <- function(mainDirectory, Labels) {
 #' @export
 getDataDirectory <- function(mainDirectory = NULL, recLabels = NULL, stimLabels = NULL, stimRecIdentical = NULL) {
   if(is.null(mainDirectory)) {
-    stop("Missing directory")
+    warning("Missing directory")
   }
   if(is.null(recLabels) & is.null(stimLabels)) {
-    stop("Missing labels: enter recLabels and/or stimLabels")
+    warning("Missing labels: enter recLabels and/or stimLabels")
   }
   if(stimRecIdentical==T & (is.character(recLabels) || is.character(stimLabels))) {
     if(is.null(recLabels)) {
@@ -47,7 +48,11 @@ getDataDirectory <- function(mainDirectory = NULL, recLabels = NULL, stimLabels 
       recDf <- getDirectory(mainDirectory = mainDirectory, Labels = recLabels)
       return(list(stimulation = stimDf, recording = recDf))
     }
+  } else if((stimRecIdentical==F & is.character(recLabels)) & is.null(stimLabels)) {
+    warning("Only recording directory selected (no stimulation)")
+    recDf <- getDirectory(mainDirectory = mainDirectory, Labels = recLabels)
+    return(list(recording = recDf))
   } else {
-    stop("missing parameters")
+    warning("missing parameters")
   }
 }

@@ -67,10 +67,12 @@ ERPMat <- function(Trace, Onset, End, SamplingFreqStim = 0, SamplingFreqTrace = 
 #' @param SamplingFreqTrace A double indicating the sampling frequency of the trace.
 #' @param PrePhase A bool indicating if pre-onset timings should be included (default = true).
 #' @param PostPhase A bool indicating if post-end timings should be included (default = true).
+#' @param FixStartLength A double indicating the starting length when fixed window is used (default = 0).
+#' @param WindowLength A double indicating the time block in seconds (default = 0).
 #' @return Returns a list which includes stimulation frequencies for hyperblocks and the corresponding ERP matrices.
 #' @export
-ERPList <- function(Trace, BlockMat, SamplingFreqStim = 0, SamplingFreqTrace = 0, PrePhase = TRUE, PostPhase = TRUE) {
-    .Call('_InVivoR_ERPList', PACKAGE = 'InVivoR', Trace, BlockMat, SamplingFreqStim, SamplingFreqTrace, PrePhase, PostPhase)
+ERPList <- function(Trace, BlockMat, SamplingFreqStim = 0, SamplingFreqTrace = 0, PrePhase = TRUE, PostPhase = TRUE, FixStartLength = 0, WindowLength = 0) {
+    .Call('_InVivoR_ERPList', PACKAGE = 'InVivoR', Trace, BlockMat, SamplingFreqStim, SamplingFreqTrace, PrePhase, PostPhase, FixStartLength, WindowLength)
 }
 
 arma_gaussian <- function(sd, width, SamplingRateOut, SpikeTimings, StartTime, EndTime) {
