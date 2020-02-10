@@ -102,8 +102,8 @@ arma::mat ERPMat(const arma::vec& Trace,
 // [[Rcpp::export]]
 Rcpp::List ERPList(const arma::vec& Trace,
                    const arma::mat BlockMat,
-                   const double& SamplingFreqStim,
-                   const double& SamplingFreqTrace,
+                   const double& SamplingFreqStim = 0,
+                   const double& SamplingFreqTrace = 0,
                    const bool& PrePhase = true,
                    const bool& PostPhase = true) {
   Rcpp::StringVector BlockProperties(BlockMat.n_rows);

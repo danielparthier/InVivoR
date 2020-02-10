@@ -69,7 +69,7 @@ ERPMat <- function(Trace, Onset, End, SamplingFreqStim = 0, SamplingFreqTrace = 
 #' @param PostPhase A bool indicating if post-end timings should be included (default = true).
 #' @return Returns a list which includes stimulation frequencies for hyperblocks and the corresponding ERP matrices.
 #' @export
-ERPList <- function(Trace, BlockMat, SamplingFreqStim, SamplingFreqTrace, PrePhase = TRUE, PostPhase = TRUE) {
+ERPList <- function(Trace, BlockMat, SamplingFreqStim = 0, SamplingFreqTrace = 0, PrePhase = TRUE, PostPhase = TRUE) {
     .Call('_InVivoR_ERPList', PACKAGE = 'InVivoR', Trace, BlockMat, SamplingFreqStim, SamplingFreqTrace, PrePhase, PostPhase)
 }
 

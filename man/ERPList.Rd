@@ -7,8 +7,8 @@
 ERPList(
   Trace,
   BlockMat,
-  SamplingFreqStim,
-  SamplingFreqTrace,
+  SamplingFreqStim = 0,
+  SamplingFreqTrace = 0,
   PrePhase = TRUE,
   PostPhase = TRUE
 )
