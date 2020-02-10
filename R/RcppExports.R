@@ -31,6 +31,48 @@ decimate <- function(SIGNAL, FIR_FILTER, M) {
     .Call('_InVivoR_decimate', PACKAGE = 'InVivoR', SIGNAL, FIR_FILTER, M)
 }
 
+#' ERP (event-related potential) extraction
+#' 
+#' This function returns a matrix with extracted traces for any given range. 
+#' The range is has to be provided in form of onset indeces and end indeces. 
+#' Additional information can be provided to adjust for sampling differences 
+#' between range points and trace sampling frequency. If required the window 
+#' is proportionally elongated to include Pre/Post times.
+#'
+#' @param Trace A numeric vector which is used for extraction.
+#' @param Onset An integer vector with onset sample indeces.
+#' @param End An integer vector with end sample indeces.
+#' @param SamplingFreqStim A double indicating the sampling frequency of onset/end indeces.
+#' @param SamplingFreqTrace A double indicating the sampling frequency of the trace.
+#' @param PrePhase A bool indicating if pre-onset timings should be included (default = false).
+#' @param PostPhase A bool indicating if post-end timings should be included (default = false).
+#' @return Returns a matrix with extracted ERPs.
+#' @export
+ERPMat <- function(Trace, Onset, End, SamplingFreqStim = 0, SamplingFreqTrace = 0, PrePhase = FALSE, PostPhase = FALSE) {
+    .Call('_InVivoR_ERPMat', PACKAGE = 'InVivoR', Trace, Onset, End, SamplingFreqStim, SamplingFreqTrace, PrePhase, PostPhase)
+}
+
+#' Wrapper for ERP (event-related potential) extraction
+#' 
+#' This function returns a list which includes the frequencies and matrices 
+#' with extracted traces for any given range. The range is has to be provided
+#' in form of onset indeces and end indeces. Additional information can be 
+#' provided to adjust for sampling differences between range points and trace 
+#' sampling frequency. If required the window is proportionally elongated to 
+#' include Pre/Post times.
+#'
+#' @param Trace A numeric vector which is used for extraction.
+#' @param BlockMat The stimulation block matrix from StimulusSequence() including onset and end timings.
+#' @param SamplingFreqStim A double indicating the sampling frequency of onset/end indeces.
+#' @param SamplingFreqTrace A double indicating the sampling frequency of the trace.
+#' @param PrePhase A bool indicating if pre-onset timings should be included (default = true).
+#' @param PostPhase A bool indicating if post-end timings should be included (default = true).
+#' @return Returns a list which includes stimulation frequencies for hyperblocks and the corresponding ERP matrices.
+#' @export
+ERPList <- function(Trace, BlockMat, SamplingFreqStim, SamplingFreqTrace, PrePhase = TRUE, PostPhase = TRUE) {
+    .Call('_InVivoR_ERPList', PACKAGE = 'InVivoR', Trace, BlockMat, SamplingFreqStim, SamplingFreqTrace, PrePhase, PostPhase)
+}
+
 arma_gaussian <- function(sd, width, SamplingRateOut, SpikeTimings, StartTime, EndTime) {
     .Call('_InVivoR_arma_gaussian', PACKAGE = 'InVivoR', sd, width, SamplingRateOut, SpikeTimings, StartTime, EndTime)
 }

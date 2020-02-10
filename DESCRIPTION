@@ -10,7 +10,7 @@ Description: The InVivoR Package provides functions in R and Rcpp to analyse loc
     which are provided by the ND-Manager tool and will be used to automatically map the probes and location 
     of recording or stimulation.
 License: GPL (>= 2)
-Imports: Rcpp (>= 1.0.3),
+Imports: Rcpp (>= 1.0.2),
     RcppArmadillo,
     stats,
     data.table (>= 1.12.8),

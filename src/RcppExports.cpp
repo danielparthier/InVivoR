@@ -35,6 +35,39 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// ERPMat
+arma::mat ERPMat(const arma::vec& Trace, const arma::vec& Onset, const arma::vec& End, const double& SamplingFreqStim, const double& SamplingFreqTrace, const bool& PrePhase, const bool& PostPhase);
+RcppExport SEXP _InVivoR_ERPMat(SEXP TraceSEXP, SEXP OnsetSEXP, SEXP EndSEXP, SEXP SamplingFreqStimSEXP, SEXP SamplingFreqTraceSEXP, SEXP PrePhaseSEXP, SEXP PostPhaseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type Trace(TraceSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type Onset(OnsetSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type End(EndSEXP);
+    Rcpp::traits::input_parameter< const double& >::type SamplingFreqStim(SamplingFreqStimSEXP);
+    Rcpp::traits::input_parameter< const double& >::type SamplingFreqTrace(SamplingFreqTraceSEXP);
+    Rcpp::traits::input_parameter< const bool& >::type PrePhase(PrePhaseSEXP);
+    Rcpp::traits::input_parameter< const bool& >::type PostPhase(PostPhaseSEXP);
+    rcpp_result_gen = Rcpp::wrap(ERPMat(Trace, Onset, End, SamplingFreqStim, SamplingFreqTrace, PrePhase, PostPhase));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ERPList
+Rcpp::List ERPList(const arma::vec& Trace, const arma::mat BlockMat, const double& SamplingFreqStim, const double& SamplingFreqTrace, const bool& PrePhase, const bool& PostPhase);
+RcppExport SEXP _InVivoR_ERPList(SEXP TraceSEXP, SEXP BlockMatSEXP, SEXP SamplingFreqStimSEXP, SEXP SamplingFreqTraceSEXP, SEXP PrePhaseSEXP, SEXP PostPhaseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type Trace(TraceSEXP);
+    Rcpp::traits::input_parameter< const arma::mat >::type BlockMat(BlockMatSEXP);
+    Rcpp::traits::input_parameter< const double& >::type SamplingFreqStim(SamplingFreqStimSEXP);
+    Rcpp::traits::input_parameter< const double& >::type SamplingFreqTrace(SamplingFreqTraceSEXP);
+    Rcpp::traits::input_parameter< const bool& >::type PrePhase(PrePhaseSEXP);
+    Rcpp::traits::input_parameter< const bool& >::type PostPhase(PostPhaseSEXP);
+    rcpp_result_gen = Rcpp::wrap(ERPList(Trace, BlockMat, SamplingFreqStim, SamplingFreqTrace, PrePhase, PostPhase));
+    return rcpp_result_gen;
+END_RCPP
+}
 // arma_gaussian
 arma::vec arma_gaussian(double& sd, double& width, int& SamplingRateOut, arma::vec& SpikeTimings, double& StartTime, double& EndTime);
 RcppExport SEXP _InVivoR_arma_gaussian(SEXP sdSEXP, SEXP widthSEXP, SEXP SamplingRateOutSEXP, SEXP SpikeTimingsSEXP, SEXP StartTimeSEXP, SEXP EndTimeSEXP) {
@@ -399,6 +432,8 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_InVivoR_BinaryFileAccess", (DL_FUNC) &_InVivoR_BinaryFileAccess, 6},
     {"_InVivoR_decimate", (DL_FUNC) &_InVivoR_decimate, 3},
+    {"_InVivoR_ERPMat", (DL_FUNC) &_InVivoR_ERPMat, 7},
+    {"_InVivoR_ERPList", (DL_FUNC) &_InVivoR_ERPList, 6},
     {"_InVivoR_arma_gaussian", (DL_FUNC) &_InVivoR_arma_gaussian, 6},
     {"_InVivoR_arma_gaussian_kernel", (DL_FUNC) &_InVivoR_arma_gaussian_kernel, 3},
     {"_InVivoR_arma_gaussian_loop", (DL_FUNC) &_InVivoR_arma_gaussian_loop, 5},
