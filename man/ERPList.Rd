@@ -10,7 +10,9 @@ ERPList(
   SamplingFreqStim = 0,
   SamplingFreqTrace = 0,
   PrePhase = TRUE,
-  PostPhase = TRUE
+  PostPhase = TRUE,
+  FixStartLength = 0,
+  WindowLength = 0
 )
 }
 \arguments{
@@ -25,6 +27,10 @@ ERPList(
 \item{PrePhase}{A bool indicating if pre-onset timings should be included (default = true).}
 
 \item{PostPhase}{A bool indicating if post-end timings should be included (default = true).}
+
+\item{FixStartLength}{A double indicating the starting length when fixed window is used (default = 0).}
+
+\item{WindowLength}{A double indicating the time block in seconds (default = 0).}
 }
 \value{
 Returns a list which includes stimulation frequencies for hyperblocks and the corresponding ERP matrices.

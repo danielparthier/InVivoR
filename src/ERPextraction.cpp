@@ -97,6 +97,8 @@ arma::mat ERPMat(const arma::vec& Trace,
 //' @param SamplingFreqTrace A double indicating the sampling frequency of the trace.
 //' @param PrePhase A bool indicating if pre-onset timings should be included (default = true).
 //' @param PostPhase A bool indicating if post-end timings should be included (default = true).
+//' @param FixStartLength A double indicating the starting length when fixed window is used (default = 0).
+//' @param WindowLength A double indicating the time block in seconds (default = 0).
 //' @return Returns a list which includes stimulation frequencies for hyperblocks and the corresponding ERP matrices.
 //' @export
 // [[Rcpp::export]]
@@ -104,13 +106,24 @@ Rcpp::List ERPList(const arma::vec& Trace,
                    const arma::mat BlockMat,
                    const double& SamplingFreqStim = 0,
                    const double& SamplingFreqTrace = 0,
-                   const bool& PrePhase = true,
-                   const bool& PostPhase = true) {
+                   bool PrePhase = true,
+                   bool PostPhase = true,
+                   const double& FixStartLength = 0,
+                   const double& WindowLength = 0) {
   Rcpp::StringVector BlockProperties(BlockMat.n_rows);
   arma::vec OnsetCol = BlockMat.col(0);
   arma::vec Onset = arma::conv_to<arma::vec>::from(OnsetCol);
   arma::vec EndCol = BlockMat.col(1);
   arma::vec End = arma::conv_to<arma::vec>::from(EndCol);
+  if(FixStartLength > 0 and WindowLength > 0) {
+    if(SamplingFreqStim == 0) {
+      Rcpp::stop("Sampling frequency missing");
+    }
+    Onset -= SamplingFreqStim*FixStartLength;
+    End = Onset+SamplingFreqStim*WindowLength;
+    PrePhase = false;
+    PostPhase = false;
+  }
   for(int i = 0; i < BlockProperties.size(); ++i) {
     std::stringstream stream;
     stream << std::fixed << std::setprecision(1) << BlockMat.at(i,9);
