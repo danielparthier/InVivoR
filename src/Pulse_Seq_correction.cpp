@@ -149,11 +149,10 @@ Rcpp::List StimulusSequence(Rcpp::NumericVector& raw,
     corr_start = stim_pulse_start_raw[which_min(abs(stim_pulse_start_raw-stim_pulse_start[i]))];
     corr_end = stim_pulse_end_raw[which_min(abs(stim_pulse_end_raw-stim_pulse_end[i]))];
     if(corr_end<=corr_start) {
-      Rcpp::warning("Start and end of detection cause conflict! ... Check stim_trace and adjust threshold if necessary");
+      Rcpp::warning("Start and end of detection cause conflict! ... Check raw input and adjust threshold if necessary");
       if(threshold*1.5<Rcpp::max(raw)) {
         threshold=threshold*1.5;
-        std::string WarningString = "New Threshold = ";
-        WarningString += std::to_string(threshold);
+        std::string WarningString = "New Threshold = " + std::to_string(threshold) + " at iteration: " + std::to_string(CorrectionCount) + "/10";
         Rcpp::warning(WarningString);
         if(CorrectionCount == 10) {
           Rcpp::stop("Threshold adjustment failed");
@@ -632,7 +631,7 @@ Rcpp::List StimulusSequence(Rcpp::NumericVector& raw,
   for(R_xlen_t block_i = 0; block_i < stim_mat_end; ++block_i) {
     if(stim_mat(block_i, 17) == 1) {
       //block start
-      block_pos(block_start, 0) = stim_mat(block_i, 2)-0.5*sampling_frequency/stim_mat(block_i, 15);
+      block_pos(block_start, 0) = round(stim_mat(block_i, 2)-0.5*sampling_frequency/stim_mat(block_i, 15));
       //start pulse
       block_pos(block_start, 2) = block_i+1;
       //isolated block
@@ -673,7 +672,7 @@ Rcpp::List StimulusSequence(Rcpp::NumericVector& raw,
         }
       }
       //block end
-      block_pos(block_end,1) = stim_mat(end_pulse, 2)+0.5*sampling_frequency/stim_mat(end_pulse, 15);
+      block_pos(block_end,1) = round(stim_mat(end_pulse, 2)+0.5*sampling_frequency/stim_mat(end_pulse, 15));
       //end pulse
       block_pos(block_end,3) = end_pulse+1;
       ++block_end;
