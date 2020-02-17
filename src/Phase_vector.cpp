@@ -10,27 +10,22 @@
 //' wavelet transforms of epochs. The input list has to be flattend (vectorised) 
 //' first.
 //' 
-//' @param x A numeric vector of phases (radians).
-//' @param DIM_X An int for x-dimension of wavelet transform.
-//' @param DIM_Y An int for y-dimension of wavelet transform.
-//' @param DIM_Z An int for z-dimension of list (number of epochs).
+//' @param x A cube of phases (radians) with slices as different ERPs.
 //' @param CORES An int indicating the number of threads used (default = 1).
 //' @return Returns a list containing a matrix with Rho vector lengths and a matrix with the corresponding circular mean.
 //' @export
 // [[Rcpp::export]]
-Rcpp::List PhaseListAnalysis(arma::vec& x,
-                             int& DIM_X,
-                             int& DIM_Y,
-                             int& DIM_Z,
+Rcpp::List PhaseListAnalysis(const arma::cube& x,
                              const int& CORES = 1) {
   omp_set_num_threads(CORES);
-  arma::cube TmpMat = arma::cube(x.memptr(), DIM_X, DIM_Y, DIM_Z, false, false);
+  int DIM_X = x.n_rows;
+  int DIM_Y = x.n_cols;
   arma::mat OutputRho = arma::mat(DIM_X, DIM_Y, arma::fill::zeros);
   arma::mat OutputMean = arma::mat(DIM_X, DIM_Y, arma::fill::zeros);
-  #pragma omp parallel for shared(TmpMat, OutputRho, OutputMean) schedule(static) 
+  #pragma omp parallel for shared(x, OutputRho, OutputMean) schedule(static) 
   for(int i = 0; i < DIM_X; ++i) {
     for(int j = 0; j < DIM_Y; ++j) {
-      arma::rowvec tmp_vec = TmpMat.tube(i, j);
+      arma::rowvec tmp_vec = x.tube(i, j);
       double tmpX = arma::mean(arma::sin(tmp_vec));
       double tmpY = arma::mean(arma::cos(tmp_vec));
       // changed from OutputRho(i, j) = sqrt((pow(tmpX, 2)+pow(tmpY, 2)));
@@ -50,24 +45,21 @@ Rcpp::List PhaseListAnalysis(arma::vec& x,
 //' given value in a matrix to be larger than a random sample.
 //' 
 //' @param x A matrix.
-//' @param DIM_X An int for x-dimension of matrix.
-//' @param DIM_Y An int for y-dimension of matrix.
 //' @param SHUFFLES An int indicating the number of shuffles.
 //' @param CORES An int indicating the number of threads used (default = 1).
 //' @return Returns a matrix indicating the probability of value being larger than shuffled data.
 //' @export
 // [[Rcpp::export]]
 arma::mat PhaseListAnalysisShuffle(arma::mat& x,
-                                   const int& DIM_X,
-                                   const int& DIM_Y,
-                                   const int& SHUFFLES,
-                                   int& CORES) {
+                                   const int SHUFFLES = 200,
+                                   int CORES = 1) {
   omp_set_num_threads(CORES);
-  arma::mat TmpMat = arma::mat(x.memptr(), DIM_X, DIM_Y, false, false);
+  int DIM_X = x.n_rows;
+  int DIM_Y = x.n_cols;
   arma::mat OutputSig = arma::mat(DIM_X, DIM_Y, arma::fill::zeros);
-  #pragma omp parallel for shared(TmpMat, OutputSig, SHUFFLES) schedule(static) 
+  #pragma omp parallel for shared(x, OutputSig) schedule(static) 
   for(int i = 0; i < SHUFFLES; ++i) {
-    OutputSig = OutputSig+(TmpMat>arma::shuffle(TmpMat, 1));
+    OutputSig = OutputSig+(x>arma::shuffle(x, 1));
   }
   return OutputSig/SHUFFLES;
 }
@@ -80,23 +72,20 @@ arma::mat PhaseListAnalysisShuffle(arma::mat& x,
 //' given value in a matrix to be larger than a random sample.
 //' 
 //' @param x A matrix.
-//' @param DIM_X An int for x-dimension of matrix.
-//' @param DIM_Y An int for y-dimension of matrix.
 //' @param SHUFFLES An int indicating the number of shuffles.
 //' @param CORES An int indicating the number of threads used (default = 1).
 //' @return Returns a matrix indicating the probability of value being larger than shuffled data.
 //' @export
 // [[Rcpp::export]]
 arma::mat PhaseListAnalysisResample(arma::mat& x,
-                                    const int& DIM_X,
-                                    const int& DIM_Y,
-                                    const int& SHUFFLES,
-                                    const int& CORES) {
+                                    const int SHUFFLES = 200,
+                                    const int CORES = 1) {
   omp_set_num_threads(CORES);
-  arma::mat TmpMat = arma::mat(x.memptr(), DIM_X, DIM_Y, false, false);
+  int DIM_X = x.n_rows;
+  int DIM_Y = x.n_cols;
   arma::mat OutputSig = arma::mat(DIM_X, DIM_Y, arma::fill::zeros);
   arma::mat ShuffleMat = arma::mat(DIM_X, DIM_Y, arma::fill::zeros);
-  #pragma omp parallel for shared(TmpMat, OutputSig, ShuffleMat, SHUFFLES, DIM_X, DIM_Y) schedule(static) 
+  #pragma omp parallel for shared(x, OutputSig, ShuffleMat, DIM_X, DIM_Y) schedule(static) 
   for(int shuffle_run = 0; shuffle_run < SHUFFLES; ++shuffle_run) {
     arma::vec VecRnd = arma::randi<arma::vec>(DIM_X*DIM_Y, arma::distr_param(0, DIM_Y*DIM_X));
     int k = 0;
@@ -107,7 +96,7 @@ arma::mat PhaseListAnalysisResample(arma::mat& x,
         ++k;
       }
     }
-    OutputSig = OutputSig+(TmpMat>ShuffleMat);
+    OutputSig = OutputSig+(x>ShuffleMat);
   }
   return OutputSig/SHUFFLES;
 }
