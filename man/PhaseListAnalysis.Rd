@@ -4,16 +4,10 @@
 \alias{PhaseListAnalysis}
 \title{Phase lock analysis}
 \usage{
-PhaseListAnalysis(x, DIM_X, DIM_Y, DIM_Z, CORES = 1L)
+PhaseListAnalysis(x, CORES = 1L)
 }
 \arguments{
-\item{x}{A numeric vector of phases (radians).}
-
-\item{DIM_X}{An int for x-dimension of wavelet transform.}
-
-\item{DIM_Y}{An int for y-dimension of wavelet transform.}
-
-\item{DIM_Z}{An int for z-dimension of list (number of epochs).}
+\item{x}{A cube of phases (radians) with slices as different ERPs.}
 
 \item{CORES}{An int indicating the number of threads used (default = 1).}
 }

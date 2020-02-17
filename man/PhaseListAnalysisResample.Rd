@@ -4,14 +4,10 @@
 \alias{PhaseListAnalysisResample}
 \title{Matrix resample}
 \usage{
-PhaseListAnalysisResample(x, DIM_X, DIM_Y, SHUFFLES, CORES)
+PhaseListAnalysisResample(x, SHUFFLES = 200L, CORES = 1L)
 }
 \arguments{
 \item{x}{A matrix.}
-
-\item{DIM_X}{An int for x-dimension of matrix.}
-
-\item{DIM_Y}{An int for y-dimension of matrix.}
 
 \item{SHUFFLES}{An int indicating the number of shuffles.}
 

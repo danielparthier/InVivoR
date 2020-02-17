@@ -136,15 +136,12 @@ MI <- function(PowerMatRaw, PhaseMatRaw, PowerPeriods, PhasePeriods, BIN_NUMBER,
 #' wavelet transforms of epochs. The input list has to be flattend (vectorised) 
 #' first.
 #' 
-#' @param x A numeric vector of phases (radians).
-#' @param DIM_X An int for x-dimension of wavelet transform.
-#' @param DIM_Y An int for y-dimension of wavelet transform.
-#' @param DIM_Z An int for z-dimension of list (number of epochs).
+#' @param x A cube of phases (radians) with slices as different ERPs.
 #' @param CORES An int indicating the number of threads used (default = 1).
 #' @return Returns a list containing a matrix with Rho vector lengths and a matrix with the corresponding circular mean.
 #' @export
-PhaseListAnalysis <- function(x, DIM_X, DIM_Y, DIM_Z, CORES = 1L) {
-    .Call('_InVivoR_PhaseListAnalysis', PACKAGE = 'InVivoR', x, DIM_X, DIM_Y, DIM_Z, CORES)
+PhaseListAnalysis <- function(x, CORES = 1L) {
+    .Call('_InVivoR_PhaseListAnalysis', PACKAGE = 'InVivoR', x, CORES)
 }
 
 #' Matrix shuffle
@@ -154,14 +151,12 @@ PhaseListAnalysis <- function(x, DIM_X, DIM_Y, DIM_Z, CORES = 1L) {
 #' given value in a matrix to be larger than a random sample.
 #' 
 #' @param x A matrix.
-#' @param DIM_X An int for x-dimension of matrix.
-#' @param DIM_Y An int for y-dimension of matrix.
 #' @param SHUFFLES An int indicating the number of shuffles.
 #' @param CORES An int indicating the number of threads used (default = 1).
 #' @return Returns a matrix indicating the probability of value being larger than shuffled data.
 #' @export
-PhaseListAnalysisShuffle <- function(x, DIM_X, DIM_Y, SHUFFLES, CORES) {
-    .Call('_InVivoR_PhaseListAnalysisShuffle', PACKAGE = 'InVivoR', x, DIM_X, DIM_Y, SHUFFLES, CORES)
+PhaseListAnalysisShuffle <- function(x, SHUFFLES = 200L, CORES = 1L) {
+    .Call('_InVivoR_PhaseListAnalysisShuffle', PACKAGE = 'InVivoR', x, SHUFFLES, CORES)
 }
 
 #' Matrix resample
@@ -171,14 +166,12 @@ PhaseListAnalysisShuffle <- function(x, DIM_X, DIM_Y, SHUFFLES, CORES) {
 #' given value in a matrix to be larger than a random sample.
 #' 
 #' @param x A matrix.
-#' @param DIM_X An int for x-dimension of matrix.
-#' @param DIM_Y An int for y-dimension of matrix.
 #' @param SHUFFLES An int indicating the number of shuffles.
 #' @param CORES An int indicating the number of threads used (default = 1).
 #' @return Returns a matrix indicating the probability of value being larger than shuffled data.
 #' @export
-PhaseListAnalysisResample <- function(x, DIM_X, DIM_Y, SHUFFLES, CORES) {
-    .Call('_InVivoR_PhaseListAnalysisResample', PACKAGE = 'InVivoR', x, DIM_X, DIM_Y, SHUFFLES, CORES)
+PhaseListAnalysisResample <- function(x, SHUFFLES = 200L, CORES = 1L) {
+    .Call('_InVivoR_PhaseListAnalysisResample', PACKAGE = 'InVivoR', x, SHUFFLES, CORES)
 }
 
 #' Butterworth filter c++
@@ -211,6 +204,82 @@ BWFiltCpp <- function(InputSignal, SamplingFrequency, ORDER = 2L, f0 = 10, type 
 #' @export
 StimulusSequence <- function(raw, sampling_frequency, threshold, max_time_gap) {
     .Call('_InVivoR_StimulusSequence', PACKAGE = 'InVivoR', raw, sampling_frequency, threshold, max_time_gap)
+}
+
+#' Morlet Wwavelet (time domain)
+#' 
+#' This function returns a complex morlet wavelet in the time domain. It can be 
+#' used in convolution.
+#'
+#' @param t A numeric sequence of time (-t/2 to t/2) with steps of sampling frequency.
+#' @param sigma A double indicating the shape parameter of the wavelet.
+#' @return Morlet wavelet as complex vector.
+#' @export
+morletWavlet <- function(t, sigma) {
+    .Call('_InVivoR_morletWavlet', PACKAGE = 'InVivoR', t, sigma)
+}
+
+#' Morlet wavelet (frequency domain)
+#' 
+#' This function returns a morlet wavelet in the frequency domain. It can be 
+#' used for implementation via inverse FFT.
+#'
+#' @param angFreq A numeric sequence of angular frequency (0 to 2pi).
+#' @param sigma A double indicating the shape parameter of the wavelet.
+#' @return Morlet wavelet as numeric vector.
+#' @export
+morletWaveletFFT <- function(angFreq, sigma) {
+    .Call('_InVivoR_morletWaveletFFT', PACKAGE = 'InVivoR', angFreq, sigma)
+}
+
+#' Application of morlet wavelet (frequency domain)
+#' 
+#' This function returns the convolution of a complex morlet daughter wavelet with the signal.
+#' 
+#' @param SignalFFT A complex vector of the signal FFT.
+#' @param scale A double indicating the scale parameter of daughter wavelet.
+#' @param morletFFT A vector of wavelet in frequency domain.
+#' @param LNorm A double indicating the L normalisation (power of 1/LNorm, default = 2).
+#' @return Morlet wavelet as numeric vector.
+#' @export
+morletWT <- function(SignalFFT, scale, morletFFT, LNorm = 2) {
+    .Call('_InVivoR_morletWT', PACKAGE = 'InVivoR', SignalFFT, scale, morletFFT, LNorm)
+}
+
+#' Wavelet transform
+#' 
+#' This function performs a wavelet transform of a signal for different scales 
+#' and returns a complex matrix from the convolution with a complex wavelet in 
+#' the frequency domain.
+#' 
+#' @param Signal A numeric vector.
+#' @param frequencies A vector indicating the frequencies which should be analysed.
+#' @param samplingfrequency A double indicating the sampling frequency in Hz.
+#' @param sigma A double indicating the shape parameter of the wavelet.
+#' @param LNorm A double indicating the L normalisation (power of 1/LNorm, default = 2).
+#' @param CORES An integer indicating number of threads used (default = 1). 
+#' @return Wavelet transform as complex matrix.
+#' @export
+WT <- function(Signal, frequencies, samplingfrequency, sigma, LNorm = 2, CORES = 1L) {
+    .Call('_InVivoR_WT', PACKAGE = 'InVivoR', Signal, frequencies, samplingfrequency, sigma, LNorm, CORES)
+}
+
+#' Wavelet transform (from ERP matrix)
+#' 
+#' This function performs a wavelet transform of a signal for different scales 
+#' and returns a complex matrix from the convolution with a complex wavelet in 
+#' the frequency domain.
+#' 
+#' @param ERPMat A numeric matrix with rows for ERP signals and columns as time domain.
+#' @param frequencies A vector indicating the frequencies which should be analysed.
+#' @param samplingfrequency A double indicating the sampling frequency in Hz.
+#' @param sigma A double indicating the shape parameter of the wavelet.
+#' @param LNorm A double indicating the L normalisation (power of 1/LNorm, default = 2).
+#' @param CORES An integer indicating number of threads used (default = 1). 
+#' @return Wavelet transform as complex cube (each slice is from one ERP).
+#' @export
+WTbatch <- function(ERPMat, frequencies, samplingfrequency, sigma, LNorm = 2, CORES = 1L) {
+    .Call('_InVivoR_WTbatch', PACKAGE = 'InVivoR', ERPMat, frequencies, samplingfrequency, sigma, LNorm, CORES)
 }
 
 #' Maximum Amplitude Channel
