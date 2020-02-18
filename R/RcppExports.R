@@ -206,7 +206,7 @@ StimulusSequence <- function(raw, sampling_frequency, threshold, max_time_gap) {
     .Call('_InVivoR_StimulusSequence', PACKAGE = 'InVivoR', raw, sampling_frequency, threshold, max_time_gap)
 }
 
-#' Morlet Wwavelet (time domain)
+#' Morlet wavelet (time domain)
 #' 
 #' This function returns a complex morlet wavelet in the time domain. It can be 
 #' used in convolution.
@@ -259,6 +259,24 @@ morletWT <- function(SignalFFT, scale, morletFFT, LNorm = 2) {
 #' @param LNorm A double indicating the L normalisation (power of 1/LNorm, default = 2).
 #' @param CORES An integer indicating number of threads used (default = 1). 
 #' @return Wavelet transform as complex matrix.
+#' 
+#' @examples # test signal
+#' testSignal <- sin(seq(0,32*pi, length.out = 4000))*6
+#' testSignal <- testSignal+sin(seq(0,84*pi, length.out = 4000))*10
+#' 
+#' # apply wavelet tranform
+#' WTmat <- WT(Signal = testSignal, frequencies = seq(from = 0.2,to = 20, by = 0.1),
+#' samplingfrequency = 1e3, sigma = 12, LNorm = 2, CORES = 1)
+#' 
+#' # plot real part of WT
+#' image(x = Re(WTmat), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = T)
+#' 
+#' # plot power of WT
+#' image(x = abs(WTmat)^2, col = hcl.colors(n = 1000, palette = "viridis"), useRaster = T)
+#' 
+#' # plot phase
+#' image(x = atan2(y = Im(WTmat), x = Re(WTmat)), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = T)
+#' 
 #' @export
 WT <- function(Signal, frequencies, samplingfrequency, sigma, LNorm = 2, CORES = 1L) {
     .Call('_InVivoR_WT', PACKAGE = 'InVivoR', Signal, frequencies, samplingfrequency, sigma, LNorm, CORES)
@@ -277,9 +295,41 @@ WT <- function(Signal, frequencies, samplingfrequency, sigma, LNorm = 2, CORES =
 #' @param LNorm A double indicating the L normalisation (power of 1/LNorm, default = 2).
 #' @param CORES An integer indicating number of threads used (default = 1). 
 #' @return Wavelet transform as complex cube (each slice is from one ERP).
+#' 
+#' @examples # Generate test signal
+#' testSignal <- sin(seq(0,32*pi, length.out = 4000))*6
+#' testSignal <- testSignal+sin(seq(0,84*pi, length.out = 4000))*10
+#' 
+#' # Generate ERP matrix
+#' ERPmat <- ERPMat(Trace = testSignal, Onset = (1:10)*200, End = (1:10)*400)
+#'   
+#' # Apply WT to all ERPs
+#' WTCube <- WTbatch(ERPMat = ERPmat, frequencies = seq(0.2,20, 0.2), samplingfrequency = 1000, sigma = 6, LNorm = 2, CORES = 1)
+#'     
+#' # Cube dimensions
+#' dim(WTCube)
+#'       
+#' # Real part of wavelet transform for different ERPs
+#' image(x = Re(WTCube[,,1]), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = T)
+#' image(x = Re(WTCube[,,5]), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = T)
+#' image(x = Re(WTCube[,,10]), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = T)
+#' 
 #' @export
 WTbatch <- function(ERPMat, frequencies, samplingfrequency, sigma, LNorm = 2, CORES = 1L) {
     .Call('_InVivoR_WTbatch', PACKAGE = 'InVivoR', ERPMat, frequencies, samplingfrequency, sigma, LNorm, CORES)
+}
+
+#' Wavelet power matrix (from wavelet power cube)
+#' 
+#' This function computes the average power of several WT which can be returned as raw power
+#' or as z-score. If the z-score is returned then every slice of the cube is z-transformed 
+#' independently and the average is calculated in z-direction.
+#' 
+#' @param x A cube with power matrices each slice representing ERP.
+#' @return An average power matrix (raw or as z-score).
+#' @export
+PowerMat <- function(x, ZScore = FALSE) {
+    .Call('_InVivoR_PowerMat', PACKAGE = 'InVivoR', x, ZScore)
 }
 
 #' Maximum Amplitude Channel

@@ -259,53 +259,53 @@ BEGIN_RCPP
 END_RCPP
 }
 // morletWavlet
-arma::cx_vec morletWavlet(arma::vec t, double sigma);
+arma::cx_vec morletWavlet(arma::vec& t, const double& sigma);
 RcppExport SEXP _InVivoR_morletWavlet(SEXP tSEXP, SEXP sigmaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::vec >::type t(tSEXP);
-    Rcpp::traits::input_parameter< double >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< arma::vec& >::type t(tSEXP);
+    Rcpp::traits::input_parameter< const double& >::type sigma(sigmaSEXP);
     rcpp_result_gen = Rcpp::wrap(morletWavlet(t, sigma));
     return rcpp_result_gen;
 END_RCPP
 }
 // morletWaveletFFT
-arma::vec morletWaveletFFT(arma::vec angFreq, double sigma);
+arma::vec morletWaveletFFT(const arma::vec& angFreq, double& sigma);
 RcppExport SEXP _InVivoR_morletWaveletFFT(SEXP angFreqSEXP, SEXP sigmaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::vec >::type angFreq(angFreqSEXP);
-    Rcpp::traits::input_parameter< double >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type angFreq(angFreqSEXP);
+    Rcpp::traits::input_parameter< double& >::type sigma(sigmaSEXP);
     rcpp_result_gen = Rcpp::wrap(morletWaveletFFT(angFreq, sigma));
     return rcpp_result_gen;
 END_RCPP
 }
 // morletWT
-arma::cx_vec morletWT(arma::cx_vec SignalFFT, double scale, arma::vec morletFFT, double LNorm);
+arma::cx_vec morletWT(const arma::cx_vec& SignalFFT, const double& scale, arma::vec morletFFT, const double& LNorm);
 RcppExport SEXP _InVivoR_morletWT(SEXP SignalFFTSEXP, SEXP scaleSEXP, SEXP morletFFTSEXP, SEXP LNormSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::cx_vec >::type SignalFFT(SignalFFTSEXP);
-    Rcpp::traits::input_parameter< double >::type scale(scaleSEXP);
+    Rcpp::traits::input_parameter< const arma::cx_vec& >::type SignalFFT(SignalFFTSEXP);
+    Rcpp::traits::input_parameter< const double& >::type scale(scaleSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type morletFFT(morletFFTSEXP);
-    Rcpp::traits::input_parameter< double >::type LNorm(LNormSEXP);
+    Rcpp::traits::input_parameter< const double& >::type LNorm(LNormSEXP);
     rcpp_result_gen = Rcpp::wrap(morletWT(SignalFFT, scale, morletFFT, LNorm));
     return rcpp_result_gen;
 END_RCPP
 }
 // WT
-arma::cx_mat WT(const arma::vec& Signal, const arma::vec& frequencies, double samplingfrequency, const double& sigma, const double& LNorm, int CORES);
+arma::cx_mat WT(const arma::vec& Signal, const arma::vec& frequencies, const double& samplingfrequency, double& sigma, const double& LNorm, int CORES);
 RcppExport SEXP _InVivoR_WT(SEXP SignalSEXP, SEXP frequenciesSEXP, SEXP samplingfrequencySEXP, SEXP sigmaSEXP, SEXP LNormSEXP, SEXP CORESSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const arma::vec& >::type Signal(SignalSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type frequencies(frequenciesSEXP);
-    Rcpp::traits::input_parameter< double >::type samplingfrequency(samplingfrequencySEXP);
-    Rcpp::traits::input_parameter< const double& >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< const double& >::type samplingfrequency(samplingfrequencySEXP);
+    Rcpp::traits::input_parameter< double& >::type sigma(sigmaSEXP);
     Rcpp::traits::input_parameter< const double& >::type LNorm(LNormSEXP);
     Rcpp::traits::input_parameter< int >::type CORES(CORESSEXP);
     rcpp_result_gen = Rcpp::wrap(WT(Signal, frequencies, samplingfrequency, sigma, LNorm, CORES));
@@ -313,18 +313,30 @@ BEGIN_RCPP
 END_RCPP
 }
 // WTbatch
-arma::cx_cube WTbatch(arma::mat& ERPMat, const arma::vec& frequencies, double samplingfrequency, const double& sigma, const double& LNorm, int CORES);
+arma::cx_cube WTbatch(arma::mat& ERPMat, const arma::vec& frequencies, const double& samplingfrequency, double& sigma, const double& LNorm, const int& CORES);
 RcppExport SEXP _InVivoR_WTbatch(SEXP ERPMatSEXP, SEXP frequenciesSEXP, SEXP samplingfrequencySEXP, SEXP sigmaSEXP, SEXP LNormSEXP, SEXP CORESSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::mat& >::type ERPMat(ERPMatSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type frequencies(frequenciesSEXP);
-    Rcpp::traits::input_parameter< double >::type samplingfrequency(samplingfrequencySEXP);
-    Rcpp::traits::input_parameter< const double& >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< const double& >::type samplingfrequency(samplingfrequencySEXP);
+    Rcpp::traits::input_parameter< double& >::type sigma(sigmaSEXP);
     Rcpp::traits::input_parameter< const double& >::type LNorm(LNormSEXP);
-    Rcpp::traits::input_parameter< int >::type CORES(CORESSEXP);
+    Rcpp::traits::input_parameter< const int& >::type CORES(CORESSEXP);
     rcpp_result_gen = Rcpp::wrap(WTbatch(ERPMat, frequencies, samplingfrequency, sigma, LNorm, CORES));
+    return rcpp_result_gen;
+END_RCPP
+}
+// PowerMat
+arma::mat PowerMat(const arma::cube& x, const bool& ZScore);
+RcppExport SEXP _InVivoR_PowerMat(SEXP xSEXP, SEXP ZScoreSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::cube& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const bool& >::type ZScore(ZScoreSEXP);
+    rcpp_result_gen = Rcpp::wrap(PowerMat(x, ZScore));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -517,6 +529,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_InVivoR_morletWT", (DL_FUNC) &_InVivoR_morletWT, 4},
     {"_InVivoR_WT", (DL_FUNC) &_InVivoR_WT, 6},
     {"_InVivoR_WTbatch", (DL_FUNC) &_InVivoR_WTbatch, 6},
+    {"_InVivoR_PowerMat", (DL_FUNC) &_InVivoR_PowerMat, 2},
     {"_InVivoR_max_channel", (DL_FUNC) &_InVivoR_max_channel, 1},
     {"_InVivoR_arma_apply_median", (DL_FUNC) &_InVivoR_arma_apply_median, 1},
     {"_InVivoR_arma_spike_extraction_loop", (DL_FUNC) &_InVivoR_arma_spike_extraction_loop, 2},
