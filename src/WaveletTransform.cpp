@@ -3,7 +3,7 @@
 #define ARMA_NO_DEBUG
 
 // [[Rcpp::depends(RcppArmadillo)]]
-//' Morlet Wwavelet (time domain)
+//' Morlet wavelet (time domain)
 //' 
 //' This function returns a complex morlet wavelet in the time domain. It can be 
 //' used in convolution.
@@ -13,7 +13,8 @@
 //' @return Morlet wavelet as complex vector.
 //' @export
 // [[Rcpp::export]]
-arma::cx_vec morletWavlet(arma::vec t, double sigma) {
+arma::cx_vec morletWavlet(arma::vec& t,
+                          const double& sigma) {
   double pi4 = std::pow(arma::datum::pi, -0.25);
   double c0 = std::pow((1+std::exp(-sigma*sigma)-2*std::exp(-0.75*sigma*sigma)), -0.5);
   double k0 = std::exp(-0.5*sigma*sigma);
@@ -39,7 +40,8 @@ arma::cx_vec morletWavlet(arma::vec t, double sigma) {
 //' @return Morlet wavelet as numeric vector.
 //' @export
 // [[Rcpp::export]]
-arma::vec morletWaveletFFT(arma::vec angFreq, double sigma) {
+arma::vec morletWaveletFFT(const arma::vec& angFreq,
+                           double& sigma) {
   double pi4 = std::pow(arma::datum::pi, -0.25);
   double c0 = std::pow((1+std::exp(-sigma*sigma)-2*std::exp(-0.75*sigma*sigma)), -0.5);
   double k0 = std::exp(-0.5*sigma*sigma);
@@ -58,8 +60,10 @@ arma::vec morletWaveletFFT(arma::vec angFreq, double sigma) {
 //' @return Morlet wavelet as numeric vector.
 //' @export
 // [[Rcpp::export]]
-arma::cx_vec morletWT(arma::cx_vec SignalFFT, double scale, arma::vec morletFFT, double LNorm = 2) {
-  return arma::ifft(std::pow(scale * arma::datum::pi*2, 1/LNorm) * SignalFFT % arma::conj(morletFFT))*SignalFFT.n_elem;
+arma::cx_vec morletWT(const arma::cx_vec& SignalFFT,
+                      const double& scale, arma::vec morletFFT,
+                      const double& LNorm = 2) {
+  return arma::ifft(std::pow(scale * arma::datum::pi*2, 1/LNorm) * SignalFFT % arma::conj(morletFFT));
 }
 
 
@@ -76,9 +80,32 @@ arma::cx_vec morletWT(arma::cx_vec SignalFFT, double scale, arma::vec morletFFT,
 //' @param LNorm A double indicating the L normalisation (power of 1/LNorm, default = 2).
 //' @param CORES An integer indicating number of threads used (default = 1). 
 //' @return Wavelet transform as complex matrix.
+//' 
+//' @examples # test signal
+//' testSignal <- sin(seq(0,32*pi, length.out = 4000))*6
+//' testSignal <- testSignal+sin(seq(0,84*pi, length.out = 4000))*10
+//' 
+//' # apply wavelet tranform
+//' WTmat <- WT(Signal = testSignal, frequencies = seq(from = 0.2,to = 20, by = 0.1),
+//' samplingfrequency = 1e3, sigma = 12, LNorm = 2, CORES = 1)
+//' 
+//' # plot real part of WT
+//' image(x = Re(WTmat), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = T)
+//' 
+//' # plot power of WT
+//' image(x = abs(WTmat)^2, col = hcl.colors(n = 1000, palette = "viridis"), useRaster = T)
+//' 
+//' # plot phase
+//' image(x = atan2(y = Im(WTmat), x = Re(WTmat)), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = T)
+//' 
 //' @export
 // [[Rcpp::export]]
-arma::cx_mat WT(const arma::vec& Signal, const arma::vec& frequencies, double samplingfrequency, const double& sigma, const double& LNorm = 2, int CORES = 1) {
+arma::cx_mat WT(const arma::vec& Signal,
+                const arma::vec& frequencies,
+                const double& samplingfrequency,
+                double& sigma,
+                const double& LNorm = 2,
+                int CORES = 1) {
   int scaleLength = frequencies.n_elem;
   int SignalLength = Signal.n_elem;
   omp_set_num_threads(CORES);
@@ -109,9 +136,33 @@ arma::cx_mat WT(const arma::vec& Signal, const arma::vec& frequencies, double sa
 //' @param LNorm A double indicating the L normalisation (power of 1/LNorm, default = 2).
 //' @param CORES An integer indicating number of threads used (default = 1). 
 //' @return Wavelet transform as complex cube (each slice is from one ERP).
+//' 
+//' @examples # Generate test signal
+//' testSignal <- sin(seq(0,32*pi, length.out = 4000))*6
+//' testSignal <- testSignal+sin(seq(0,84*pi, length.out = 4000))*10
+//' 
+//' # Generate ERP matrix
+//' ERPmat <- ERPMat(Trace = testSignal, Onset = (1:10)*200, End = (1:10)*400)
+//'   
+//' # Apply WT to all ERPs
+//' WTCube <- WTbatch(ERPMat = ERPmat, frequencies = seq(0.2,20, 0.2), samplingfrequency = 1000, sigma = 6, LNorm = 2, CORES = 1)
+//'     
+//' # Cube dimensions
+//' dim(WTCube)
+//'       
+//' # Real part of wavelet transform for different ERPs
+//' image(x = Re(WTCube[,,1]), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = T)
+//' image(x = Re(WTCube[,,5]), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = T)
+//' image(x = Re(WTCube[,,10]), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = T)
+//' 
 //' @export
 // [[Rcpp::export]]
-arma::cx_cube WTbatch(arma::mat& ERPMat, const arma::vec& frequencies, double samplingfrequency, const double& sigma, const double& LNorm = 2, int CORES = 1) {
+arma::cx_cube WTbatch(arma::mat& ERPMat,
+                      const arma::vec& frequencies,
+                      const double& samplingfrequency,
+                      double& sigma,
+                      const double& LNorm = 2,
+                      const int& CORES = 1) {
   int scaleLength = frequencies.n_elem;
   int SignalLength = ERPMat.n_cols;
   int SignalCount = ERPMat.n_rows;
@@ -137,4 +188,33 @@ arma::cx_cube WTbatch(arma::mat& ERPMat, const arma::vec& frequencies, double sa
     WTCube.slice(j) = WTMat;
   }
   return WTCube;
+}
+
+//' Wavelet power matrix (from wavelet power cube)
+//' 
+//' This function computes the average power of several WT which can be returned as raw power
+//' or as z-score. If the z-score is returned then every slice of the cube is z-transformed 
+//' independently and the average is calculated in z-direction.
+//' 
+//' @param x A cube with power matrices each slice representing ERP.
+//' @return An average power matrix (raw or as z-score).
+//' @export
+// [[Rcpp::export]]
+arma::mat PowerMat(const arma::cube& x,
+                   const bool& ZScore = false) {
+  int DIM_X = x.n_rows;
+  int DIM_Y = x.n_cols;
+  int DIM_Z = x.n_slices;
+  long double mean;
+  long double sd;
+  arma::cube Cube = arma::cube(x.memptr(), DIM_X, DIM_Y, DIM_Z);
+  if(ZScore) {
+    for(int i = 0; i < DIM_Z; ++i) {
+      mean = arma::mean(arma::vectorise(Cube.slice(i)));
+      sd = arma::stddev(arma::vectorise(Cube.slice(i)));
+      Cube.slice(i) -= mean;
+      Cube.slice(i) /= sd;
+    }
+  }
+  return arma::mean(Cube, 2);
 }
