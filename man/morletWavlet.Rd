@@ -2,7 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{morletWavlet}
 \alias{morletWavlet}
-\title{Morlet Wwavelet (time domain)}
+\title{Morlet wavelet (time domain)}
 \usage{
 morletWavlet(t, sigma)
 }

@@ -27,3 +27,23 @@ This function performs a wavelet transform of a signal for different scales
 and returns a complex matrix from the convolution with a complex wavelet in 
 the frequency domain.
 }
+\examples{
+# Generate test signal
+testSignal <- sin(seq(0,32*pi, length.out = 4000))*6
+testSignal <- testSignal+sin(seq(0,84*pi, length.out = 4000))*10
+
+# Generate ERP matrix
+ERPmat <- ERPMat(Trace = testSignal, Onset = (1:10)*200, End = (1:10)*400)
+  
+# Apply WT to all ERPs
+WTCube <- WTbatch(ERPMat = ERPmat, frequencies = seq(0.2,20, 0.2), samplingfrequency = 1000, sigma = 6, LNorm = 2, CORES = 1)
+    
+# Cube dimensions
+dim(WTCube)
+      
+# Real part of wavelet transform for different ERPs
+image(x = Re(WTCube[,,1]), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = T)
+image(x = Re(WTCube[,,5]), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = T)
+image(x = Re(WTCube[,,10]), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = T)
+
+}

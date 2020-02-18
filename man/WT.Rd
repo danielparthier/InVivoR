@@ -27,3 +27,22 @@ This function performs a wavelet transform of a signal for different scales
 and returns a complex matrix from the convolution with a complex wavelet in 
 the frequency domain.
 }
+\examples{
+# test signal
+testSignal <- sin(seq(0,32*pi, length.out = 4000))*6
+testSignal <- testSignal+sin(seq(0,84*pi, length.out = 4000))*10
+
+# apply wavelet tranform
+WTmat <- WT(Signal = testSignal, frequencies = seq(from = 0.2,to = 20, by = 0.1),
+samplingfrequency = 1e3, sigma = 12, LNorm = 2, CORES = 1)
+
+# plot real part of WT
+image(x = Re(WTmat), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = T)
+
+# plot power of WT
+image(x = abs(WTmat)^2, col = hcl.colors(n = 1000, palette = "viridis"), useRaster = T)
+
+# plot phase
+image(x = atan2(y = Im(WTmat), x = Re(WTmat)), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = T)
+
+}
