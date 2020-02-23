@@ -63,14 +63,17 @@ Rcpp::List MI(arma::mat& PowerMatRaw,
     for(int j=POWER_START; j<POWER_END+1; ++j) {
       arma::vec MeanPowerCol = PowerMat.unsafe_col(j);
       for(int k=0; k<BIN_NUMBER; ++k) {
-        MeanPower(k) = arma::mean(MeanPowerCol.elem(arma::find(PiSeq==k)));
+        arma::uvec PiFind = arma::find(PiSeq==k);
+        if(PiFind.n_elem>0) {
+          MeanPower(k) = arma::mean(MeanPowerCol.elem(PiFind));
+        }
       }
       const double MeanPowerSum = arma::sum(MeanPower);
       MeanPower /= MeanPowerSum;
       MIMat.at(j-POWER_START,i-PHASE_START) = arma::sum(MeanPower%arma::log(MeanPower*BIN_NUMBER))/LOG_BIN;
     }
   }
-  return Rcpp::List::create(Rcpp::Named("MI") = MIMat,
-                            Rcpp::Named("PhaseFrequency") = 1/Rcpp::NumericVector(PhaseFreq.begin(),PhaseFreq.end()),
-                            Rcpp::Named("PowerFrequency") = 1/Rcpp::NumericVector(PowerFreq.begin(),PowerFreq.end()));
+ return Rcpp::List::create(Rcpp::Named("MI") = MIMat,
+                           Rcpp::Named("PhaseFrequency") = 1/Rcpp::NumericVector(PhaseFreq.begin(),PhaseFreq.end()),
+                           Rcpp::Named("PowerFrequency") = 1/Rcpp::NumericVector(PowerFreq.begin(),PowerFreq.end()));
 }

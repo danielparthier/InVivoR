@@ -340,6 +340,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// Squeeze
+arma::cx_mat Squeeze(const arma::cx_mat& WT, const arma::vec& frequencies, const double& samplingfrequency, double sigma, const int& CORES);
+RcppExport SEXP _InVivoR_Squeeze(SEXP WTSEXP, SEXP frequenciesSEXP, SEXP samplingfrequencySEXP, SEXP sigmaSEXP, SEXP CORESSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::cx_mat& >::type WT(WTSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type frequencies(frequenciesSEXP);
+    Rcpp::traits::input_parameter< const double& >::type samplingfrequency(samplingfrequencySEXP);
+    Rcpp::traits::input_parameter< double >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< const int& >::type CORES(CORESSEXP);
+    rcpp_result_gen = Rcpp::wrap(Squeeze(WT, frequencies, samplingfrequency, sigma, CORES));
+    return rcpp_result_gen;
+END_RCPP
+}
 // max_channel
 arma::rowvec max_channel(arma::mat median_input_mat);
 RcppExport SEXP _InVivoR_max_channel(SEXP median_input_matSEXP) {
@@ -530,6 +545,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_InVivoR_WT", (DL_FUNC) &_InVivoR_WT, 6},
     {"_InVivoR_WTbatch", (DL_FUNC) &_InVivoR_WTbatch, 6},
     {"_InVivoR_PowerMat", (DL_FUNC) &_InVivoR_PowerMat, 2},
+    {"_InVivoR_Squeeze", (DL_FUNC) &_InVivoR_Squeeze, 5},
     {"_InVivoR_max_channel", (DL_FUNC) &_InVivoR_max_channel, 1},
     {"_InVivoR_arma_apply_median", (DL_FUNC) &_InVivoR_arma_apply_median, 1},
     {"_InVivoR_arma_spike_extraction_loop", (DL_FUNC) &_InVivoR_arma_spike_extraction_loop, 2},
