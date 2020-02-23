@@ -15,12 +15,12 @@
 // [[Rcpp::export]]
 arma::cx_vec morletWavlet(arma::vec& t,
                           const double& sigma) {
-  double pi4 = std::pow(arma::datum::pi, -0.25);
-  double c0 = std::pow((1+std::exp(-sigma*sigma)-2*std::exp(-0.75*sigma*sigma)), -0.5);
-  double k0 = std::exp(-0.5*sigma*sigma);
+  const double pi4 = std::pow(arma::datum::pi, -0.25);
+  const double c0 = std::pow((1+std::exp(-sigma*sigma)-2*std::exp(-0.75*sigma*sigma)), -0.5);
+  const double k0 = std::exp(-0.5*sigma*sigma);
   arma::vec sigmaVec(t.n_elem);
   sigmaVec.fill(sigma);
-  sigmaVec %=t;
+  sigmaVec %= t;
   arma::vec tSq = arma::vec(t.memptr(), t.n_elem, true, false);
   tSq %= -t*0.5;
   arma::cx_vec WaveletOut(t.n_elem, arma::fill::zeros);
@@ -106,8 +106,8 @@ arma::cx_mat WT(const arma::vec& Signal,
                 double& sigma,
                 const double& LNorm = 2,
                 int CORES = 1) {
-  int scaleLength = frequencies.n_elem;
-  int SignalLength = Signal.n_elem;
+  const int scaleLength = frequencies.n_elem;
+  const int SignalLength = Signal.n_elem;
   omp_set_num_threads(CORES);
   arma::vec SignalPadded = arma::zeros<arma::vec>(SignalLength*3);
   SignalPadded.subvec(SignalLength+1,size(Signal)) = Signal;
@@ -115,7 +115,7 @@ arma::cx_mat WT(const arma::vec& Signal,
   arma::vec angFreq = arma::linspace<arma::vec>(0, 2*arma::datum::pi, SignalPadded.n_elem);
   arma::cx_vec SignalFFT = arma::fft(SignalPadded);
   arma::cx_mat WTMat = arma::zeros<arma::cx_mat>(SignalLength, scaleLength);
-#pragma omp parallel for shared(SignalFFT, angFreq, scale, scaleLength, sigma, LNorm) schedule(static) 
+#pragma omp parallel for shared(SignalFFT, angFreq, scale, sigma, LNorm) schedule(static) 
   for(int i = 0; i < scaleLength; ++i) {
     arma::cx_vec tmp =  morletWT(SignalFFT, scale.at(i), morletWaveletFFT(angFreq*scale.at(i), sigma), LNorm);
     WTMat.unsafe_col(i) = tmp.subvec(SignalLength+1,SignalLength*2);
@@ -163,9 +163,9 @@ arma::cx_cube WTbatch(arma::mat& ERPMat,
                       double& sigma,
                       const double& LNorm = 2,
                       const int& CORES = 1) {
-  int scaleLength = frequencies.n_elem;
-  int SignalLength = ERPMat.n_cols;
-  int SignalCount = ERPMat.n_rows;
+  const int scaleLength = frequencies.n_elem;
+  const int SignalLength = ERPMat.n_cols;
+  const int SignalCount = ERPMat.n_rows;
   inplace_trans(ERPMat);
   omp_set_num_threads(CORES);
   arma::vec scale = samplingfrequency/arma::vec(frequencies.memptr(), scaleLength)/((4*arma::datum::pi)/(sigma+std::sqrt(2+sigma*sigma)));
@@ -175,7 +175,7 @@ arma::cx_cube WTbatch(arma::mat& ERPMat,
   for(int i = 0; i < scaleLength; ++i) {
     ScaleMat.unsafe_col(i) = morletWaveletFFT(angFreq*scale.at(i), sigma);
   }
-#pragma omp parallel for shared(ERPMat, ScaleMat, scale, scaleLength, SignalCount, SignalLength, sigma, LNorm) schedule(static) 
+#pragma omp parallel for shared(ERPMat, ScaleMat, scale, sigma, LNorm) schedule(static) 
   for(int j = 0; j < SignalCount; ++j) {
     arma::cx_mat WTMat = arma::zeros<arma::cx_mat>(SignalLength, scaleLength);
     arma::vec SignalPadded = arma::zeros<arma::vec>(SignalLength*3);
@@ -197,14 +197,15 @@ arma::cx_cube WTbatch(arma::mat& ERPMat,
 //' independently and the average is calculated in z-direction.
 //' 
 //' @param x A cube with power matrices each slice representing ERP.
+//' @param ZScore A bool indicating if Z-score should be computed.
 //' @return An average power matrix (raw or as z-score).
 //' @export
 // [[Rcpp::export]]
 arma::mat PowerMat(const arma::cube& x,
                    const bool& ZScore = false) {
-  int DIM_X = x.n_rows;
-  int DIM_Y = x.n_cols;
-  int DIM_Z = x.n_slices;
+  const int DIM_X = x.n_rows;
+  const int DIM_Y = x.n_cols;
+  const int DIM_Z = x.n_slices;
   long double mean;
   long double sd;
   arma::cube Cube = arma::cube(x.memptr(), DIM_X, DIM_Y, DIM_Z);
@@ -217,4 +218,74 @@ arma::mat PowerMat(const arma::cube& x,
     }
   }
   return arma::mean(Cube, 2);
+}
+
+//' Synchrosqueezed wavelet power matrix (from wavelet power matrix)
+//' 
+//' This function computes the synchrosqueezed wavelet transform as proposed by Daubechies and Maes (1996). Wavelet 
+//' coefficients of the wavelet will be reassigned according to the instantaneous frequency in the transform.
+//' 
+//' @param WT A complex matrix representing the wavelet transform.
+//' @param frequencies A vector indicating the frequencies which should be analysed.
+//' @param samplingfrequency A double indicating the sampling frequency in Hz (default = 1000).
+//' @param sigma A double indicating the shape parameter of the wavelet (default = 6).
+//' @param CORES An integer indicating number of threads used (default = 1). 
+//' @return A complex matrix representing the synchrosqueezed wavelet transform.
+//' @export
+// [[Rcpp::export]]
+arma::cx_mat Squeeze(const arma::cx_mat& WT,
+                  const arma::vec& frequencies,
+                  const double& samplingfrequency = 1e3,
+                  double sigma = 6.0,
+                  const int& CORES = 1) {
+  const int DIM_X =  WT.n_cols;
+  const int DIM_Y =  WT.n_rows;
+  omp_set_num_threads(CORES);
+  
+  arma::cx_mat x = arma::cx_mat(WT.memptr(), DIM_Y, DIM_X);
+  
+  // scale calculation, delta and useful transformations
+  arma::vec scale = samplingfrequency/frequencies/((4*arma::datum::pi)/(sigma+std::sqrt(2+sigma*sigma)));
+  arma::vec scaleDelta = arma::zeros<arma::vec>(scale.n_elem+1);
+  scaleDelta.at(0) = frequencies.at(0)+(frequencies.at(0)-frequencies.at(1));
+  scaleDelta.subvec(1,size(scale)) = frequencies;
+  scaleDelta = samplingfrequency/scaleDelta;
+  scaleDelta /= (4*arma::datum::pi)/(sigma+std::sqrt(2+sigma*sigma));
+  scaleDelta = arma::abs(arma::diff(scaleDelta));
+  arma::vec scalePower = arma::pow(scale, -1.5);
+  scalePower %= scaleDelta;
+  
+  // angular frequency and delta
+  arma::vec wFreq = frequencies*2*arma::datum::pi;
+  arma::vec wDelta = arma::zeros<arma::vec>(wFreq.n_elem+1);
+  wDelta.at(0) = wFreq.at(0)-(wFreq.at(1)-wFreq.at(0));
+  wDelta.subvec(1,size(wFreq)) = wFreq;
+  wDelta = arma::abs(arma::diff(wDelta));
+  arma::vec wDeltaHalf = wDelta/2;
+  arma::vec wDeltaInv = 1/wDelta;
+  
+  //wavelet differential and instantaneous frequency
+  arma::cx_mat wab = arma::cx_mat(x.n_rows, x.n_cols, arma::fill::zeros);
+  wab.fill(arma::cx_double(0,-1));
+  wab.col(0) = arma::zeros<arma::cx_vec>(x.n_rows);
+  wab.submat(1, 0, x.n_rows-1, x.n_cols-1) %= arma::diff(x, 1);
+  arma::mat wabAbs = arma::abs(wab / x * samplingfrequency);
+  arma::inplace_strans(wabAbs);
+  arma::inplace_strans(x);
+
+  // allocating space for output matrix
+  arma::cx_mat Ts = arma::cx_mat(DIM_Y, DIM_X, arma::fill::zeros);
+#pragma omp parallel for shared(x, Ts, wabAbs, wFreq, wDeltaHalf, wDeltaInv, scalePower) schedule(static)
+  for(int b = 0; b < DIM_Y; ++b) {
+    for(int w = 0; w < DIM_X; ++w) {
+      // find instantaneous frequencies in wl range
+      arma::ucolvec ColK = arma::find(arma::abs(wabAbs.col(b)-wFreq.at(w)) < wDeltaHalf.at(w));
+      if(ColK.n_elem > 0) {
+        // transform amplitude from a,b space to b,w space
+        arma::cx_vec tmp = x.col(b);
+        Ts.at(b,w) = wDeltaInv.at(w) * arma::sum(tmp.elem(ColK)) * scalePower.at(w);
+      }
+    }
+  }
+  return Ts;
 }
