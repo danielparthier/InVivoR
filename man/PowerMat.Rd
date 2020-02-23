@@ -8,6 +8,8 @@ PowerMat(x, ZScore = FALSE)
 }
 \arguments{
 \item{x}{A cube with power matrices each slice representing ERP.}
+
+\item{ZScore}{A bool indicating if Z-score should be computed.}
 }
 \value{
 An average power matrix (raw or as z-score).

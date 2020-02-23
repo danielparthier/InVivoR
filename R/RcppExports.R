@@ -326,10 +326,27 @@ WTbatch <- function(ERPMat, frequencies, samplingfrequency, sigma, LNorm = 2, CO
 #' independently and the average is calculated in z-direction.
 #' 
 #' @param x A cube with power matrices each slice representing ERP.
+#' @param ZScore A bool indicating if Z-score should be computed.
 #' @return An average power matrix (raw or as z-score).
 #' @export
 PowerMat <- function(x, ZScore = FALSE) {
     .Call('_InVivoR_PowerMat', PACKAGE = 'InVivoR', x, ZScore)
+}
+
+#' Synchrosqueezed wavelet power matrix (from wavelet power matrix)
+#' 
+#' This function computes the synchrosqueezed wavelet transform as proposed by Daubechies and Maes (1996). Wavelet 
+#' coefficients of the wavelet will be reassigned according to the instantaneous frequency in the transform.
+#' 
+#' @param WT A complex matrix representing the wavelet transform.
+#' @param frequencies A vector indicating the frequencies which should be analysed.
+#' @param samplingfrequency A double indicating the sampling frequency in Hz (default = 1000).
+#' @param sigma A double indicating the shape parameter of the wavelet (default = 6).
+#' @param CORES An integer indicating number of threads used (default = 1). 
+#' @return A complex matrix representing the synchrosqueezed wavelet transform.
+#' @export
+Squeeze <- function(WT, frequencies, samplingfrequency = 1e3, sigma = 6.0, CORES = 1L) {
+    .Call('_InVivoR_Squeeze', PACKAGE = 'InVivoR', WT, frequencies, samplingfrequency, sigma, CORES)
 }
 
 #' Maximum Amplitude Channel
