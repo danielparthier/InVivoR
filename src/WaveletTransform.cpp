@@ -175,6 +175,8 @@ arma::cx_cube WTbatch(arma::mat& ERPMat,
   for(int i = 0; i < scaleLength; ++i) {
     ScaleMat.unsafe_col(i) = morletWaveletFFT(angFreq*scale.at(i), sigma);
   }
+  int iteration = 0;
+  int progressSteps = SignalCount/10;
 #pragma omp parallel for shared(ERPMat, ScaleMat, scale, sigma, LNorm) schedule(static) 
   for(int j = 0; j < SignalCount; ++j) {
     arma::cx_mat WTMat = arma::zeros<arma::cx_mat>(SignalLength, scaleLength);
@@ -186,6 +188,14 @@ arma::cx_cube WTbatch(arma::mat& ERPMat,
       WTMat.unsafe_col(k) = tmp.subvec(SignalLength+1,SignalLength*2);
     }
     WTCube.slice(j) = WTMat;
+#pragma omp atomic
+    ++iteration;
+    
+    if (iteration % progressSteps == 1)
+    {
+#pragma omp critical
+      Rcpp::Rcout << "Progress: " << std::fixed << std::setprecision(1) << (100.0*iteration/SignalCount) << "%\n";
+    }
   }
   return WTCube;
 }
@@ -289,3 +299,83 @@ arma::cx_mat Squeeze(const arma::cx_mat& WT,
   }
   return Ts;
 }
+
+//' Average complex matrix (from wavelet power cube)
+//' 
+//' This function computes the average complex matrix of a complex cube.
+//' 
+//' @param x A cube with complex matrices each slice representing ERP.
+//' @return An average complex matrix.
+//' @export
+// [[Rcpp::export]]
+arma::cx_mat CxCubeCollapse(const arma::cx_cube& x) {
+  return arma::mean(x, 2);
+}
+
+//' Smoothing complex wavelet matrix
+//' 
+//' This function computes the smoothened wavelet transform required 
+//' for coherence calculation.
+//' 
+//' @param x A cube with complex matrices each slice representing ERP.
+//' @return An smoothened wavelet transform.
+//' @export
+// [[Rcpp::export]]
+arma::cx_mat WTSmoothing(const arma::cx_mat& x,
+                       const arma::vec& frequencies,
+                       const double& samplingfrequency,
+                       const double& sigma,
+                       const double& Ba = 0.6,
+                       const double& Bb = 1) {
+  arma::vec scale = samplingfrequency/frequencies/((4*arma::datum::pi)/(sigma+std::sqrt(2+sigma*sigma)));
+  int scaleLength = scale.n_elem;
+  arma::cx_mat smoothMat = arma::zeros<arma::cx_mat>(x.n_rows, x.n_cols);
+  for(int i = 0; i < scaleLength; ++i) {
+    int timeLength = scale[i]*Bb*10+1;
+    //arma::cx_vec kernel = arma::zeros<arma::cx_vec>(timeLength+200);
+    //int timeLength = scale[i]*10+1;
+    if(timeLength < 10) {
+      timeLength = 10;
+    }
+    //arma::cx_vec kernel = arma::zeros<arma::cx_vec>();
+    arma::cx_vec kernel = arma::exp(arma::pow(arma::linspace<arma::cx_vec>(-scale[i]*5,scale[i]*5, timeLength),2)/(2*scale[i]*scale[i]))/timeLength;
+    //kernel(arma::span(100, timeLength+100)) += 1.0/timeLength;
+    smoothMat.col(i) = arma::conv(x.col(i), kernel, "same");
+  }
+//  for(int i = 0; i < scaleLength; ++i) {
+//    arma::uvec indx = arma::find(scale<=(scale[i]+Ba) and scale>=(scale[i]-Ba));
+//    smoothMat.col(i) = arma::mean(smoothMat.cols(arma::min(indx),arma::max(indx)), 1);
+//  }
+  return smoothMat;
+}
+
+
+
+//' Smoothing complex wavelet matrix
+//' 
+//' This function computes the smoothened wavelet transform required 
+//' for coherence calculation.
+//' 
+//' @param x A cube with complex matrices each slice representing ERP.
+//' @return An smoothened wavelet transform.
+//' @export
+// [[Rcpp::export]]
+arma::cx_mat WTCoherence(arma::cx_mat& WT1,
+                         arma::cx_mat& WT2,
+                         arma::vec& frequencies,
+                         double& samplingfrequency,
+                         double& sigma,
+                         const double& Ba = 0.6,
+                         const double& Bb = 1) {
+  //arma::cx_mat CohMat = arma::zeros<arma::cx_mat>(size(WT1));
+  //CohMat = arma::pow(arma::abs(x), 2);
+  arma::cx_mat WT1sq = arma::zeros<arma::cx_mat>(size(WT1));
+  arma::cx_mat WT2sq = arma::zeros<arma::cx_mat>(size(WT1));
+  WT1sq.set_real(arma::abs(WT1) % arma::abs(WT1));
+  WT2sq.set_real(arma::abs(WT2) % arma::abs(WT2));
+  arma::cx_mat coh1 = WTSmoothing(WT1 % arma::conj(WT2), frequencies, samplingfrequency, sigma, Ba, Bb);
+  arma::cx_mat coh2 = WTSmoothing(WT1sq, frequencies, samplingfrequency, sigma, Ba, Bb);
+  arma::cx_mat coh3 = WTSmoothing(WT2sq, frequencies, samplingfrequency, sigma, Ba, Bb);
+  return (arma::abs(coh1)%arma::abs(coh1))/(coh2 % coh3);
+}
+
