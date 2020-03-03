@@ -126,7 +126,7 @@ Rcpp::List ERPList(const arma::vec& Trace,
   }
   for(int i = 0; i < BlockProperties.size(); ++i) {
     std::stringstream stream;
-    stream << std::fixed << std::setprecision(1) << BlockMat.at(i,9);
+    stream << std::fixed << std::setprecision(1) << BlockMat.at(i,15);
     std::string PropString = stream.str();
     if(BlockMat.at(i,10) == 1) {
       PropString += "_sine";
