@@ -134,7 +134,10 @@ Rcpp::List ERPList(const arma::vec& Trace,
       PropString += "_pulse";
     }
     if(BlockMat.at(i,7) == 1) {
-      PropString += "_burst";
+      PropString += "_burst_";
+      std::stringstream burst;
+      burst << std::fixed << std::setprecision(1) << BlockMat.at(i,9);
+      PropString += burst.str();
     }
     if(BlockMat.at(i,12) == 1) {
       PropString += "_frontRamp";
