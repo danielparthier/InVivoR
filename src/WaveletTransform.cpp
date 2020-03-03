@@ -90,13 +90,15 @@ arma::cx_vec morletWT(const arma::cx_vec& SignalFFT,
 //' samplingfrequency = 1e3, sigma = 12, LNorm = 2, CORES = 1)
 //' 
 //' # plot real part of WT
-//' image(x = Re(WTmat), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = T)
+//' image(x = Re(WTmat), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = TRUE)
 //' 
 //' # plot power of WT
-//' image(x = abs(WTmat)^2, col = hcl.colors(n = 1000, palette = "viridis"), useRaster = T)
+//' image(x = abs(WTmat)^2, col = hcl.colors(n = 1000, palette = "viridis"), useRaster = TRUE)
 //' 
 //' # plot phase
-//' image(x = atan2(y = Im(WTmat), x = Re(WTmat)), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = T)
+//' image(x = atan2(y = Im(WTmat), x = Re(WTmat)),
+//'       col = hcl.colors(n = 1000, palette = "viridis"),
+//'       useRaster = TRUE)
 //' 
 //' @export
 // [[Rcpp::export]]
@@ -145,15 +147,19 @@ arma::cx_mat WT(const arma::vec& Signal,
 //' ERPmat <- ERPMat(Trace = testSignal, Onset = (1:10)*200, End = (1:10)*400)
 //'   
 //' # Apply WT to all ERPs
-//' WTCube <- WTbatch(ERPMat = ERPmat, frequencies = seq(0.2,20, 0.2), samplingfrequency = 1000, sigma = 6, LNorm = 2, CORES = 1)
+//' WTCube <- WTbatch(ERPMat = ERPmat,
+//'                   frequencies = seq(0.2,20, 0.2),
+//'                   samplingfrequency = 1000,
+//'                   sigma = 6, LNorm = 2,
+//'                   CORES = 1)
 //'     
 //' # Cube dimensions
 //' dim(WTCube)
 //'       
 //' # Real part of wavelet transform for different ERPs
-//' image(x = Re(WTCube[,,1]), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = T)
-//' image(x = Re(WTCube[,,5]), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = T)
-//' image(x = Re(WTCube[,,10]), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = T)
+//' image(x = Re(WTCube[,,1]), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = TRUE)
+//' image(x = Re(WTCube[,,5]), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = TRUE)
+//' image(x = Re(WTCube[,,10]), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = TRUE)
 //' 
 //' @export
 // [[Rcpp::export]]
@@ -317,19 +323,24 @@ arma::cx_mat CxCubeCollapse(const arma::cx_cube& x) {
 //' This function computes the smoothened wavelet transform required 
 //' for coherence calculation.
 //' 
-//' @param x A cube with complex matrices each slice representing ERP.
+//' @param WT A complex matrix representing the wavelet transform.
+//' @param frequencies A vector indicating the frequencies which should be analysed.
+//' @param samplingfrequency A double indicating the sampling frequency in Hz (default = 1000).
+//' @param sigma A double indicating the shape parameter of the wavelet (default = 6).
+//' @param Ba A double indicating the smoothing factor in the scale domain (default = 0.6).
+//' @param Bb A double indicating the smoothing factor in the time domain (default = 1).
 //' @return An smoothened wavelet transform.
 //' @export
 // [[Rcpp::export]]
-arma::cx_mat WTSmoothing(const arma::cx_mat& x,
+arma::cx_mat WTSmoothing(const arma::cx_mat& WT,
                        const arma::vec& frequencies,
-                       const double& samplingfrequency,
-                       const double& sigma,
+                       const double& samplingfrequency = 1e3,
+                       const double& sigma = 6.0,
                        const double& Ba = 0.6,
                        const double& Bb = 1) {
   arma::vec scale = samplingfrequency/frequencies/((4*arma::datum::pi)/(sigma+std::sqrt(2+sigma*sigma)));
   int scaleLength = scale.n_elem;
-  arma::cx_mat smoothMat = arma::zeros<arma::cx_mat>(x.n_rows, x.n_cols);
+  arma::cx_mat smoothMat = arma::zeros<arma::cx_mat>(WT.n_rows, WT.n_cols);
   for(int i = 0; i < scaleLength; ++i) {
     int timeLength = scale[i]*Bb*10+1;
     //arma::cx_vec kernel = arma::zeros<arma::cx_vec>(timeLength+200);
@@ -340,7 +351,7 @@ arma::cx_mat WTSmoothing(const arma::cx_mat& x,
     //arma::cx_vec kernel = arma::zeros<arma::cx_vec>();
     arma::cx_vec kernel = arma::exp(arma::pow(arma::linspace<arma::cx_vec>(-scale[i]*5,scale[i]*5, timeLength),2)/(2*scale[i]*scale[i]))/timeLength;
     //kernel(arma::span(100, timeLength+100)) += 1.0/timeLength;
-    smoothMat.col(i) = arma::conv(x.col(i), kernel, "same");
+    smoothMat.col(i) = arma::conv(WT.col(i), kernel, "same");
   }
 //  for(int i = 0; i < scaleLength; ++i) {
 //    arma::uvec indx = arma::find(scale<=(scale[i]+Ba) and scale>=(scale[i]-Ba));
@@ -356,15 +367,21 @@ arma::cx_mat WTSmoothing(const arma::cx_mat& x,
 //' This function computes the smoothened wavelet transform required 
 //' for coherence calculation.
 //' 
-//' @param x A cube with complex matrices each slice representing ERP.
+//' @param WT1 A complex matrix representing the wavelet transform.
+//' @param WT2 A complex matrix representing the wavelet transform.
+//' @param frequencies A vector indicating the frequencies which should be analysed.
+//' @param samplingfrequency A double indicating the sampling frequency in Hz (default = 1000).
+//' @param sigma A double indicating the shape parameter of the wavelet (default = 6).
+//' @param Ba A double indicating the smoothing factor in the scale domain (default = 0.6).
+//' @param Bb A double indicating the smoothing factor in the time domain (default = 1).
 //' @return An smoothened wavelet transform.
 //' @export
 // [[Rcpp::export]]
 arma::cx_mat WTCoherence(arma::cx_mat& WT1,
                          arma::cx_mat& WT2,
                          arma::vec& frequencies,
-                         double& samplingfrequency,
-                         double& sigma,
+                         const double& samplingfrequency = 1000.0,
+                         const double& sigma = 6.0,
                          const double& Ba = 0.6,
                          const double& Bb = 1) {
   //arma::cx_mat CohMat = arma::zeros<arma::cx_mat>(size(WT1));

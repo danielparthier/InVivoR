@@ -355,6 +355,50 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// CxCubeCollapse
+arma::cx_mat CxCubeCollapse(const arma::cx_cube& x);
+RcppExport SEXP _InVivoR_CxCubeCollapse(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::cx_cube& >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(CxCubeCollapse(x));
+    return rcpp_result_gen;
+END_RCPP
+}
+// WTSmoothing
+arma::cx_mat WTSmoothing(const arma::cx_mat& WT, const arma::vec& frequencies, const double& samplingfrequency, const double& sigma, const double& Ba, const double& Bb);
+RcppExport SEXP _InVivoR_WTSmoothing(SEXP WTSEXP, SEXP frequenciesSEXP, SEXP samplingfrequencySEXP, SEXP sigmaSEXP, SEXP BaSEXP, SEXP BbSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::cx_mat& >::type WT(WTSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type frequencies(frequenciesSEXP);
+    Rcpp::traits::input_parameter< const double& >::type samplingfrequency(samplingfrequencySEXP);
+    Rcpp::traits::input_parameter< const double& >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< const double& >::type Ba(BaSEXP);
+    Rcpp::traits::input_parameter< const double& >::type Bb(BbSEXP);
+    rcpp_result_gen = Rcpp::wrap(WTSmoothing(WT, frequencies, samplingfrequency, sigma, Ba, Bb));
+    return rcpp_result_gen;
+END_RCPP
+}
+// WTCoherence
+arma::cx_mat WTCoherence(arma::cx_mat& WT1, arma::cx_mat& WT2, arma::vec& frequencies, const double& samplingfrequency, const double& sigma, const double& Ba, const double& Bb);
+RcppExport SEXP _InVivoR_WTCoherence(SEXP WT1SEXP, SEXP WT2SEXP, SEXP frequenciesSEXP, SEXP samplingfrequencySEXP, SEXP sigmaSEXP, SEXP BaSEXP, SEXP BbSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::cx_mat& >::type WT1(WT1SEXP);
+    Rcpp::traits::input_parameter< arma::cx_mat& >::type WT2(WT2SEXP);
+    Rcpp::traits::input_parameter< arma::vec& >::type frequencies(frequenciesSEXP);
+    Rcpp::traits::input_parameter< const double& >::type samplingfrequency(samplingfrequencySEXP);
+    Rcpp::traits::input_parameter< const double& >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< const double& >::type Ba(BaSEXP);
+    Rcpp::traits::input_parameter< const double& >::type Bb(BbSEXP);
+    rcpp_result_gen = Rcpp::wrap(WTCoherence(WT1, WT2, frequencies, samplingfrequency, sigma, Ba, Bb));
+    return rcpp_result_gen;
+END_RCPP
+}
 // max_channel
 arma::rowvec max_channel(arma::mat median_input_mat);
 RcppExport SEXP _InVivoR_max_channel(SEXP median_input_matSEXP) {
@@ -546,6 +590,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_InVivoR_WTbatch", (DL_FUNC) &_InVivoR_WTbatch, 6},
     {"_InVivoR_PowerMat", (DL_FUNC) &_InVivoR_PowerMat, 2},
     {"_InVivoR_Squeeze", (DL_FUNC) &_InVivoR_Squeeze, 5},
+    {"_InVivoR_CxCubeCollapse", (DL_FUNC) &_InVivoR_CxCubeCollapse, 1},
+    {"_InVivoR_WTSmoothing", (DL_FUNC) &_InVivoR_WTSmoothing, 6},
+    {"_InVivoR_WTCoherence", (DL_FUNC) &_InVivoR_WTCoherence, 7},
     {"_InVivoR_max_channel", (DL_FUNC) &_InVivoR_max_channel, 1},
     {"_InVivoR_arma_apply_median", (DL_FUNC) &_InVivoR_arma_apply_median, 1},
     {"_InVivoR_arma_spike_extraction_loop", (DL_FUNC) &_InVivoR_arma_spike_extraction_loop, 2},

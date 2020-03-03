@@ -269,13 +269,15 @@ morletWT <- function(SignalFFT, scale, morletFFT, LNorm = 2) {
 #' samplingfrequency = 1e3, sigma = 12, LNorm = 2, CORES = 1)
 #' 
 #' # plot real part of WT
-#' image(x = Re(WTmat), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = T)
+#' image(x = Re(WTmat), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = TRUE)
 #' 
 #' # plot power of WT
-#' image(x = abs(WTmat)^2, col = hcl.colors(n = 1000, palette = "viridis"), useRaster = T)
+#' image(x = abs(WTmat)^2, col = hcl.colors(n = 1000, palette = "viridis"), useRaster = TRUE)
 #' 
 #' # plot phase
-#' image(x = atan2(y = Im(WTmat), x = Re(WTmat)), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = T)
+#' image(x = atan2(y = Im(WTmat), x = Re(WTmat)),
+#'       col = hcl.colors(n = 1000, palette = "viridis"),
+#'       useRaster = TRUE)
 #' 
 #' @export
 WT <- function(Signal, frequencies, samplingfrequency, sigma, LNorm = 2, CORES = 1L) {
@@ -304,15 +306,19 @@ WT <- function(Signal, frequencies, samplingfrequency, sigma, LNorm = 2, CORES =
 #' ERPmat <- ERPMat(Trace = testSignal, Onset = (1:10)*200, End = (1:10)*400)
 #'   
 #' # Apply WT to all ERPs
-#' WTCube <- WTbatch(ERPMat = ERPmat, frequencies = seq(0.2,20, 0.2), samplingfrequency = 1000, sigma = 6, LNorm = 2, CORES = 1)
+#' WTCube <- WTbatch(ERPMat = ERPmat,
+#'                   frequencies = seq(0.2,20, 0.2),
+#'                   samplingfrequency = 1000,
+#'                   sigma = 6, LNorm = 2,
+#'                   CORES = 1)
 #'     
 #' # Cube dimensions
 #' dim(WTCube)
 #'       
 #' # Real part of wavelet transform for different ERPs
-#' image(x = Re(WTCube[,,1]), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = T)
-#' image(x = Re(WTCube[,,5]), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = T)
-#' image(x = Re(WTCube[,,10]), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = T)
+#' image(x = Re(WTCube[,,1]), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = TRUE)
+#' image(x = Re(WTCube[,,5]), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = TRUE)
+#' image(x = Re(WTCube[,,10]), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = TRUE)
 #' 
 #' @export
 WTbatch <- function(ERPMat, frequencies, samplingfrequency, sigma, LNorm = 2, CORES = 1L) {
@@ -347,6 +353,52 @@ PowerMat <- function(x, ZScore = FALSE) {
 #' @export
 Squeeze <- function(WT, frequencies, samplingfrequency = 1e3, sigma = 6.0, CORES = 1L) {
     .Call('_InVivoR_Squeeze', PACKAGE = 'InVivoR', WT, frequencies, samplingfrequency, sigma, CORES)
+}
+
+#' Average complex matrix (from wavelet power cube)
+#' 
+#' This function computes the average complex matrix of a complex cube.
+#' 
+#' @param x A cube with complex matrices each slice representing ERP.
+#' @return An average complex matrix.
+#' @export
+CxCubeCollapse <- function(x) {
+    .Call('_InVivoR_CxCubeCollapse', PACKAGE = 'InVivoR', x)
+}
+
+#' Smoothing complex wavelet matrix
+#' 
+#' This function computes the smoothened wavelet transform required 
+#' for coherence calculation.
+#' 
+#' @param WT A complex matrix representing the wavelet transform.
+#' @param frequencies A vector indicating the frequencies which should be analysed.
+#' @param samplingfrequency A double indicating the sampling frequency in Hz (default = 1000).
+#' @param sigma A double indicating the shape parameter of the wavelet (default = 6).
+#' @param Ba A double indicating the smoothing factor in the scale domain (default = 0.6).
+#' @param Bb A double indicating the smoothing factor in the time domain (default = 1).
+#' @return An smoothened wavelet transform.
+#' @export
+WTSmoothing <- function(WT, frequencies, samplingfrequency = 1e3, sigma = 6.0, Ba = 0.6, Bb = 1) {
+    .Call('_InVivoR_WTSmoothing', PACKAGE = 'InVivoR', WT, frequencies, samplingfrequency, sigma, Ba, Bb)
+}
+
+#' Smoothing complex wavelet matrix
+#' 
+#' This function computes the smoothened wavelet transform required 
+#' for coherence calculation.
+#' 
+#' @param WT1 A complex matrix representing the wavelet transform.
+#' @param WT2 A complex matrix representing the wavelet transform.
+#' @param frequencies A vector indicating the frequencies which should be analysed.
+#' @param samplingfrequency A double indicating the sampling frequency in Hz (default = 1000).
+#' @param sigma A double indicating the shape parameter of the wavelet (default = 6).
+#' @param Ba A double indicating the smoothing factor in the scale domain (default = 0.6).
+#' @param Bb A double indicating the smoothing factor in the time domain (default = 1).
+#' @return An smoothened wavelet transform.
+#' @export
+WTCoherence <- function(WT1, WT2, frequencies, samplingfrequency = 1000.0, sigma = 6.0, Ba = 0.6, Bb = 1) {
+    .Call('_InVivoR_WTCoherence', PACKAGE = 'InVivoR', WT1, WT2, frequencies, samplingfrequency, sigma, Ba, Bb)
 }
 
 #' Maximum Amplitude Channel
