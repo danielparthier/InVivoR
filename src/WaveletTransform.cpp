@@ -183,6 +183,9 @@ arma::cx_cube WTbatch(arma::mat& ERPMat,
   }
   int iteration = 0;
   int progressSteps = SignalCount/10;
+  if(progressSteps == 0) {
+    progressSteps = 1;
+  }
 #pragma omp parallel for shared(ERPMat, ScaleMat, scale, sigma, LNorm) schedule(static) 
   for(int j = 0; j < SignalCount; ++j) {
     arma::cx_mat WTMat = arma::zeros<arma::cx_mat>(SignalLength, scaleLength);
@@ -190,19 +193,19 @@ arma::cx_cube WTbatch(arma::mat& ERPMat,
     SignalPadded.subvec(SignalLength+1,size(ERPMat.col(j))) = ERPMat.col(j);
     arma::cx_vec SignalFFT = arma::fft(SignalPadded);
     for(int k = 0; k < scaleLength; ++k) {
-      arma::cx_vec tmp =  morletWT(SignalFFT, scale.at(k), ScaleMat.unsafe_col(k), LNorm);
+      arma::cx_vec tmp =  morletWT(SignalFFT, scale.at(k), ScaleMat.col(k), LNorm);
       WTMat.unsafe_col(k) = tmp.subvec(SignalLength+1,SignalLength*2);
     }
     WTCube.slice(j) = WTMat;
 #pragma omp atomic
     ++iteration;
-    
-    if (iteration % progressSteps == 1)
+   if (iteration % progressSteps == 1)
     {
 #pragma omp critical
       Rcpp::Rcout << "Progress: " << std::fixed << std::setprecision(1) << (100.0*iteration/SignalCount) << "%\n";
     }
   }
+  Rcpp::Rcout << "finished ERP" << std::endl;
   return WTCube;
 }
 
