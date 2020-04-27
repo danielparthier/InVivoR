@@ -18,6 +18,10 @@ BinaryFileAccess <- function(FILENAME, spikePoints, WINDOW = 40L, CHANNELCOUNT =
     .Call('_InVivoR_BinaryFileAccess', PACKAGE = 'InVivoR', FILENAME, spikePoints, WINDOW, CHANNELCOUNT, CACHESIZE, BYTECODE)
 }
 
+read_file_cpp2 <- function(path) {
+    .Call('_InVivoR_read_file_cpp2', PACKAGE = 'InVivoR', path)
+}
+
 #' Decimate
 #' 
 #' This function downsamples a signal using a preset FIR filter which should be filtering at half the target frequency.
@@ -75,32 +79,32 @@ ERPList <- function(Trace, BlockMat, SamplingFreqStim = 0, SamplingFreqTrace = 0
     .Call('_InVivoR_ERPList', PACKAGE = 'InVivoR', Trace, BlockMat, SamplingFreqStim, SamplingFreqTrace, PrePhase, PostPhase, FixStartLength, WindowLength)
 }
 
-arma_gaussian <- function(sd, width, SamplingRateOut, SpikeTimings, StartTime, EndTime) {
-    .Call('_InVivoR_arma_gaussian', PACKAGE = 'InVivoR', sd, width, SamplingRateOut, SpikeTimings, StartTime, EndTime)
+#' ERP (event-related potential) extraction
+#' 
+#' This function returns a matrix with extracted traces for any given range. 
+#' The range is has to be provided in form of onset indeces and end indeces. 
+#' Additional information can be provided to adjust for sampling differences 
+#' between range points and trace sampling frequency. If required the window 
+#' is proportionally elongated to include Pre/Post times.
+#'
+#' @param SpikeTimes A numeric vector with spike times in seconds.
+#' @param timeStart A double for the start time for which the rate should be computed.
+#' @param timeEnd A double for the end time for which the rate should be computed.
+#' @param sigma A double indicating sigma of the gausian kernel in seconds.
+#' @param alpha A double indicating alpha of the gamma kernel in seconds.
+#' @param useBAKS A indicating whether Bayesian Adaptive Kernel Smoother should be used.
+#' @param BAKSalpha A double indicating the prior for alpha in BAKS (default = 4).
+#' @param BAKSbeta A double indicating the prior for beta in BAKS (default = 4).
+#' @param SamplingRate A double indicating the sampling rate (default = 1000).
+#' @param CORES An integer indicating how many core should be used (default = 4).
+#' @return Returns a vector with firing rate.
+#' @export
+FiringRate <- function(SpikeTimes, timeStart = NULL, timeEnd = NULL, sigma = NULL, alpha = NULL, useBAKS = FALSE, BAKSalpha = 4, BAKSbeta = 4, SamplingRate = 1e3, CORES = 4L) {
+    .Call('_InVivoR_FiringRate', PACKAGE = 'InVivoR', SpikeTimes, timeStart, timeEnd, sigma, alpha, useBAKS, BAKSalpha, BAKSbeta, SamplingRate, CORES)
 }
 
-arma_gaussian_kernel <- function(sd, width, SamplingRateOut) {
-    .Call('_InVivoR_arma_gaussian_kernel', PACKAGE = 'InVivoR', sd, width, SamplingRateOut)
-}
-
-arma_gaussian_loop <- function(sd, SamplingRateOut, SpikeTimings, StartTime, EndTime) {
-    .Call('_InVivoR_arma_gaussian_loop', PACKAGE = 'InVivoR', sd, SamplingRateOut, SpikeTimings, StartTime, EndTime)
-}
-
-BAKS <- function(SpikeTimings, Time, alpha, beta) {
-    .Call('_InVivoR_BAKS', PACKAGE = 'InVivoR', SpikeTimings, Time, alpha, beta)
-}
-
-OKS <- function(SpikeTimings, Time, alpha, beta) {
-    .Call('_InVivoR_OKS', PACKAGE = 'InVivoR', SpikeTimings, Time, alpha, beta)
-}
-
-BAKS_fast <- function(SpikeTimings, Time, alpha, beta) {
-    .Call('_InVivoR_BAKS_fast', PACKAGE = 'InVivoR', SpikeTimings, Time, alpha, beta)
-}
-
-BAKS_fast_new <- function(SpikeTimings, Time, alpha, beta) {
-    .Call('_InVivoR_BAKS_fast_new', PACKAGE = 'InVivoR', SpikeTimings, Time, alpha, beta)
+FiringRateSparse <- function(SpikeTimes, sigma = NULL, alpha = NULL, SamplingRate = 1e3) {
+    .Call('_InVivoR_FiringRateSparse', PACKAGE = 'InVivoR', SpikeTimes, sigma, alpha, SamplingRate)
 }
 
 #' @useDynLib InVivoR
@@ -295,8 +299,11 @@ WT <- function(Signal, frequencies, samplingfrequency, sigma, LNorm = 2, CORES =
 #' @param samplingfrequency A double indicating the sampling frequency in Hz.
 #' @param sigma A double indicating the shape parameter of the wavelet.
 #' @param LNorm A double indicating the L normalisation (power of 1/LNorm, default = 2).
-#' @param CORES An integer indicating number of threads used (default = 1). 
-#' @return Wavelet transform as complex cube (each slice is from one ERP).
+#' @param CORES An integer indicating number of threads used (default = 1).
+#' @param compression An integer indicating number of threads used (default = 1).
+#' @param PhaseAnalysis An integer indicating number of threads used (default = 1) 
+#' @return List with wavelet transform as complex cube (each slice is from one ERP or when compressed one matrix), 
+#' rho vector length and mean phase.
 #' 
 #' @examples # Generate test signal
 #' testSignal <- sin(seq(0,32*pi, length.out = 4000))*6
@@ -310,19 +317,21 @@ WT <- function(Signal, frequencies, samplingfrequency, sigma, LNorm = 2, CORES =
 #'                   frequencies = seq(0.2,20, 0.2),
 #'                   samplingfrequency = 1000,
 #'                   sigma = 6, LNorm = 2,
-#'                   CORES = 1)
+#'                   CORES = 1,
+#'                   compression = TRUE,
+#'                   PhaseAnalysis = TRUE)
 #'     
 #' # Cube dimensions
 #' dim(WTCube)
 #'       
 #' # Real part of wavelet transform for different ERPs
-#' image(x = Re(WTCube[,,1]), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = TRUE)
-#' image(x = Re(WTCube[,,5]), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = TRUE)
-#' image(x = Re(WTCube[,,10]), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = TRUE)
+#' image(x = abs(WTCube$Raw)^2, col = hcl.colors(n = 1000, palette = "viridis"), useRaster = TRUE)
+#' image(x = WTCube$Rho, col = hcl.colors(n = 1000, palette = "viridis"), useRaster = TRUE, zlim = c(0,1))
+#' image(x = WTCube$Mean), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = TRUE)
 #' 
 #' @export
-WTbatch <- function(ERPMat, frequencies, samplingfrequency, sigma, LNorm = 2, CORES = 1L) {
-    .Call('_InVivoR_WTbatch', PACKAGE = 'InVivoR', ERPMat, frequencies, samplingfrequency, sigma, LNorm, CORES)
+WTbatch <- function(ERPMat, frequencies, samplingfrequency, sigma, LNorm = 2, CORES = 1L, compression = FALSE, PhaseAnalysis = FALSE) {
+    .Call('_InVivoR_WTbatch', PACKAGE = 'InVivoR', ERPMat, frequencies, samplingfrequency, sigma, LNorm, CORES, compression, PhaseAnalysis)
 }
 
 #' Wavelet power matrix (from wavelet power cube)
