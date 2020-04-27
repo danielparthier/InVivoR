@@ -136,8 +136,11 @@ arma::cx_mat WT(const arma::vec& Signal,
 //' @param samplingfrequency A double indicating the sampling frequency in Hz.
 //' @param sigma A double indicating the shape parameter of the wavelet.
 //' @param LNorm A double indicating the L normalisation (power of 1/LNorm, default = 2).
-//' @param CORES An integer indicating number of threads used (default = 1). 
-//' @return Wavelet transform as complex cube (each slice is from one ERP).
+//' @param CORES An integer indicating number of threads used (default = 1).
+//' @param compression An integer indicating number of threads used (default = 1).
+//' @param PhaseAnalysis An integer indicating number of threads used (default = 1) 
+//' @return List with wavelet transform as complex cube (each slice is from one ERP or when compressed one matrix), 
+//' rho vector length and mean phase.
 //' 
 //' @examples # Generate test signal
 //' testSignal <- sin(seq(0,32*pi, length.out = 4000))*6
@@ -151,40 +154,60 @@ arma::cx_mat WT(const arma::vec& Signal,
 //'                   frequencies = seq(0.2,20, 0.2),
 //'                   samplingfrequency = 1000,
 //'                   sigma = 6, LNorm = 2,
-//'                   CORES = 1)
+//'                   CORES = 1,
+//'                   compression = TRUE,
+//'                   PhaseAnalysis = TRUE)
 //'     
 //' # Cube dimensions
-//' dim(WTCube)
+//' length(WTCube)
+//' dim(WTCube[[1]])
 //'       
 //' # Real part of wavelet transform for different ERPs
-//' image(x = Re(WTCube[,,1]), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = TRUE)
-//' image(x = Re(WTCube[,,5]), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = TRUE)
-//' image(x = Re(WTCube[,,10]), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = TRUE)
+//' image(x = abs(WTCube$Raw)^2, col = hcl.colors(n = 1000, palette = "viridis"), useRaster = TRUE)
+//' image(x = WTCube$Rho, col = hcl.colors(n = 1000, palette = "viridis"), useRaster = TRUE, zlim = c(0,1))
+//' image(x = WTCube$Mean, col = hcl.colors(n = 1000, palette = "viridis"), useRaster = TRUE)
 //' 
 //' @export
 // [[Rcpp::export]]
-arma::cx_cube WTbatch(arma::mat& ERPMat,
+Rcpp::List WTbatch(arma::mat& ERPMat,
                       const arma::vec& frequencies,
                       const double& samplingfrequency,
                       double& sigma,
                       const double& LNorm = 2,
-                      const int& CORES = 1) {
+                      int CORES = 1L,
+                      bool compression = false,
+                      bool PhaseAnalysis = false) {
   const int scaleLength = frequencies.n_elem;
   const int SignalLength = ERPMat.n_cols;
   const int SignalCount = ERPMat.n_rows;
+  if(CORES>SignalCount) {
+    CORES = SignalCount;
+  }
+  arma::cx_cube WTCube;
+  arma::mat WTCubeCos;
+  arma::mat WTCubeSin;
   inplace_trans(ERPMat);
   omp_set_num_threads(CORES);
   arma::vec scale = samplingfrequency/arma::vec(frequencies.memptr(), scaleLength)/((4*arma::datum::pi)/(sigma+std::sqrt(2+sigma*sigma)));
   arma::vec angFreq = arma::linspace<arma::vec>(0, 2*arma::datum::pi, SignalLength*3);
-  arma::cx_cube WTCube = arma::zeros<arma::cx_cube>(SignalLength,scaleLength, SignalCount);
+  
+  if(PhaseAnalysis) {
+    if(SignalCount == 1) {
+      Rcpp::warning("Only one ERP - no phase analysis possible");
+      PhaseAnalysis = false;
+    } else {
+      WTCubeCos = arma::zeros<arma::mat>(SignalLength, scaleLength);
+      WTCubeSin = arma::zeros<arma::mat>(SignalLength, scaleLength);  
+    }
+  }
+  if(compression) {
+    WTCube = arma::zeros<arma::cx_cube>(SignalLength,scaleLength, 1);
+  } else {
+    WTCube = arma::zeros<arma::cx_cube>(SignalLength,scaleLength, SignalCount);
+  }
   arma::mat ScaleMat = arma::mat(SignalLength*3,scaleLength,arma::fill::zeros);
   for(int i = 0; i < scaleLength; ++i) {
     ScaleMat.unsafe_col(i) = morletWaveletFFT(angFreq*scale.at(i), sigma);
-  }
-  int iteration = 0;
-  int progressSteps = SignalCount/10;
-  if(progressSteps == 0) {
-    progressSteps = 1;
   }
 #pragma omp parallel for shared(ERPMat, ScaleMat, scale, sigma, LNorm) schedule(static) 
   for(int j = 0; j < SignalCount; ++j) {
@@ -196,17 +219,38 @@ arma::cx_cube WTbatch(arma::mat& ERPMat,
       arma::cx_vec tmp =  morletWT(SignalFFT, scale.at(k), ScaleMat.col(k), LNorm);
       WTMat.unsafe_col(k) = tmp.subvec(SignalLength+1,SignalLength*2);
     }
-    WTCube.slice(j) = WTMat;
-#pragma omp atomic
-    ++iteration;
-   if (iteration % progressSteps == 1)
-    {
 #pragma omp critical
-      Rcpp::Rcout << "Progress: " << std::fixed << std::setprecision(1) << (100.0*iteration/SignalCount) << "%\n";
+    if(PhaseAnalysis) {
+      arma::mat PhaseMatTmp = atan2(arma::imag(WTMat), arma::real(WTMat));
+      WTCubeCos += arma::cos(PhaseMatTmp)/(SignalCount-1);
+      WTCubeSin += arma::sin(PhaseMatTmp)/(SignalCount-1);
+    }
+#pragma omp critical
+    if(compression) {
+      WTCube.slice(0) += WTMat/(SignalCount-1);
+    } else if(compression == false) {
+      WTCube.slice(j) = WTMat;
     }
   }
   Rcpp::Rcout << "finished ERP" << std::endl;
-  return WTCube;
+  if(PhaseAnalysis) {
+    if(compression) {
+      return Rcpp::List::create(Rcpp::Named("Raw") = WTCube.slice(0),
+                                Rcpp::Named("Rho") = arma::sqrt(WTCubeSin%WTCubeSin+WTCubeCos%WTCubeCos),
+                                Rcpp::Named("Mean") = arma::atan2(WTCubeSin, WTCubeCos));
+    } else {
+      return Rcpp::List::create(Rcpp::Named("Raw") = WTCube,
+                                Rcpp::Named("Rho") = arma::sqrt(WTCubeSin%WTCubeSin+WTCubeCos%WTCubeCos),
+                                Rcpp::Named("Mean") = arma::atan2(WTCubeSin, WTCubeCos));
+    }
+    
+      } else {
+    if(compression) {
+      return Rcpp::List::create(Rcpp::Named("Raw") = WTCube.slice(0));
+    } else {
+      return Rcpp::List::create(Rcpp::Named("Raw") = WTCube);
+    }
+  }
 }
 
 //' Wavelet power matrix (from wavelet power cube)
@@ -321,6 +365,8 @@ arma::cx_mat CxCubeCollapse(const arma::cx_cube& x) {
   return arma::mean(x, 2);
 }
 
+
+// coherence functions still need to be worked through --> smoothing function
 //' Smoothing complex wavelet matrix
 //' 
 //' This function computes the smoothened wavelet transform required 
@@ -362,8 +408,6 @@ arma::cx_mat WTSmoothing(const arma::cx_mat& WT,
 //  }
   return smoothMat;
 }
-
-
 
 //' Smoothing complex wavelet matrix
 //' 

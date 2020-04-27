@@ -4,7 +4,16 @@
 \alias{WTbatch}
 \title{Wavelet transform (from ERP matrix)}
 \usage{
-WTbatch(ERPMat, frequencies, samplingfrequency, sigma, LNorm = 2, CORES = 1L)
+WTbatch(
+  ERPMat,
+  frequencies,
+  samplingfrequency,
+  sigma,
+  LNorm = 2,
+  CORES = 1L,
+  compression = FALSE,
+  PhaseAnalysis = FALSE
+)
 }
 \arguments{
 \item{ERPMat}{A numeric matrix with rows for ERP signals and columns as time domain.}
@@ -18,9 +27,14 @@ WTbatch(ERPMat, frequencies, samplingfrequency, sigma, LNorm = 2, CORES = 1L)
 \item{LNorm}{A double indicating the L normalisation (power of 1/LNorm, default = 2).}
 
 \item{CORES}{An integer indicating number of threads used (default = 1).}
+
+\item{compression}{An integer indicating number of threads used (default = 1).}
+
+\item{PhaseAnalysis}{An integer indicating number of threads used (default = 1)}
 }
 \value{
-Wavelet transform as complex cube (each slice is from one ERP).
+List with wavelet transform as complex cube (each slice is from one ERP or when compressed one matrix), 
+rho vector length and mean phase.
 }
 \description{
 This function performs a wavelet transform of a signal for different scales 
@@ -40,14 +54,16 @@ WTCube <- WTbatch(ERPMat = ERPmat,
                   frequencies = seq(0.2,20, 0.2),
                   samplingfrequency = 1000,
                   sigma = 6, LNorm = 2,
-                  CORES = 1)
+                  CORES = 1,
+                  compression = TRUE,
+                  PhaseAnalysis = TRUE)
     
 # Cube dimensions
 dim(WTCube)
       
 # Real part of wavelet transform for different ERPs
-image(x = Re(WTCube[,,1]), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = TRUE)
-image(x = Re(WTCube[,,5]), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = TRUE)
-image(x = Re(WTCube[,,10]), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = TRUE)
+image(x = abs(WTCube$Raw)^2, col = hcl.colors(n = 1000, palette = "viridis"), useRaster = TRUE)
+image(x = WTCube$Rho, col = hcl.colors(n = 1000, palette = "viridis"), useRaster = TRUE, zlim = c(0,1))
+image(x = WTCube$Mean), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = TRUE)
 
 }

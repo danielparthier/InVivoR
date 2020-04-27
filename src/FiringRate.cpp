@@ -108,7 +108,7 @@ Rcpp::NumericVector FiringRate(arma::vec& SpikeTimes,
                                double BAKSalpha = 4,
                                double BAKSbeta = 4,
                                double SamplingRate = 1e3,
-                               int CORES = 4) {
+                               int CORES = 4L) {
   double timeEndtmp, timeStarttmp;
   if(timeStart.isNotNull() && timeEnd.isNotNull()) {
     timeEndtmp = Rcpp::as<double>(timeEnd);

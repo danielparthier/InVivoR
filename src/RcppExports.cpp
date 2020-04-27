@@ -22,6 +22,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// read_file_cpp2
+Rcpp::CharacterVector read_file_cpp2(std::string path);
+RcppExport SEXP _InVivoR_read_file_cpp2(SEXP pathSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type path(pathSEXP);
+    rcpp_result_gen = Rcpp::wrap(read_file_cpp2(path));
+    return rcpp_result_gen;
+END_RCPP
+}
 // decimate
 Rcpp::NumericVector decimate(arma::vec& SIGNAL, const arma::vec& FIR_FILTER, const int& M);
 RcppExport SEXP _InVivoR_decimate(SEXP SIGNALSEXP, SEXP FIR_FILTERSEXP, SEXP MSEXP) {
@@ -70,103 +81,37 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// arma_gaussian
-arma::vec arma_gaussian(double& sd, double& width, int& SamplingRateOut, arma::vec& SpikeTimings, double& StartTime, double& EndTime);
-RcppExport SEXP _InVivoR_arma_gaussian(SEXP sdSEXP, SEXP widthSEXP, SEXP SamplingRateOutSEXP, SEXP SpikeTimingsSEXP, SEXP StartTimeSEXP, SEXP EndTimeSEXP) {
+// FiringRate
+Rcpp::NumericVector FiringRate(arma::vec& SpikeTimes, Rcpp::Nullable<double> timeStart, Rcpp::Nullable<double> timeEnd, Rcpp::Nullable<double> sigma, Rcpp::Nullable<double> alpha, bool useBAKS, double BAKSalpha, double BAKSbeta, double SamplingRate, int CORES);
+RcppExport SEXP _InVivoR_FiringRate(SEXP SpikeTimesSEXP, SEXP timeStartSEXP, SEXP timeEndSEXP, SEXP sigmaSEXP, SEXP alphaSEXP, SEXP useBAKSSEXP, SEXP BAKSalphaSEXP, SEXP BAKSbetaSEXP, SEXP SamplingRateSEXP, SEXP CORESSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< double& >::type sd(sdSEXP);
-    Rcpp::traits::input_parameter< double& >::type width(widthSEXP);
-    Rcpp::traits::input_parameter< int& >::type SamplingRateOut(SamplingRateOutSEXP);
-    Rcpp::traits::input_parameter< arma::vec& >::type SpikeTimings(SpikeTimingsSEXP);
-    Rcpp::traits::input_parameter< double& >::type StartTime(StartTimeSEXP);
-    Rcpp::traits::input_parameter< double& >::type EndTime(EndTimeSEXP);
-    rcpp_result_gen = Rcpp::wrap(arma_gaussian(sd, width, SamplingRateOut, SpikeTimings, StartTime, EndTime));
+    Rcpp::traits::input_parameter< arma::vec& >::type SpikeTimes(SpikeTimesSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<double> >::type timeStart(timeStartSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<double> >::type timeEnd(timeEndSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<double> >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<double> >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< bool >::type useBAKS(useBAKSSEXP);
+    Rcpp::traits::input_parameter< double >::type BAKSalpha(BAKSalphaSEXP);
+    Rcpp::traits::input_parameter< double >::type BAKSbeta(BAKSbetaSEXP);
+    Rcpp::traits::input_parameter< double >::type SamplingRate(SamplingRateSEXP);
+    Rcpp::traits::input_parameter< int >::type CORES(CORESSEXP);
+    rcpp_result_gen = Rcpp::wrap(FiringRate(SpikeTimes, timeStart, timeEnd, sigma, alpha, useBAKS, BAKSalpha, BAKSbeta, SamplingRate, CORES));
     return rcpp_result_gen;
 END_RCPP
 }
-// arma_gaussian_kernel
-arma::vec arma_gaussian_kernel(double& sd, double& width, int& SamplingRateOut);
-RcppExport SEXP _InVivoR_arma_gaussian_kernel(SEXP sdSEXP, SEXP widthSEXP, SEXP SamplingRateOutSEXP) {
+// FiringRateSparse
+Rcpp::NumericVector FiringRateSparse(arma::vec& SpikeTimes, Rcpp::Nullable<double> sigma, Rcpp::Nullable<double> alpha, double SamplingRate);
+RcppExport SEXP _InVivoR_FiringRateSparse(SEXP SpikeTimesSEXP, SEXP sigmaSEXP, SEXP alphaSEXP, SEXP SamplingRateSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< double& >::type sd(sdSEXP);
-    Rcpp::traits::input_parameter< double& >::type width(widthSEXP);
-    Rcpp::traits::input_parameter< int& >::type SamplingRateOut(SamplingRateOutSEXP);
-    rcpp_result_gen = Rcpp::wrap(arma_gaussian_kernel(sd, width, SamplingRateOut));
-    return rcpp_result_gen;
-END_RCPP
-}
-// arma_gaussian_loop
-arma::vec arma_gaussian_loop(double& sd, int& SamplingRateOut, arma::vec& SpikeTimings, double& StartTime, double& EndTime);
-RcppExport SEXP _InVivoR_arma_gaussian_loop(SEXP sdSEXP, SEXP SamplingRateOutSEXP, SEXP SpikeTimingsSEXP, SEXP StartTimeSEXP, SEXP EndTimeSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< double& >::type sd(sdSEXP);
-    Rcpp::traits::input_parameter< int& >::type SamplingRateOut(SamplingRateOutSEXP);
-    Rcpp::traits::input_parameter< arma::vec& >::type SpikeTimings(SpikeTimingsSEXP);
-    Rcpp::traits::input_parameter< double& >::type StartTime(StartTimeSEXP);
-    Rcpp::traits::input_parameter< double& >::type EndTime(EndTimeSEXP);
-    rcpp_result_gen = Rcpp::wrap(arma_gaussian_loop(sd, SamplingRateOut, SpikeTimings, StartTime, EndTime));
-    return rcpp_result_gen;
-END_RCPP
-}
-// BAKS
-arma::vec BAKS(arma::vec& SpikeTimings, arma::vec& Time, double& alpha, double& beta);
-RcppExport SEXP _InVivoR_BAKS(SEXP SpikeTimingsSEXP, SEXP TimeSEXP, SEXP alphaSEXP, SEXP betaSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::vec& >::type SpikeTimings(SpikeTimingsSEXP);
-    Rcpp::traits::input_parameter< arma::vec& >::type Time(TimeSEXP);
-    Rcpp::traits::input_parameter< double& >::type alpha(alphaSEXP);
-    Rcpp::traits::input_parameter< double& >::type beta(betaSEXP);
-    rcpp_result_gen = Rcpp::wrap(BAKS(SpikeTimings, Time, alpha, beta));
-    return rcpp_result_gen;
-END_RCPP
-}
-// OKS
-arma::vec OKS(arma::vec& SpikeTimings, arma::vec& Time, double& alpha, double& beta);
-RcppExport SEXP _InVivoR_OKS(SEXP SpikeTimingsSEXP, SEXP TimeSEXP, SEXP alphaSEXP, SEXP betaSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::vec& >::type SpikeTimings(SpikeTimingsSEXP);
-    Rcpp::traits::input_parameter< arma::vec& >::type Time(TimeSEXP);
-    Rcpp::traits::input_parameter< double& >::type alpha(alphaSEXP);
-    Rcpp::traits::input_parameter< double& >::type beta(betaSEXP);
-    rcpp_result_gen = Rcpp::wrap(OKS(SpikeTimings, Time, alpha, beta));
-    return rcpp_result_gen;
-END_RCPP
-}
-// BAKS_fast
-arma::vec BAKS_fast(arma::vec& SpikeTimings, arma::vec& Time, double& alpha, double& beta);
-RcppExport SEXP _InVivoR_BAKS_fast(SEXP SpikeTimingsSEXP, SEXP TimeSEXP, SEXP alphaSEXP, SEXP betaSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::vec& >::type SpikeTimings(SpikeTimingsSEXP);
-    Rcpp::traits::input_parameter< arma::vec& >::type Time(TimeSEXP);
-    Rcpp::traits::input_parameter< double& >::type alpha(alphaSEXP);
-    Rcpp::traits::input_parameter< double& >::type beta(betaSEXP);
-    rcpp_result_gen = Rcpp::wrap(BAKS_fast(SpikeTimings, Time, alpha, beta));
-    return rcpp_result_gen;
-END_RCPP
-}
-// BAKS_fast_new
-arma::vec BAKS_fast_new(arma::vec& SpikeTimings, arma::vec& Time, double& alpha, double& beta);
-RcppExport SEXP _InVivoR_BAKS_fast_new(SEXP SpikeTimingsSEXP, SEXP TimeSEXP, SEXP alphaSEXP, SEXP betaSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::vec& >::type SpikeTimings(SpikeTimingsSEXP);
-    Rcpp::traits::input_parameter< arma::vec& >::type Time(TimeSEXP);
-    Rcpp::traits::input_parameter< double& >::type alpha(alphaSEXP);
-    Rcpp::traits::input_parameter< double& >::type beta(betaSEXP);
-    rcpp_result_gen = Rcpp::wrap(BAKS_fast_new(SpikeTimings, Time, alpha, beta));
+    Rcpp::traits::input_parameter< arma::vec& >::type SpikeTimes(SpikeTimesSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<double> >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<double> >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< double >::type SamplingRate(SamplingRateSEXP);
+    rcpp_result_gen = Rcpp::wrap(FiringRateSparse(SpikeTimes, sigma, alpha, SamplingRate));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -313,8 +258,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // WTbatch
-arma::cx_cube WTbatch(arma::mat& ERPMat, const arma::vec& frequencies, const double& samplingfrequency, double& sigma, const double& LNorm, const int& CORES);
-RcppExport SEXP _InVivoR_WTbatch(SEXP ERPMatSEXP, SEXP frequenciesSEXP, SEXP samplingfrequencySEXP, SEXP sigmaSEXP, SEXP LNormSEXP, SEXP CORESSEXP) {
+Rcpp::List WTbatch(arma::mat& ERPMat, const arma::vec& frequencies, const double& samplingfrequency, double& sigma, const double& LNorm, int CORES, bool compression, bool PhaseAnalysis);
+RcppExport SEXP _InVivoR_WTbatch(SEXP ERPMatSEXP, SEXP frequenciesSEXP, SEXP samplingfrequencySEXP, SEXP sigmaSEXP, SEXP LNormSEXP, SEXP CORESSEXP, SEXP compressionSEXP, SEXP PhaseAnalysisSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -323,8 +268,10 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const double& >::type samplingfrequency(samplingfrequencySEXP);
     Rcpp::traits::input_parameter< double& >::type sigma(sigmaSEXP);
     Rcpp::traits::input_parameter< const double& >::type LNorm(LNormSEXP);
-    Rcpp::traits::input_parameter< const int& >::type CORES(CORESSEXP);
-    rcpp_result_gen = Rcpp::wrap(WTbatch(ERPMat, frequencies, samplingfrequency, sigma, LNorm, CORES));
+    Rcpp::traits::input_parameter< int >::type CORES(CORESSEXP);
+    Rcpp::traits::input_parameter< bool >::type compression(compressionSEXP);
+    Rcpp::traits::input_parameter< bool >::type PhaseAnalysis(PhaseAnalysisSEXP);
+    rcpp_result_gen = Rcpp::wrap(WTbatch(ERPMat, frequencies, samplingfrequency, sigma, LNorm, CORES, compression, PhaseAnalysis));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -567,16 +514,12 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_InVivoR_BinaryFileAccess", (DL_FUNC) &_InVivoR_BinaryFileAccess, 6},
+    {"_InVivoR_read_file_cpp2", (DL_FUNC) &_InVivoR_read_file_cpp2, 1},
     {"_InVivoR_decimate", (DL_FUNC) &_InVivoR_decimate, 3},
     {"_InVivoR_ERPMat", (DL_FUNC) &_InVivoR_ERPMat, 7},
     {"_InVivoR_ERPList", (DL_FUNC) &_InVivoR_ERPList, 8},
-    {"_InVivoR_arma_gaussian", (DL_FUNC) &_InVivoR_arma_gaussian, 6},
-    {"_InVivoR_arma_gaussian_kernel", (DL_FUNC) &_InVivoR_arma_gaussian_kernel, 3},
-    {"_InVivoR_arma_gaussian_loop", (DL_FUNC) &_InVivoR_arma_gaussian_loop, 5},
-    {"_InVivoR_BAKS", (DL_FUNC) &_InVivoR_BAKS, 4},
-    {"_InVivoR_OKS", (DL_FUNC) &_InVivoR_OKS, 4},
-    {"_InVivoR_BAKS_fast", (DL_FUNC) &_InVivoR_BAKS_fast, 4},
-    {"_InVivoR_BAKS_fast_new", (DL_FUNC) &_InVivoR_BAKS_fast_new, 4},
+    {"_InVivoR_FiringRate", (DL_FUNC) &_InVivoR_FiringRate, 10},
+    {"_InVivoR_FiringRateSparse", (DL_FUNC) &_InVivoR_FiringRateSparse, 4},
     {"_InVivoR_MI", (DL_FUNC) &_InVivoR_MI, 10},
     {"_InVivoR_PhaseListAnalysis", (DL_FUNC) &_InVivoR_PhaseListAnalysis, 2},
     {"_InVivoR_PhaseListAnalysisShuffle", (DL_FUNC) &_InVivoR_PhaseListAnalysisShuffle, 3},
@@ -587,7 +530,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_InVivoR_morletWaveletFFT", (DL_FUNC) &_InVivoR_morletWaveletFFT, 2},
     {"_InVivoR_morletWT", (DL_FUNC) &_InVivoR_morletWT, 4},
     {"_InVivoR_WT", (DL_FUNC) &_InVivoR_WT, 6},
-    {"_InVivoR_WTbatch", (DL_FUNC) &_InVivoR_WTbatch, 6},
+    {"_InVivoR_WTbatch", (DL_FUNC) &_InVivoR_WTbatch, 8},
     {"_InVivoR_PowerMat", (DL_FUNC) &_InVivoR_PowerMat, 2},
     {"_InVivoR_Squeeze", (DL_FUNC) &_InVivoR_Squeeze, 5},
     {"_InVivoR_CxCubeCollapse", (DL_FUNC) &_InVivoR_CxCubeCollapse, 1},
