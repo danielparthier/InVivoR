@@ -2,11 +2,12 @@
 % Please edit documentation in R/RcppExports.R
 \name{SpikeCCF}
 \alias{SpikeCCF}
-\title{Spike cross-correlation wrapper function}
+\title{Spike cross-correlation function}
 \usage{
 SpikeCCF(
   x,
-  y,
+  y = NULL,
+  UnitNr = NULL,
   WINDOW_LENGTH = 1,
   BIN_SIZE = 0.001,
   BaselineFrequency = TRUE,
@@ -21,6 +22,8 @@ SpikeCCF(
 \item{x}{A numeric vector of times which has to be sorted in ascending order.}
 
 \item{y}{A numeric vector of times which has to be sorted in ascending order.}
+
+\item{UnitNr}{An integer vector containing the unit numbers in order of time occurence.}
 
 \item{WINDOW_LENGTH}{An int as total window length in seconds (default = 1).}
 
@@ -42,10 +45,10 @@ SpikeCCF(
 Returns a list containing counts per bin, axis, random bin count, confidence-intervals with counts per bin.
 }
 \description{
-This function computes the cross-correlation for spike trains.
-In case of a cross-correlation of the same time series an auto-correlation 
-will be computed and with 0 correlation correction.
-The function has the capability to output the corresponding confidence-
-interval based on an inverse gaussian lamda approximation. Further a random
-distribution of spike occurence is computed based on spike number and time.
+The function will calculate the cross-correlation for spikes of the same or a different cell. 
+The input arguments can be a vector containg timpoints (in seconds), two different vectors 
+with timepoints or one vector with time points for all units and an integer vector containg 
+the unit ID. The ouput will be depending on the input a single CCF or a list containing the 
+CCF for all combinations in a matrix. Additional options include the computation of the confidence 
+interval and the baseline activity.
 }

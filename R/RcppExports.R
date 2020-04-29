@@ -18,10 +18,6 @@ BinaryFileAccess <- function(FILENAME, spikePoints, WINDOW = 40L, CHANNELCOUNT =
     .Call('_InVivoR_BinaryFileAccess', PACKAGE = 'InVivoR', FILENAME, spikePoints, WINDOW, CHANNELCOUNT, CACHESIZE, BYTECODE)
 }
 
-read_file_cpp2 <- function(path) {
-    .Call('_InVivoR_read_file_cpp2', PACKAGE = 'InVivoR', path)
-}
-
 #' Decimate
 #' 
 #' This function downsamples a signal using a preset FIR filter which should be filtering at half the target frequency.
@@ -273,14 +269,14 @@ morletWT <- function(SignalFFT, scale, morletFFT, LNorm = 2) {
 #' samplingfrequency = 1e3, sigma = 12, LNorm = 2, CORES = 1)
 #' 
 #' # plot real part of WT
-#' image(x = Re(WTmat), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = TRUE)
+#' image(x = Re(WTmat), col = hcl.colors(n = 1000), useRaster = TRUE)
 #' 
 #' # plot power of WT
-#' image(x = abs(WTmat)^2, col = hcl.colors(n = 1000, palette = "viridis"), useRaster = TRUE)
+#' image(x = abs(WTmat)^2, col = hcl.colors(n = 1000), useRaster = TRUE)
 #' 
 #' # plot phase
 #' image(x = atan2(y = Im(WTmat), x = Re(WTmat)),
-#'       col = hcl.colors(n = 1000, palette = "viridis"),
+#'       col = hcl.colors(n = 1000),
 #'       useRaster = TRUE)
 #' 
 #' @export
@@ -326,9 +322,9 @@ WT <- function(Signal, frequencies, samplingfrequency, sigma, LNorm = 2, CORES =
 #' dim(WTCube[[1]])
 #'       
 #' # Real part of wavelet transform for different ERPs
-#' image(x = abs(WTCube$Raw)^2, col = hcl.colors(n = 1000, palette = "viridis"), useRaster = TRUE)
-#' image(x = WTCube$Rho, col = hcl.colors(n = 1000, palette = "viridis"), useRaster = TRUE, zlim = c(0,1))
-#' image(x = WTCube$Mean, col = hcl.colors(n = 1000, palette = "viridis"), useRaster = TRUE)
+#' image(x = abs(WTCube$Raw)^2, col = hcl.colors(n = 1000), useRaster = TRUE)
+#' image(x = WTCube$Rho, col = hcl.colors(n = 1000), useRaster = TRUE, zlim = c(0,1))
+#' image(x = WTCube$Mean, col = hcl.colors(n = 1000), useRaster = TRUE)
 #' 
 #' @export
 WTbatch <- function(ERPMat, frequencies, samplingfrequency, sigma, LNorm = 2, CORES = 1L, compression = FALSE, PhaseAnalysis = FALSE) {
@@ -486,39 +482,6 @@ FirFiltering <- function(SIGNAL, FIR_FILTER) {
     .Call('_InVivoR_FirFiltering', PACKAGE = 'InVivoR', SIGNAL, FIR_FILTER)
 }
 
-#' Spike cross-correlation
-#' 
-#' This function computes the cross-correlation for spike trains.
-#' In case of a cross-correlation of the same time series an
-#' auto-correlation will be computed and with 0 correlation correction.
-#'
-#' @param x A numeric vector of times which has to be sorted in ascending order.
-#' @param y A numeric vector of times which has to be sorted in ascending order.
-#' @param WINDOW_LENGTH An int as total window length in seconds (default = 1).
-#' @param BIN_SIZE A double indicating the size of bins in seconds (default = 0.001).
-#' @return Integer vector with counts per bin.
-#' @export
-spike_ccf <- function(x, y, WINDOW_LENGTH = 1, BIN_SIZE = 0.001) {
-    .Call('_InVivoR_spike_ccf', PACKAGE = 'InVivoR', x, y, WINDOW_LENGTH, BIN_SIZE)
-}
-
-#' Spike cross-correlation wrapper function for batch use 
-#' 
-#' Computes the confidence interval of a poisson train using an inverted gaussian
-#' distribution. Based on the weighted average with the given distribution lamda
-#' can be estimated. The confidence interval is then estimated by estimation through
-#' Chisq-distribution.
-#'
-#' @param Time A numeric vector of times sorted in ascending order containing all time points.
-#' @param UnitNr An integer vector containing the unit numbers in order of time occurence.
-#' @param WINDOW_LENGTH An int as total window length in seconds (default = 1).
-#' @param BIN_SIZE A double indicating the size of bins in seconds (default = 0.001).
-#' @return Returns a list containing the unit number, the counts per bin and the random expected count.
-#' @export
-spike_ccf_batch <- function(Time, UnitNr, WINDOW_LENGTH = 1, BIN_SIZE = 0.001) {
-    .Call('_InVivoR_spike_ccf_batch', PACKAGE = 'InVivoR', Time, UnitNr, WINDOW_LENGTH, BIN_SIZE)
-}
-
 #' Confidence interval for poisson train
 #' 
 #' Computes the confidence interval of a poisson train using an inverted gaussian
@@ -537,17 +500,18 @@ ConfIntPoisson <- function(CountVector, CONFLEVEL = 0.95, SD = 0.6, CENTREMIN = 
     .Call('_InVivoR_ConfIntPoisson', PACKAGE = 'InVivoR', CountVector, CONFLEVEL, SD, CENTREMIN, KERNELSIZE)
 }
 
-#' Spike cross-correlation wrapper function
+#' Spike cross-correlation function
 #' 
-#' This function computes the cross-correlation for spike trains.
-#' In case of a cross-correlation of the same time series an auto-correlation 
-#' will be computed and with 0 correlation correction.
-#' The function has the capability to output the corresponding confidence-
-#' interval based on an inverse gaussian lamda approximation. Further a random
-#' distribution of spike occurence is computed based on spike number and time.
-#'
+#' The function will calculate the cross-correlation for spikes of the same or a different cell. 
+#' The input arguments can be a vector containg timpoints (in seconds), two different vectors 
+#' with timepoints or one vector with time points for all units and an integer vector containg 
+#' the unit ID. The ouput will be depending on the input a single CCF or a list containing the 
+#' CCF for all combinations in a matrix. Additional options include the computation of the confidence 
+#' interval and the baseline activity.
+#' 
 #' @param x A numeric vector of times which has to be sorted in ascending order.
 #' @param y A numeric vector of times which has to be sorted in ascending order.
+#' @param UnitNr An integer vector containing the unit numbers in order of time occurence.
 #' @param WINDOW_LENGTH An int as total window length in seconds (default = 1).
 #' @param BIN_SIZE A double indicating the size of bins in seconds (default = 0.001).
 #' @param BaselineFrequency A bool to indicate whether base line activity should be estimated (default = TRUE).
@@ -557,9 +521,8 @@ ConfIntPoisson <- function(CountVector, CONFLEVEL = 0.95, SD = 0.6, CENTREMIN = 
 #' @param CENTREMIN A double as shape parameter determining the strength of centre exclusion (default = 0.6).
 #' @param KERNELSIZE A double as length parameter for gaussian kernel (2*KERNELSIZE+1, default = 20).
 #' @return Returns a list containing counts per bin, axis, random bin count, confidence-intervals with counts per bin.
-#' @export
-SpikeCCF <- function(x, y, WINDOW_LENGTH = 1, BIN_SIZE = 0.001, BaselineFrequency = TRUE, ConfidenceInterval = TRUE, ConfLevel = 0.95, SD = 0.6, CENTREMIN = 0.6, KERNELSIZE = 20L) {
-    .Call('_InVivoR_SpikeCCF', PACKAGE = 'InVivoR', x, y, WINDOW_LENGTH, BIN_SIZE, BaselineFrequency, ConfidenceInterval, ConfLevel, SD, CENTREMIN, KERNELSIZE)
+SpikeCCF <- function(x, y = NULL, UnitNr = NULL, WINDOW_LENGTH = 1, BIN_SIZE = 0.001, BaselineFrequency = TRUE, ConfidenceInterval = TRUE, ConfLevel = 0.95, SD = 0.6, CENTREMIN = 0.6, KERNELSIZE = 20L) {
+    .Call('_InVivoR_SpikeCCF', PACKAGE = 'InVivoR', x, y, UnitNr, WINDOW_LENGTH, BIN_SIZE, BaselineFrequency, ConfidenceInterval, ConfLevel, SD, CENTREMIN, KERNELSIZE)
 }
 
 #' Spike stimulation properties

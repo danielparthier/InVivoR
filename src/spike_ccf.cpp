@@ -2,19 +2,6 @@
 
 // [[Rcpp::depends(RcppArmadillo)]]
 
-//' Spike cross-correlation
-//' 
-//' This function computes the cross-correlation for spike trains.
-//' In case of a cross-correlation of the same time series an
-//' auto-correlation will be computed and with 0 correlation correction.
-//'
-//' @param x A numeric vector of times which has to be sorted in ascending order.
-//' @param y A numeric vector of times which has to be sorted in ascending order.
-//' @param WINDOW_LENGTH An int as total window length in seconds (default = 1).
-//' @param BIN_SIZE A double indicating the size of bins in seconds (default = 0.001).
-//' @return Integer vector with counts per bin.
-//' @export
-// [[Rcpp::export]]
 Rcpp::IntegerVector spike_ccf(const Rcpp::NumericVector&  x,
                               const Rcpp::NumericVector&  y,
                               const double& WINDOW_LENGTH = 1,
@@ -99,64 +86,6 @@ Rcpp::IntegerVector spike_ccf(const Rcpp::NumericVector&  x,
   return hist_out;
 }
 
-// Function wrapper for multiple units creates CCF for all possible combinations
-// Outputs Matrix with Unit combination and Matrix with CCF
-
-//' Spike cross-correlation wrapper function for batch use 
-//' 
-//' Computes the confidence interval of a poisson train using an inverted gaussian
-//' distribution. Based on the weighted average with the given distribution lamda
-//' can be estimated. The confidence interval is then estimated by estimation through
-//' Chisq-distribution.
-//'
-//' @param Time A numeric vector of times sorted in ascending order containing all time points.
-//' @param UnitNr An integer vector containing the unit numbers in order of time occurence.
-//' @param WINDOW_LENGTH An int as total window length in seconds (default = 1).
-//' @param BIN_SIZE A double indicating the size of bins in seconds (default = 0.001).
-//' @return Returns a list containing the unit number, the counts per bin and the random expected count.
-//' @export
-// [[Rcpp::export]]
-
-Rcpp::List spike_ccf_batch(const Rcpp::NumericVector& Time,
-                           const Rcpp::IntegerVector UnitNr,
-                           const double WINDOW_LENGTH = 1,
-                           const double BIN_SIZE = 0.001) {
-  Rcpp::IntegerVector UnitCollection = Rcpp::sort_unique(UnitNr);
-  int MatLength = UnitCollection.size();
-  MatLength = MatLength*MatLength;
-  arma::mat CcfMatrix = arma::mat(roundf(WINDOW_LENGTH/BIN_SIZE)+1, MatLength, arma::fill::zeros);
-  Rcpp::IntegerMatrix Units(MatLength, 2);
-  arma::vec RandomBinCount(MatLength);
-  Units(Rcpp::_,0) = Rcpp::rep_each(UnitCollection, UnitCollection.size());
-  Units(Rcpp::_,1) = Rcpp::rep(UnitCollection, UnitCollection.size());
-  for (int i = 0; i < MatLength; ++i) {
-    Rcpp::NumericVector tmp1 = Time[UnitNr == Units(i,0)];
-    Rcpp::NumericVector tmp2 = Time[UnitNr == Units(i,1)];
-    double tmpMax;
-    if(max(tmp1)<max(tmp2)) {
-      tmpMax = max(tmp2);
-    } else {
-      tmpMax = max(tmp1);
-    }
-    double tmpMin;
-    if(min(tmp1)<min(tmp2)) {
-      tmpMin = min(tmp1);
-    } else {
-      tmpMin = min(tmp2);
-    }
-    CcfMatrix.unsafe_col(i) += Rcpp::as<arma::colvec>(spike_ccf(tmp1, tmp2, WINDOW_LENGTH, BIN_SIZE));
-    // compute random counts per bin
-    if (Rcpp::is_false(Rcpp::all(tmp1==tmp2))) {
-      RandomBinCount(i) = (tmp1.size()*tmp2.size())/(tmpMax-tmpMin)*BIN_SIZE;
-    } else {
-      RandomBinCount(i) = (tmp1.size()*tmp1.size()-tmp1.size())/(tmpMax-tmpMin)*BIN_SIZE;
-    } 
-  }
-return Rcpp::List::create(Rcpp::Named("Units") = Units,
-                          Rcpp::Named("CcfMatrix") = CcfMatrix,
-                          Rcpp::Named("RandomBinCount") = RandomBinCount);
-}
-
 //' Confidence interval for poisson train
 //' 
 //' Computes the confidence interval of a poisson train using an inverted gaussian
@@ -206,38 +135,99 @@ Rcpp::NumericMatrix ConfIntPoisson(const arma::vec& CountVector,
   return OutputMat;
 }
 
-//' Spike cross-correlation wrapper function
-//' 
-//' This function computes the cross-correlation for spike trains.
-//' In case of a cross-correlation of the same time series an auto-correlation 
-//' will be computed and with 0 correlation correction.
-//' The function has the capability to output the corresponding confidence-
-//' interval based on an inverse gaussian lamda approximation. Further a random
-//' distribution of spike occurence is computed based on spike number and time.
-//'
-//' @param x A numeric vector of times which has to be sorted in ascending order.
-//' @param y A numeric vector of times which has to be sorted in ascending order.
-//' @param WINDOW_LENGTH An int as total window length in seconds (default = 1).
-//' @param BIN_SIZE A double indicating the size of bins in seconds (default = 0.001).
-//' @param BaselineFrequency A bool to indicate whether base line activity should be estimated (default = TRUE).
-//' @param ConfidenceInterval A bool to indicate whether confidence interval should be estimated (default = TRUE).
-//' @param ConfLevel A double indicating the confidence-level (default = 0.95).
-//' @param SD A double as standard deviation for a gaussian shape parameter (default = 0.6).
-//' @param CENTREMIN A double as shape parameter determining the strength of centre exclusion (default = 0.6).
-//' @param KERNELSIZE A double as length parameter for gaussian kernel (2*KERNELSIZE+1, default = 20).
-//' @return Returns a list containing counts per bin, axis, random bin count, confidence-intervals with counts per bin.
-//' @export
-// [[Rcpp::export]]
-Rcpp::List SpikeCCF(Rcpp::NumericVector&  x,
-                    Rcpp::NumericVector&  y,
-                    const double& WINDOW_LENGTH = 1,
-                    const double& BIN_SIZE = 0.001,
-                    bool BaselineFrequency = true,
-                    bool ConfidenceInterval = true,
-                    double ConfLevel = 0.95,
-                    const double& SD = 0.6,
-                    const double& CENTREMIN = 0.6,
-                    const int& KERNELSIZE = 20) {
+Rcpp::List SpikeCCFBatch(const Rcpp::NumericVector& Time,
+                         const Rcpp::IntegerVector& UnitNr,
+                         const double& WINDOW_LENGTH = 1,
+                         const double& BIN_SIZE = 0.001,
+                         const bool& BaselineFrequency = true,
+                         const bool& ConfidenceInterval = true,
+                         const double& ConfLevel = 0.95,
+                         const double& SD = 0.6,
+                         const double& CENTREMIN = 0.6,
+                         const int& KERNELSIZE = 20) {
+  Rcpp::IntegerVector UnitCollection = Rcpp::sort_unique(UnitNr);
+  int MatLength = UnitCollection.size();
+  MatLength = MatLength*MatLength;
+  arma::mat CcfMatrix = arma::mat(roundf(WINDOW_LENGTH/BIN_SIZE)+1, MatLength, arma::fill::zeros);
+  Rcpp::NumericMatrix CcfLower = Rcpp::NumericMatrix(roundf(WINDOW_LENGTH/BIN_SIZE)+1, MatLength);
+  Rcpp::NumericMatrix CcfUpper = Rcpp::NumericMatrix(roundf(WINDOW_LENGTH/BIN_SIZE)+1, MatLength);  
+  Rcpp::IntegerMatrix Units(MatLength, 2);
+  arma::vec RandomBinCount(MatLength);
+  Units(Rcpp::_,0) = Rcpp::rep_each(UnitCollection, UnitCollection.size());
+  Units(Rcpp::_,1) = Rcpp::rep(UnitCollection, UnitCollection.size());
+  for (int i = 0; i < MatLength; ++i) {
+    Rcpp::NumericVector tmp1 = Time[UnitNr == Units(i,0)];
+    Rcpp::NumericVector tmp2 = Time[UnitNr == Units(i,1)];
+    double tmpMax;
+    if(max(tmp1)<max(tmp2)) {
+      tmpMax = max(tmp2);
+    } else {
+      tmpMax = max(tmp1);
+    }
+    double tmpMin;
+    if(min(tmp1)<min(tmp2)) {
+      tmpMin = min(tmp1);
+    } else {
+      tmpMin = min(tmp2);
+    }
+    CcfMatrix.unsafe_col(i) += Rcpp::as<arma::colvec>(spike_ccf(tmp1, tmp2, WINDOW_LENGTH, BIN_SIZE));
+    if(ConfidenceInterval) {
+      Rcpp::NumericMatrix CCFci = ConfIntPoisson(CcfMatrix.unsafe_col(i),
+                                                 ConfLevel,
+                                                 SD,
+                                                 CENTREMIN,
+                                                 KERNELSIZE);
+      CcfLower(Rcpp::_,i) = CCFci(Rcpp::_,0);
+      CcfUpper(Rcpp::_,i) = CCFci(Rcpp::_,1);
+    }
+    if(BaselineFrequency) {
+      // compute random counts per bin
+      if (Rcpp::is_false(Rcpp::all(tmp1==tmp2))) {
+        RandomBinCount(i) = (tmp1.size()*tmp2.size())/(tmpMax-tmpMin)*BIN_SIZE;
+      } else {
+        RandomBinCount(i) = (tmp1.size()*tmp1.size()-tmp1.size())/(tmpMax-tmpMin)*BIN_SIZE;
+      } 
+    }
+  }
+  Rcpp::IntegerVector Xtmp = Rcpp::seq(-(roundf(WINDOW_LENGTH/BIN_SIZE)+1)/2,(roundf(WINDOW_LENGTH/BIN_SIZE)+1)/2);
+  if(ConfidenceInterval & BaselineFrequency) {
+    return Rcpp::List::create(Rcpp::Named("Units") = Units,
+                              Rcpp::Named("CcfMatrix") = CcfMatrix,
+                              Rcpp::Named("xAxis") = Rcpp::as<Rcpp::NumericVector>(Xtmp)*BIN_SIZE,
+                              Rcpp::Named("LowerCI") = CcfLower,
+                              Rcpp::Named("UpperCI") = CcfUpper,
+                              Rcpp::Named("RandomBinCount") = RandomBinCount);
+  } else if(!ConfidenceInterval & BaselineFrequency){
+    return Rcpp::List::create(Rcpp::Named("Units") = Units,
+                              Rcpp::Named("CcfMatrix") = CcfMatrix,
+                              Rcpp::Named("xAxis") = Rcpp::as<Rcpp::NumericVector>(Xtmp)*BIN_SIZE,
+                              Rcpp::Named("RandomBinCount") = RandomBinCount); 
+  } else if(ConfidenceInterval & !BaselineFrequency){
+    return Rcpp::List::create(Rcpp::Named("Units") = Units,
+                              Rcpp::Named("CcfMatrix") = CcfMatrix,
+                              Rcpp::Named("xAxis") = Rcpp::as<Rcpp::NumericVector>(Xtmp)*BIN_SIZE,
+                              Rcpp::Named("LowerCI") = CcfLower,
+                              Rcpp::Named("UpperCI") = CcfUpper); 
+  } else if(!ConfidenceInterval & !BaselineFrequency){
+    return Rcpp::List::create(Rcpp::Named("Units") = Units,
+                              Rcpp::Named("CcfMatrix") = CcfMatrix,
+                              Rcpp::Named("xAxis") = Rcpp::as<Rcpp::NumericVector>(Xtmp)*BIN_SIZE); 
+  } else {
+    Rcpp::stop("batch analysis failed");
+  }
+}
+
+
+Rcpp::List SpikeCCFSingle(const Rcpp::NumericVector&  x,
+                          const Rcpp::NumericVector&  y,
+                          const double& WINDOW_LENGTH = 1,
+                          const double& BIN_SIZE = 0.001,
+                          bool BaselineFrequency = true,
+                          bool ConfidenceInterval = true,
+                          double ConfLevel = 0.95,
+                          const double& SD = 0.6,
+                          const double& CENTREMIN = 0.6,
+                          const int& KERNELSIZE = 20) {
   double tmpMax;
   if(max(x)<max(y)) {
     tmpMax = max(y);
@@ -294,5 +284,91 @@ Rcpp::List SpikeCCF(Rcpp::NumericVector&  x,
   } else {
     return Rcpp::List::create(Rcpp::Named("CCF") = HistOut,
                               Rcpp::Named("xAxis") = Rcpp::as<Rcpp::NumericVector>(Xtmp)*BIN_SIZE);
+  }
+}
+
+
+//' Spike cross-correlation function
+//' 
+//' The function will calculate the cross-correlation for spikes of the same or a different cell. 
+//' The input arguments can be a vector containg timpoints (in seconds), two different vectors 
+//' with timepoints or one vector with time points for all units and an integer vector containg 
+//' the unit ID. The ouput will be depending on the input a single CCF or a list containing the 
+//' CCF for all combinations in a matrix. Additional options include the computation of the confidence 
+//' interval and the baseline activity.
+//' 
+//' @param x A numeric vector of times which has to be sorted in ascending order.
+//' @param y A numeric vector of times which has to be sorted in ascending order.
+//' @param UnitNr An integer vector containing the unit numbers in order of time occurence.
+//' @param WINDOW_LENGTH An int as total window length in seconds (default = 1).
+//' @param BIN_SIZE A double indicating the size of bins in seconds (default = 0.001).
+//' @param BaselineFrequency A bool to indicate whether base line activity should be estimated (default = TRUE).
+//' @param ConfidenceInterval A bool to indicate whether confidence interval should be estimated (default = TRUE).
+//' @param ConfLevel A double indicating the confidence-level (default = 0.95).
+//' @param SD A double as standard deviation for a gaussian shape parameter (default = 0.6).
+//' @param CENTREMIN A double as shape parameter determining the strength of centre exclusion (default = 0.6).
+//' @param KERNELSIZE A double as length parameter for gaussian kernel (2*KERNELSIZE+1, default = 20).
+//' @return Returns a list containing counts per bin, axis, random bin count, confidence-intervals with counts per bin.
+// [[Rcpp::export]]
+Rcpp::List SpikeCCF(const Rcpp::NumericVector  x,
+                    Rcpp::Nullable<Rcpp::NumericVector> y = R_NilValue,
+                    Rcpp::Nullable<Rcpp::IntegerVector> UnitNr = R_NilValue,
+                    const double WINDOW_LENGTH = 1,
+                    const double BIN_SIZE = 0.001,
+                    const bool BaselineFrequency = true,
+                    const bool ConfidenceInterval = true,
+                    const double ConfLevel = 0.95,
+                    const double SD = 0.6,
+                    const double CENTREMIN = 0.6,
+                    const int KERNELSIZE = 20) {
+  if(y.isNotNull() & !UnitNr.isNotNull()) {
+    if(Rcpp::as<Rcpp::NumericVector>(y).size()>1) {
+      return SpikeCCFSingle(x,
+                            Rcpp::as<Rcpp::NumericVector>(y),
+                            WINDOW_LENGTH,
+                            BIN_SIZE,
+                            BaselineFrequency,
+                            ConfidenceInterval,
+                            ConfLevel,
+                            SD,
+                            CENTREMIN,
+                            KERNELSIZE);
+    } else {
+      Rcpp::stop("y does not contain engough values");
+    }
+  } else if(UnitNr.isNotNull() & !y.isNotNull()) {
+    if(Rcpp::as<Rcpp::IntegerVector>(UnitNr).size()>1) {
+      return SpikeCCFBatch(x,
+                           Rcpp::as<Rcpp::IntegerVector>(UnitNr),
+                           WINDOW_LENGTH,
+                           BIN_SIZE,
+                           BaselineFrequency,
+                           ConfidenceInterval,
+                           ConfLevel,
+                           SD,
+                           CENTREMIN,
+                           KERNELSIZE);
+    } else {
+      Rcpp::stop("UnitNr does not contain engough values");
+    }
+  } else if(!UnitNr.isNotNull() & !y.isNotNull()) {
+    if(x.size()>1) {
+      return SpikeCCFSingle(x,
+                            x,
+                            WINDOW_LENGTH,
+                            BIN_SIZE,
+                            BaselineFrequency,
+                            ConfidenceInterval,
+                            ConfLevel,
+                            SD,
+                            CENTREMIN,
+                            KERNELSIZE);
+    } else {
+      Rcpp::stop("Missing arguments"); 
+    }
+  } else if(UnitNr.isNotNull() & y.isNotNull()) {
+    Rcpp::stop("Too many arguments: 'y' for single CCF and 'UnitNr' for batch analysis");
+  } else {
+    Rcpp::stop("Check inputs");
   }
 }
