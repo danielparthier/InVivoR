@@ -6,13 +6,11 @@
 //' Morlet wavelet (time domain)
 //' 
 //' This function returns a complex morlet wavelet in the time domain. It can be 
-//' used in convolution.
+//' used for convolution.
 //'
 //' @param t A numeric sequence of time (-t/2 to t/2) with steps of sampling frequency.
 //' @param sigma A double indicating the shape parameter of the wavelet.
 //' @return Morlet wavelet as complex vector.
-//' @export
-// [[Rcpp::export]]
 arma::cx_vec morletWavlet(arma::vec& t,
                           const double& sigma) {
   const double pi4 = std::pow(arma::datum::pi, -0.25);
@@ -38,8 +36,6 @@ arma::cx_vec morletWavlet(arma::vec& t,
 //' @param angFreq A numeric sequence of angular frequency (0 to 2pi).
 //' @param sigma A double indicating the shape parameter of the wavelet.
 //' @return Morlet wavelet as numeric vector.
-//' @export
-// [[Rcpp::export]]
 arma::vec morletWaveletFFT(const arma::vec& angFreq,
                            double& sigma) {
   double pi4 = std::pow(arma::datum::pi, -0.25);
@@ -49,17 +45,14 @@ arma::vec morletWaveletFFT(const arma::vec& angFreq,
 }
 
 
-//' Application of morlet wavelet (frequency domain)
-//' 
-//' This function returns the convolution of a complex morlet daughter wavelet with the signal.
+// Application of morlet wavelet (frequency domain)
+// This function returns the convolution of a complex morlet daughter wavelet with the signal.
 //' 
 //' @param SignalFFT A complex vector of the signal FFT.
 //' @param scale A double indicating the scale parameter of daughter wavelet.
 //' @param morletFFT A vector of wavelet in frequency domain.
 //' @param LNorm A double indicating the L normalisation (power of 1/LNorm, default = 2).
 //' @return Morlet wavelet as numeric vector.
-//' @export
-// [[Rcpp::export]]
 arma::cx_vec morletWT(const arma::cx_vec& SignalFFT,
                       const double& scale, arma::vec morletFFT,
                       const double& LNorm = 2) {
@@ -90,14 +83,14 @@ arma::cx_vec morletWT(const arma::cx_vec& SignalFFT,
 //' samplingfrequency = 1e3, sigma = 12, LNorm = 2, CORES = 1)
 //' 
 //' # plot real part of WT
-//' image(x = Re(WTmat), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = TRUE)
+//' image(x = Re(WTmat), col = hcl.colors(n = 1000), useRaster = TRUE)
 //' 
 //' # plot power of WT
-//' image(x = abs(WTmat)^2, col = hcl.colors(n = 1000, palette = "viridis"), useRaster = TRUE)
+//' image(x = abs(WTmat)^2, col = hcl.colors(n = 1000), useRaster = TRUE)
 //' 
 //' # plot phase
 //' image(x = atan2(y = Im(WTmat), x = Re(WTmat)),
-//'       col = hcl.colors(n = 1000, palette = "viridis"),
+//'       col = hcl.colors(n = 1000),
 //'       useRaster = TRUE)
 //' 
 //' @export
@@ -163,9 +156,9 @@ arma::cx_mat WT(const arma::vec& Signal,
 //' dim(WTCube[[1]])
 //'       
 //' # Real part of wavelet transform for different ERPs
-//' image(x = abs(WTCube$Raw)^2, col = hcl.colors(n = 1000, palette = "viridis"), useRaster = TRUE)
-//' image(x = WTCube$Rho, col = hcl.colors(n = 1000, palette = "viridis"), useRaster = TRUE, zlim = c(0,1))
-//' image(x = WTCube$Mean, col = hcl.colors(n = 1000, palette = "viridis"), useRaster = TRUE)
+//' image(x = abs(WTCube$Raw)^2, col = hcl.colors(n = 1000), useRaster = TRUE)
+//' image(x = WTCube$Rho, col = hcl.colors(n = 1000), useRaster = TRUE, zlim = c(0,1))
+//' image(x = WTCube$Mean, col = hcl.colors(n = 1000), useRaster = TRUE)
 //' 
 //' @export
 // [[Rcpp::export]]
@@ -294,9 +287,10 @@ arma::mat PowerMat(const arma::cube& x,
 //' @param sigma A double indicating the shape parameter of the wavelet (default = 6).
 //' @param CORES An integer indicating number of threads used (default = 1). 
 //' @return A complex matrix representing the synchrosqueezed wavelet transform.
+//' 
 //' @export
 // [[Rcpp::export]]
-arma::cx_mat Squeeze(const arma::cx_mat& WT,
+arma::cx_mat WTSqueeze(const arma::cx_mat& WT,
                   const arma::vec& frequencies,
                   const double& samplingfrequency = 1e3,
                   double sigma = 6.0,
@@ -359,6 +353,7 @@ arma::cx_mat Squeeze(const arma::cx_mat& WT,
 //' 
 //' @param x A cube with complex matrices each slice representing ERP.
 //' @return An average complex matrix.
+//' 
 //' @export
 // [[Rcpp::export]]
 arma::cx_mat CxCubeCollapse(const arma::cx_cube& x) {

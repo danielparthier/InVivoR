@@ -37,14 +37,14 @@ WTmat <- WT(Signal = testSignal, frequencies = seq(from = 0.2,to = 20, by = 0.1)
 samplingfrequency = 1e3, sigma = 12, LNorm = 2, CORES = 1)
 
 # plot real part of WT
-image(x = Re(WTmat), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = TRUE)
+image(x = Re(WTmat), col = hcl.colors(n = 1000), useRaster = TRUE)
 
 # plot power of WT
-image(x = abs(WTmat)^2, col = hcl.colors(n = 1000, palette = "viridis"), useRaster = TRUE)
+image(x = abs(WTmat)^2, col = hcl.colors(n = 1000), useRaster = TRUE)
 
 # plot phase
 image(x = atan2(y = Im(WTmat), x = Re(WTmat)),
-      col = hcl.colors(n = 1000, palette = "viridis"),
+      col = hcl.colors(n = 1000),
       useRaster = TRUE)
 
 }

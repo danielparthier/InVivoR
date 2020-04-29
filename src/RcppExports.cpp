@@ -22,17 +22,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// read_file_cpp2
-Rcpp::CharacterVector read_file_cpp2(std::string path);
-RcppExport SEXP _InVivoR_read_file_cpp2(SEXP pathSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::string >::type path(pathSEXP);
-    rcpp_result_gen = Rcpp::wrap(read_file_cpp2(path));
-    return rcpp_result_gen;
-END_RCPP
-}
 // decimate
 Rcpp::NumericVector decimate(arma::vec& SIGNAL, const arma::vec& FIR_FILTER, const int& M);
 RcppExport SEXP _InVivoR_decimate(SEXP SIGNALSEXP, SEXP FIR_FILTERSEXP, SEXP MSEXP) {
@@ -203,44 +192,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// morletWavlet
-arma::cx_vec morletWavlet(arma::vec& t, const double& sigma);
-RcppExport SEXP _InVivoR_morletWavlet(SEXP tSEXP, SEXP sigmaSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::vec& >::type t(tSEXP);
-    Rcpp::traits::input_parameter< const double& >::type sigma(sigmaSEXP);
-    rcpp_result_gen = Rcpp::wrap(morletWavlet(t, sigma));
-    return rcpp_result_gen;
-END_RCPP
-}
-// morletWaveletFFT
-arma::vec morletWaveletFFT(const arma::vec& angFreq, double& sigma);
-RcppExport SEXP _InVivoR_morletWaveletFFT(SEXP angFreqSEXP, SEXP sigmaSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::vec& >::type angFreq(angFreqSEXP);
-    Rcpp::traits::input_parameter< double& >::type sigma(sigmaSEXP);
-    rcpp_result_gen = Rcpp::wrap(morletWaveletFFT(angFreq, sigma));
-    return rcpp_result_gen;
-END_RCPP
-}
-// morletWT
-arma::cx_vec morletWT(const arma::cx_vec& SignalFFT, const double& scale, arma::vec morletFFT, const double& LNorm);
-RcppExport SEXP _InVivoR_morletWT(SEXP SignalFFTSEXP, SEXP scaleSEXP, SEXP morletFFTSEXP, SEXP LNormSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::cx_vec& >::type SignalFFT(SignalFFTSEXP);
-    Rcpp::traits::input_parameter< const double& >::type scale(scaleSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type morletFFT(morletFFTSEXP);
-    Rcpp::traits::input_parameter< const double& >::type LNorm(LNormSEXP);
-    rcpp_result_gen = Rcpp::wrap(morletWT(SignalFFT, scale, morletFFT, LNorm));
-    return rcpp_result_gen;
-END_RCPP
-}
 // WT
 arma::cx_mat WT(const arma::vec& Signal, const arma::vec& frequencies, const double& samplingfrequency, double& sigma, const double& LNorm, int CORES);
 RcppExport SEXP _InVivoR_WT(SEXP SignalSEXP, SEXP frequenciesSEXP, SEXP samplingfrequencySEXP, SEXP sigmaSEXP, SEXP LNormSEXP, SEXP CORESSEXP) {
@@ -287,9 +238,9 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// Squeeze
-arma::cx_mat Squeeze(const arma::cx_mat& WT, const arma::vec& frequencies, const double& samplingfrequency, double sigma, const int& CORES);
-RcppExport SEXP _InVivoR_Squeeze(SEXP WTSEXP, SEXP frequenciesSEXP, SEXP samplingfrequencySEXP, SEXP sigmaSEXP, SEXP CORESSEXP) {
+// WTSqueeze
+arma::cx_mat WTSqueeze(const arma::cx_mat& WT, const arma::vec& frequencies, const double& samplingfrequency, double sigma, const int& CORES);
+RcppExport SEXP _InVivoR_WTSqueeze(SEXP WTSEXP, SEXP frequenciesSEXP, SEXP samplingfrequencySEXP, SEXP sigmaSEXP, SEXP CORESSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -298,7 +249,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const double& >::type samplingfrequency(samplingfrequencySEXP);
     Rcpp::traits::input_parameter< double >::type sigma(sigmaSEXP);
     Rcpp::traits::input_parameter< const int& >::type CORES(CORESSEXP);
-    rcpp_result_gen = Rcpp::wrap(Squeeze(WT, frequencies, samplingfrequency, sigma, CORES));
+    rcpp_result_gen = Rcpp::wrap(WTSqueeze(WT, frequencies, samplingfrequency, sigma, CORES));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -420,34 +371,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// spike_ccf
-Rcpp::IntegerVector spike_ccf(const Rcpp::NumericVector& x, const Rcpp::NumericVector& y, const double& WINDOW_LENGTH, const double& BIN_SIZE);
-RcppExport SEXP _InVivoR_spike_ccf(SEXP xSEXP, SEXP ySEXP, SEXP WINDOW_LENGTHSEXP, SEXP BIN_SIZESEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type x(xSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type y(ySEXP);
-    Rcpp::traits::input_parameter< const double& >::type WINDOW_LENGTH(WINDOW_LENGTHSEXP);
-    Rcpp::traits::input_parameter< const double& >::type BIN_SIZE(BIN_SIZESEXP);
-    rcpp_result_gen = Rcpp::wrap(spike_ccf(x, y, WINDOW_LENGTH, BIN_SIZE));
-    return rcpp_result_gen;
-END_RCPP
-}
-// spike_ccf_batch
-Rcpp::List spike_ccf_batch(const Rcpp::NumericVector& Time, const Rcpp::IntegerVector UnitNr, const double WINDOW_LENGTH, const double BIN_SIZE);
-RcppExport SEXP _InVivoR_spike_ccf_batch(SEXP TimeSEXP, SEXP UnitNrSEXP, SEXP WINDOW_LENGTHSEXP, SEXP BIN_SIZESEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type Time(TimeSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::IntegerVector >::type UnitNr(UnitNrSEXP);
-    Rcpp::traits::input_parameter< const double >::type WINDOW_LENGTH(WINDOW_LENGTHSEXP);
-    Rcpp::traits::input_parameter< const double >::type BIN_SIZE(BIN_SIZESEXP);
-    rcpp_result_gen = Rcpp::wrap(spike_ccf_batch(Time, UnitNr, WINDOW_LENGTH, BIN_SIZE));
-    return rcpp_result_gen;
-END_RCPP
-}
 // ConfIntPoisson
 Rcpp::NumericMatrix ConfIntPoisson(const arma::vec& CountVector, const double& CONFLEVEL, const double& SD, const double& CENTREMIN, const int& KERNELSIZE);
 RcppExport SEXP _InVivoR_ConfIntPoisson(SEXP CountVectorSEXP, SEXP CONFLEVELSEXP, SEXP SDSEXP, SEXP CENTREMINSEXP, SEXP KERNELSIZESEXP) {
@@ -464,22 +387,23 @@ BEGIN_RCPP
 END_RCPP
 }
 // SpikeCCF
-Rcpp::List SpikeCCF(Rcpp::NumericVector& x, Rcpp::NumericVector& y, const double& WINDOW_LENGTH, const double& BIN_SIZE, bool BaselineFrequency, bool ConfidenceInterval, double ConfLevel, const double& SD, const double& CENTREMIN, const int& KERNELSIZE);
-RcppExport SEXP _InVivoR_SpikeCCF(SEXP xSEXP, SEXP ySEXP, SEXP WINDOW_LENGTHSEXP, SEXP BIN_SIZESEXP, SEXP BaselineFrequencySEXP, SEXP ConfidenceIntervalSEXP, SEXP ConfLevelSEXP, SEXP SDSEXP, SEXP CENTREMINSEXP, SEXP KERNELSIZESEXP) {
+Rcpp::List SpikeCCF(const Rcpp::NumericVector x, Rcpp::Nullable<Rcpp::NumericVector> y, Rcpp::Nullable<Rcpp::IntegerVector> UnitNr, const double WINDOW_LENGTH, const double BIN_SIZE, const bool BaselineFrequency, const bool ConfidenceInterval, const double ConfLevel, const double SD, const double CENTREMIN, const int KERNELSIZE);
+RcppExport SEXP _InVivoR_SpikeCCF(SEXP xSEXP, SEXP ySEXP, SEXP UnitNrSEXP, SEXP WINDOW_LENGTHSEXP, SEXP BIN_SIZESEXP, SEXP BaselineFrequencySEXP, SEXP ConfidenceIntervalSEXP, SEXP ConfLevelSEXP, SEXP SDSEXP, SEXP CENTREMINSEXP, SEXP KERNELSIZESEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type x(xSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type y(ySEXP);
-    Rcpp::traits::input_parameter< const double& >::type WINDOW_LENGTH(WINDOW_LENGTHSEXP);
-    Rcpp::traits::input_parameter< const double& >::type BIN_SIZE(BIN_SIZESEXP);
-    Rcpp::traits::input_parameter< bool >::type BaselineFrequency(BaselineFrequencySEXP);
-    Rcpp::traits::input_parameter< bool >::type ConfidenceInterval(ConfidenceIntervalSEXP);
-    Rcpp::traits::input_parameter< double >::type ConfLevel(ConfLevelSEXP);
-    Rcpp::traits::input_parameter< const double& >::type SD(SDSEXP);
-    Rcpp::traits::input_parameter< const double& >::type CENTREMIN(CENTREMINSEXP);
-    Rcpp::traits::input_parameter< const int& >::type KERNELSIZE(KERNELSIZESEXP);
-    rcpp_result_gen = Rcpp::wrap(SpikeCCF(x, y, WINDOW_LENGTH, BIN_SIZE, BaselineFrequency, ConfidenceInterval, ConfLevel, SD, CENTREMIN, KERNELSIZE));
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector >::type x(xSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::NumericVector> >::type y(ySEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::IntegerVector> >::type UnitNr(UnitNrSEXP);
+    Rcpp::traits::input_parameter< const double >::type WINDOW_LENGTH(WINDOW_LENGTHSEXP);
+    Rcpp::traits::input_parameter< const double >::type BIN_SIZE(BIN_SIZESEXP);
+    Rcpp::traits::input_parameter< const bool >::type BaselineFrequency(BaselineFrequencySEXP);
+    Rcpp::traits::input_parameter< const bool >::type ConfidenceInterval(ConfidenceIntervalSEXP);
+    Rcpp::traits::input_parameter< const double >::type ConfLevel(ConfLevelSEXP);
+    Rcpp::traits::input_parameter< const double >::type SD(SDSEXP);
+    Rcpp::traits::input_parameter< const double >::type CENTREMIN(CENTREMINSEXP);
+    Rcpp::traits::input_parameter< const int >::type KERNELSIZE(KERNELSIZESEXP);
+    rcpp_result_gen = Rcpp::wrap(SpikeCCF(x, y, UnitNr, WINDOW_LENGTH, BIN_SIZE, BaselineFrequency, ConfidenceInterval, ConfLevel, SD, CENTREMIN, KERNELSIZE));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -514,7 +438,6 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_InVivoR_BinaryFileAccess", (DL_FUNC) &_InVivoR_BinaryFileAccess, 6},
-    {"_InVivoR_read_file_cpp2", (DL_FUNC) &_InVivoR_read_file_cpp2, 1},
     {"_InVivoR_decimate", (DL_FUNC) &_InVivoR_decimate, 3},
     {"_InVivoR_ERPMat", (DL_FUNC) &_InVivoR_ERPMat, 7},
     {"_InVivoR_ERPList", (DL_FUNC) &_InVivoR_ERPList, 8},
@@ -526,13 +449,10 @@ static const R_CallMethodDef CallEntries[] = {
     {"_InVivoR_PhaseListAnalysisResample", (DL_FUNC) &_InVivoR_PhaseListAnalysisResample, 3},
     {"_InVivoR_BWFiltCpp", (DL_FUNC) &_InVivoR_BWFiltCpp, 6},
     {"_InVivoR_StimulusSequence", (DL_FUNC) &_InVivoR_StimulusSequence, 4},
-    {"_InVivoR_morletWavlet", (DL_FUNC) &_InVivoR_morletWavlet, 2},
-    {"_InVivoR_morletWaveletFFT", (DL_FUNC) &_InVivoR_morletWaveletFFT, 2},
-    {"_InVivoR_morletWT", (DL_FUNC) &_InVivoR_morletWT, 4},
     {"_InVivoR_WT", (DL_FUNC) &_InVivoR_WT, 6},
     {"_InVivoR_WTbatch", (DL_FUNC) &_InVivoR_WTbatch, 8},
     {"_InVivoR_PowerMat", (DL_FUNC) &_InVivoR_PowerMat, 2},
-    {"_InVivoR_Squeeze", (DL_FUNC) &_InVivoR_Squeeze, 5},
+    {"_InVivoR_WTSqueeze", (DL_FUNC) &_InVivoR_WTSqueeze, 5},
     {"_InVivoR_CxCubeCollapse", (DL_FUNC) &_InVivoR_CxCubeCollapse, 1},
     {"_InVivoR_WTSmoothing", (DL_FUNC) &_InVivoR_WTSmoothing, 6},
     {"_InVivoR_WTCoherence", (DL_FUNC) &_InVivoR_WTCoherence, 7},
@@ -542,10 +462,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_InVivoR_chan_out", (DL_FUNC) &_InVivoR_chan_out, 2},
     {"_InVivoR_BWFilterCpp", (DL_FUNC) &_InVivoR_BWFilterCpp, 6},
     {"_InVivoR_FirFiltering", (DL_FUNC) &_InVivoR_FirFiltering, 2},
-    {"_InVivoR_spike_ccf", (DL_FUNC) &_InVivoR_spike_ccf, 4},
-    {"_InVivoR_spike_ccf_batch", (DL_FUNC) &_InVivoR_spike_ccf_batch, 4},
     {"_InVivoR_ConfIntPoisson", (DL_FUNC) &_InVivoR_ConfIntPoisson, 5},
-    {"_InVivoR_SpikeCCF", (DL_FUNC) &_InVivoR_SpikeCCF, 10},
+    {"_InVivoR_SpikeCCF", (DL_FUNC) &_InVivoR_SpikeCCF, 11},
     {"_InVivoR_spike_stim_properties", (DL_FUNC) &_InVivoR_spike_stim_properties, 5},
     {"_InVivoR_mat_baseline_zscore", (DL_FUNC) &_InVivoR_mat_baseline_zscore, 3},
     {NULL, NULL, 0}

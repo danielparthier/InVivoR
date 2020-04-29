@@ -59,11 +59,12 @@ WTCube <- WTbatch(ERPMat = ERPmat,
                   PhaseAnalysis = TRUE)
     
 # Cube dimensions
-dim(WTCube)
+length(WTCube)
+dim(WTCube[[1]])
       
 # Real part of wavelet transform for different ERPs
-image(x = abs(WTCube$Raw)^2, col = hcl.colors(n = 1000, palette = "viridis"), useRaster = TRUE)
-image(x = WTCube$Rho, col = hcl.colors(n = 1000, palette = "viridis"), useRaster = TRUE, zlim = c(0,1))
-image(x = WTCube$Mean), col = hcl.colors(n = 1000, palette = "viridis"), useRaster = TRUE)
+image(x = abs(WTCube$Raw)^2, col = hcl.colors(n = 1000), useRaster = TRUE)
+image(x = WTCube$Rho, col = hcl.colors(n = 1000), useRaster = TRUE, zlim = c(0,1))
+image(x = WTCube$Mean, col = hcl.colors(n = 1000), useRaster = TRUE)
 
 }

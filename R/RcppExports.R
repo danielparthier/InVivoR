@@ -209,15 +209,12 @@ StimulusSequence <- function(raw, sampling_frequency, threshold, max_time_gap) {
 #' Morlet wavelet (time domain)
 #' 
 #' This function returns a complex morlet wavelet in the time domain. It can be 
-#' used in convolution.
+#' used for convolution.
 #'
 #' @param t A numeric sequence of time (-t/2 to t/2) with steps of sampling frequency.
 #' @param sigma A double indicating the shape parameter of the wavelet.
 #' @return Morlet wavelet as complex vector.
-#' @export
-morletWavlet <- function(t, sigma) {
-    .Call('_InVivoR_morletWavlet', PACKAGE = 'InVivoR', t, sigma)
-}
+NULL
 
 #' Morlet wavelet (frequency domain)
 #' 
@@ -227,24 +224,15 @@ morletWavlet <- function(t, sigma) {
 #' @param angFreq A numeric sequence of angular frequency (0 to 2pi).
 #' @param sigma A double indicating the shape parameter of the wavelet.
 #' @return Morlet wavelet as numeric vector.
-#' @export
-morletWaveletFFT <- function(angFreq, sigma) {
-    .Call('_InVivoR_morletWaveletFFT', PACKAGE = 'InVivoR', angFreq, sigma)
-}
+NULL
 
-#' Application of morlet wavelet (frequency domain)
-#' 
-#' This function returns the convolution of a complex morlet daughter wavelet with the signal.
 #' 
 #' @param SignalFFT A complex vector of the signal FFT.
 #' @param scale A double indicating the scale parameter of daughter wavelet.
 #' @param morletFFT A vector of wavelet in frequency domain.
 #' @param LNorm A double indicating the L normalisation (power of 1/LNorm, default = 2).
 #' @return Morlet wavelet as numeric vector.
-#' @export
-morletWT <- function(SignalFFT, scale, morletFFT, LNorm = 2) {
-    .Call('_InVivoR_morletWT', PACKAGE = 'InVivoR', SignalFFT, scale, morletFFT, LNorm)
-}
+NULL
 
 #' Wavelet transform
 #' 
@@ -356,9 +344,10 @@ PowerMat <- function(x, ZScore = FALSE) {
 #' @param sigma A double indicating the shape parameter of the wavelet (default = 6).
 #' @param CORES An integer indicating number of threads used (default = 1). 
 #' @return A complex matrix representing the synchrosqueezed wavelet transform.
+#' 
 #' @export
-Squeeze <- function(WT, frequencies, samplingfrequency = 1e3, sigma = 6.0, CORES = 1L) {
-    .Call('_InVivoR_Squeeze', PACKAGE = 'InVivoR', WT, frequencies, samplingfrequency, sigma, CORES)
+WTSqueeze <- function(WT, frequencies, samplingfrequency = 1e3, sigma = 6.0, CORES = 1L) {
+    .Call('_InVivoR_WTSqueeze', PACKAGE = 'InVivoR', WT, frequencies, samplingfrequency, sigma, CORES)
 }
 
 #' Average complex matrix (from wavelet power cube)
@@ -367,6 +356,7 @@ Squeeze <- function(WT, frequencies, samplingfrequency = 1e3, sigma = 6.0, CORES
 #' 
 #' @param x A cube with complex matrices each slice representing ERP.
 #' @return An average complex matrix.
+#' 
 #' @export
 CxCubeCollapse <- function(x) {
     .Call('_InVivoR_CxCubeCollapse', PACKAGE = 'InVivoR', x)
