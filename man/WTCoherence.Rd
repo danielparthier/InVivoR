@@ -9,9 +9,8 @@ WTCoherence(
   WT2,
   frequencies,
   samplingfrequency = 1000,
-  sigma = 6,
-  Ba = 0.6,
-  Bb = 1
+  tKernelWidth = 0.01,
+  sKernelWidth = 0.6
 )
 }
 \arguments{

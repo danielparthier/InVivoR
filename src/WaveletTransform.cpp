@@ -1,6 +1,7 @@
 #include <RcppArmadillo.h>
 #include <omp.h>
 #define ARMA_NO_DEBUG
+#define ARMA_USE_MKL
 
 // [[Rcpp::depends(RcppArmadillo)]]
 //' Morlet wavelet (time domain)
@@ -413,28 +414,42 @@ arma::cx_mat WTSmoothing(const arma::cx_mat& WT,
 //' @param WT2 A complex matrix representing the wavelet transform.
 //' @param frequencies A vector indicating the frequencies which should be analysed.
 //' @param samplingfrequency A double indicating the sampling frequency in Hz (default = 1000).
-//' @param sigma A double indicating the shape parameter of the wavelet (default = 6).
-//' @param Ba A double indicating the smoothing factor in the scale domain (default = 0.6).
-//' @param Bb A double indicating the smoothing factor in the time domain (default = 1).
-//' @return An smoothened wavelet transform.
+//' @param tKernelWidth A double indicating the sd as smoothing factor in the time domain (default = 0.01).
+//' @param sKernelWidth A double indicating the smoothing factor in the scale domain (default = 0.6).
+//' @return A list containing the coherency, coherence and phase difference of the two wavelet transforms.
 //' @export
 // [[Rcpp::export]]
-arma::cx_mat WTCoherence(arma::cx_mat& WT1,
+Rcpp::List WTCoherence(arma::cx_mat& WT1,
                          arma::cx_mat& WT2,
                          arma::vec& frequencies,
                          const double& samplingfrequency = 1000.0,
-                         const double& sigma = 6.0,
-                         const double& Ba = 0.6,
-                         const double& Bb = 1) {
-  //arma::cx_mat CohMat = arma::zeros<arma::cx_mat>(size(WT1));
-  //CohMat = arma::pow(arma::abs(x), 2);
-  arma::cx_mat WT1sq = arma::zeros<arma::cx_mat>(size(WT1));
-  arma::cx_mat WT2sq = arma::zeros<arma::cx_mat>(size(WT1));
-  WT1sq.set_real(arma::abs(WT1) % arma::abs(WT1));
-  WT2sq.set_real(arma::abs(WT2) % arma::abs(WT2));
-  arma::cx_mat coh1 = WTSmoothing(WT1 % arma::conj(WT2), frequencies, samplingfrequency, sigma, Ba, Bb);
-  arma::cx_mat coh2 = WTSmoothing(WT1sq, frequencies, samplingfrequency, sigma, Ba, Bb);
-  arma::cx_mat coh3 = WTSmoothing(WT2sq, frequencies, samplingfrequency, sigma, Ba, Bb);
-  return (arma::abs(coh1)%arma::abs(coh1))/(coh2 % coh3);
+                         const double& tKernelWidth = 0.01,
+                         const double& sKernelWidth = 0.6) {
+  arma::vec tKernel = arma::normpdf(arma::regspace(0,1/samplingfrequency,WT1.n_rows/samplingfrequency), 0, tKernelWidth);
+  arma::vec sKernel = arma::zeros<arma::vec>(frequencies.n_elem);
+  for(unsigned int i = 0; i < frequencies.n_elem; ++i) {
+    sKernel.at(i) = std::pow(sKernelWidth, frequencies.at(i));
+  }
+  int paddingCol = std::pow(2, std::ceil(std::log2(WT1.n_cols*2)));
+  int paddingRow = std::pow(2, std::ceil(std::log2(WT1.n_rows*2)));
+  arma::mat kernel2D = tKernel*sKernel.t();
+  kernel2D /= arma::accu(kernel2D);
+  arma::mat kernelPad = arma::zeros<arma::mat>(paddingRow, paddingCol);
+  arma::mat WT1Pad = arma::zeros<arma::mat>(paddingRow, paddingCol);
+  arma::mat WT2Pad = arma::zeros<arma::mat>(paddingRow, paddingCol);
+  arma::cx_mat WT12Pad = arma::zeros<arma::cx_mat>(paddingRow, paddingCol);
+  kernelPad(0, 0, size(kernel2D)) = kernel2D;
+  WT1Pad(0, 0, size(WT1)) = arma::real(arma::abs(WT1)%arma::abs(WT1));
+  WT2Pad(0, 0, size(WT2)) = arma::real(arma::abs(WT2)%arma::abs(WT2));
+  WT12Pad(0, 0, size(WT1)) = WT1%arma::conj(WT2);
+  arma::cx_mat kernelFFT = arma::fft2(kernelPad);
+  arma::cx_mat WT1s = arma::ifft2(kernelFFT%arma::fft2(WT1Pad));
+  arma::cx_mat WT2s = arma::ifft2(kernelFFT%arma::fft2(WT2Pad));
+  arma::cx_mat WT12s = arma::ifft2(kernelFFT%arma::fft2(WT12Pad));
+  WT1s = WT1s(0, 0, size(WT1));
+  WT2s = WT2s(0, 0, size(WT2));
+  WT12s = WT12s(0, 0, size(WT1));
+  return Rcpp::List::create(Rcpp::Named("Coherency") = arma::real(WT12s)/arma::sqrt(WT1s%WT2s),
+                            Rcpp::Named("Coherence") = (arma::real(WT12s)%arma::real(WT12s)+arma::imag(WT12s)%arma::imag(WT12s))/(WT1s%WT2s),
+                            Rcpp::Named("PhaseDiff") = arma::atan(arma::real(WT12s)/arma::imag(WT12s)));
 }
-
