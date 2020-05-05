@@ -16,7 +16,6 @@ Returns a list containing a matrix with Rho vector lengths and a matrix with the
 }
 \description{
 This function computes the phase lock using the Rho vector length 
-(strength of the locking) and the circular mean phase from a list containing 
-wavelet transforms of epochs. The input list has to be flattend (vectorised) 
-first.
+(strength of the locking) and the circular mean phase from a cube containing 
+wavelet transforms of epochs.
 }

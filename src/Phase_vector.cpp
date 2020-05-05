@@ -6,9 +6,8 @@
 //' Phase lock analysis
 //' 
 //' This function computes the phase lock using the Rho vector length 
-//' (strength of the locking) and the circular mean phase from a list containing 
-//' wavelet transforms of epochs. The input list has to be flattend (vectorised) 
-//' first.
+//' (strength of the locking) and the circular mean phase from a cube containing 
+//' wavelet transforms of epochs.
 //' 
 //' @param x A cube of phases (radians) with slices as different ERPs.
 //' @param CORES An int indicating the number of threads used (default = 1).

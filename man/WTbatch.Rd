@@ -7,8 +7,8 @@
 WTbatch(
   ERPMat,
   frequencies,
-  samplingfrequency,
-  sigma,
+  samplingfrequency = 1000,
+  sigma = 6,
   LNorm = 2,
   CORES = 1L,
   compression = FALSE,
@@ -20,9 +20,9 @@ WTbatch(
 
 \item{frequencies}{A vector indicating the frequencies which should be analysed.}
 
-\item{samplingfrequency}{A double indicating the sampling frequency in Hz.}
+\item{samplingfrequency}{A double indicating the sampling frequency in Hz (default = 1000).}
 
-\item{sigma}{A double indicating the shape parameter of the wavelet.}
+\item{sigma}{A double indicating the shape parameter of the wavelet (default = 6).}
 
 \item{LNorm}{A double indicating the L normalisation (power of 1/LNorm, default = 2).}
 

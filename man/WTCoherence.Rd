@@ -2,7 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{WTCoherence}
 \alias{WTCoherence}
-\title{Smoothing complex wavelet matrix}
+\title{Coherence/Coherency/Phase Difference function}
 \usage{
 WTCoherence(
   WT1,
@@ -22,16 +22,13 @@ WTCoherence(
 
 \item{samplingfrequency}{A double indicating the sampling frequency in Hz (default = 1000).}
 
-\item{sigma}{A double indicating the shape parameter of the wavelet (default = 6).}
+\item{tKernelWidth}{A double indicating the sd as smoothing factor in the time domain (default = 0.01).}
 
-\item{Ba}{A double indicating the smoothing factor in the scale domain (default = 0.6).}
-
-\item{Bb}{A double indicating the smoothing factor in the time domain (default = 1).}
+\item{sKernelWidth}{A double indicating the smoothing factor in the scale domain (default = 0.6).}
 }
 \value{
-An smoothened wavelet transform.
+A list containing the coherency, coherence, and phase difference of the two wavelet transforms.
 }
 \description{
-This function computes the smoothened wavelet transform required 
-for coherence calculation.
+This function computes the coherence, coherency, and the phase difference between two wavelet transforms.
 }
