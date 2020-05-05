@@ -9,7 +9,7 @@ BinaryFileAccess(
   spikePoints,
   WINDOW = 40L,
   CHANNELCOUNT = 32L,
-  CACHESIZE = 512000L,
+  CACHESIZE = 51200L,
   BYTECODE = 2L
 )
 }
