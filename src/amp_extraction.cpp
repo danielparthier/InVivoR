@@ -1,3 +1,4 @@
+#define ARMA_64BIT_WORD
 #include <RcppArmadillo.h>
 
 // [[Rcpp::depends(RcppArmadillo)]]
@@ -12,8 +13,8 @@
 //' @return Returns a vector with position of maximum amplitude and amplitude itself.
 //' @export
 // [[Rcpp::export]]
-arma::cube SpikeCut(const arma::mat AmpMatrix,
-                    arma::vec& SpikeIdx,
+arma::cube SpikeCut(const arma::mat& AmpMatrix,
+                    const arma::vec& SpikeIdx,
                     const int& WINDOW = 20){
   arma::vec SpikeIdxUse = SpikeIdx(arma::find(SpikeIdx>WINDOW and SpikeIdx<(AmpMatrix.n_cols-WINDOW)));
   arma::cube outCube(AmpMatrix.n_rows, WINDOW*2+1, SpikeIdxUse.size(), arma::fill::zeros);
@@ -31,7 +32,7 @@ arma::cube SpikeCut(const arma::mat AmpMatrix,
 //' @return Returns a matrix with median spike shapes (rows = channels, columns = time).
 //' @export
 // [[Rcpp::export]]
-arma::mat SpikeMed(const arma::cube SpikeCube){
+arma::mat SpikeMed(const arma::cube& SpikeCube){
   arma::mat MedMat = arma::mat(SpikeCube.n_rows, SpikeCube.n_cols, arma::fill::zeros);
   for(unsigned int i = 0; i < SpikeCube.n_rows; ++i){
     for(unsigned int j = 0; j < SpikeCube.n_cols; ++j){
@@ -56,7 +57,7 @@ arma::mat SpikeMed(const arma::cube SpikeCube){
 //' @return Returns a vector with position of maximum amplitude and amplitude itself.
 //' @export
 // [[Rcpp::export]]
-arma::rowvec MaxChannel(arma::mat MedianSpikeMat) {
+arma::rowvec MaxChannel(const arma::mat& MedianSpikeMat) {
   int channel_nr = MedianSpikeMat.n_rows;
   arma::rowvec channel_out(2, arma::fill::zeros);
   arma::vec min_peak_amp(channel_nr, arma::fill::zeros);
@@ -76,7 +77,7 @@ arma::rowvec MaxChannel(arma::mat MedianSpikeMat) {
 //' @return Returns a list inlcuding the channel number and amplitude.
 //' @export
 // [[Rcpp::export]]
-Rcpp::List ChannelFromList(Rcpp::List SpikeCubeList) {
+Rcpp::List ChannelFromList(const Rcpp::List& SpikeCubeList) {
   int end_i = SpikeCubeList.size();
   arma::mat out_mat = arma::mat(end_i, 2, arma::fill::zeros);
   for(int i=0; i<end_i; i++) {
@@ -98,18 +99,29 @@ Rcpp::List ChannelFromList(Rcpp::List SpikeCubeList) {
 //' @return Returns a list inlcuding the channel number, amplitude and unit number.
 //' @export
 // [[Rcpp::export]]
-Rcpp::List UnitChannel(arma::vec SpikeIdx,
-                      arma::vec Units,
-                      arma::mat AmpMatrix) {
+Rcpp::List UnitChannel(const arma::vec& SpikeIdx,
+                       const arma::vec& Units,
+                       const arma::mat& AmpMatrix,
+                       const int& WINDOW = 20) {
+  int ChannelCount = AmpMatrix.n_rows;
   arma::vec UnitsUnique = arma::unique(Units);
   arma::mat out_mat = arma::mat(UnitsUnique.n_elem, 3, arma::fill::zeros);
-  for(unsigned int i=0; i<UnitsUnique.n_elem; i++) {
+  arma::cube SpikeShape = arma::cube(AmpMatrix.n_rows, 2*WINDOW+1, UnitsUnique.n_elem, arma::fill::zeros);
+  for(long int i=0; i<UnitsUnique.n_elem; i++) {
     arma::vec SpikeVec = SpikeIdx.elem(find(Units == UnitsUnique.at(i)));
-    arma::cube tmpCube = SpikeCut(AmpMatrix, SpikeVec);
-    out_mat.submat(i, 0, i, 1) = MaxChannel(SpikeMed(tmpCube));
+    arma::uvec SpikeSelectIdx = arma::conv_to<arma::uvec>::from(SpikeVec);
+    for(long int j=0; j<AmpMatrix.n_rows; ++j){
+      for(long int k = -WINDOW; k < WINDOW+1; ++k){
+        arma::uvec tmpIDX = (SpikeSelectIdx+k)*ChannelCount+j;
+        SpikeShape.at(j,k+WINDOW,i) = arma::median(AmpMatrix.elem(tmpIDX));
+      }
+      SpikeShape.slice(i).row(j) -= arma::median(SpikeShape.slice(i).row(j));
+    } 
+    out_mat.submat(i, 0, i, 1) = MaxChannel(SpikeShape.slice(i));
     out_mat.at(i, 2) = UnitsUnique.at(i);
   }
   return Rcpp::List::create(Rcpp::Named("ChannelNr") = out_mat.col(0),
                             Rcpp::Named("Amplitude") = out_mat.col(1),
-                            Rcpp::Named("UnitNr") = out_mat.col(2));
+                            Rcpp::Named("UnitNr") = out_mat.col(2),
+                            Rcpp::Named("SpikeShape") = SpikeShape);
 }
