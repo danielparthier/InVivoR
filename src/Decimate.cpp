@@ -1,3 +1,4 @@
+#define ARMA_64BIT_WORD
 #include <RcppArmadillo.h>
 #define ARMA_NO_DEBUG
 
@@ -12,7 +13,7 @@
 //' @return Returns a numeric vector with length N/M.
 //' @export
 // [[Rcpp::export]]
-Rcpp::NumericVector decimate(arma::vec& SIGNAL,
+Rcpp::NumericVector decimate(const arma::vec& SIGNAL,
                          const arma::vec& FIR_FILTER,
                          const int& M) {
   arma::colvec PaddedSignal = arma::zeros(SIGNAL.size()+FIR_FILTER.size()*2);
