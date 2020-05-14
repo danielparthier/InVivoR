@@ -534,6 +534,7 @@ ConfIntPoisson <- function(CountVector, CONFLEVEL = 0.95, SD = 0.6, CENTREMIN = 
 #' @param CENTREMIN A double as shape parameter determining the strength of centre exclusion (default = 0.6).
 #' @param KERNELSIZE A double as length parameter for gaussian kernel (2*KERNELSIZE+1, default = 20).
 #' @return Returns a list containing counts per bin, axis, random bin count, confidence-intervals with counts per bin.
+#' @export
 SpikeCCF <- function(x, y = NULL, UnitNr = NULL, WINDOW_LENGTH = 1, BIN_SIZE = 0.001, BaselineFrequency = TRUE, ConfidenceInterval = TRUE, ConfLevel = 0.95, SD = 0.6, CENTREMIN = 0.6, KERNELSIZE = 20L) {
     .Call('_InVivoR_SpikeCCF', PACKAGE = 'InVivoR', x, y, UnitNr, WINDOW_LENGTH, BIN_SIZE, BaselineFrequency, ConfidenceInterval, ConfLevel, SD, CENTREMIN, KERNELSIZE)
 }
