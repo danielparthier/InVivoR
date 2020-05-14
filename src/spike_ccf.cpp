@@ -309,6 +309,7 @@ Rcpp::List SpikeCCFSingle(const Rcpp::NumericVector&  x,
 //' @param CENTREMIN A double as shape parameter determining the strength of centre exclusion (default = 0.6).
 //' @param KERNELSIZE A double as length parameter for gaussian kernel (2*KERNELSIZE+1, default = 20).
 //' @return Returns a list containing counts per bin, axis, random bin count, confidence-intervals with counts per bin.
+//' @export
 // [[Rcpp::export]]
 Rcpp::List SpikeCCF(const Rcpp::NumericVector  x,
                     Rcpp::Nullable<Rcpp::NumericVector> y = R_NilValue,
