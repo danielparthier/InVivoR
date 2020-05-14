@@ -1,3 +1,4 @@
+#define ARMA_64BIT_WORD
 #include <RcppArmadillo.h>
 #include <omp.h>
 #define ARMA_NO_DEBUG
@@ -25,7 +26,7 @@ arma::cx_vec morletWavlet(arma::vec& t,
   arma::cx_vec WaveletOut(t.n_elem, arma::fill::zeros);
   WaveletOut.set_imag(sigmaVec);
   return c0*pi4*arma::exp(WaveletOut)%arma::exp(tSq-k0);
-  }
+}
 
 
 
@@ -167,14 +168,14 @@ arma::cx_mat WT(const arma::vec& Signal,
 //' 
 //' @export
 // [[Rcpp::export]]
-Rcpp::List WTbatch(arma::mat& ERPMat,
-                      const arma::vec& frequencies,
-                      const double& samplingfrequency = 1e3,
-                      const double& sigma = 6,
-                      const double& LNorm = 2,
-                      int CORES = 1L,
-                      bool compression = false,
-                      bool PhaseAnalysis = false) {
+Rcpp::List WTbatch(arma::mat ERPMat,
+                   const arma::vec& frequencies,
+                   const double& samplingfrequency = 1e3,
+                   const double& sigma = 6,
+                   const double& LNorm = 2,
+                   int CORES = 1L,
+                   bool compression = false,
+                   bool PhaseAnalysis = false) {
   const int scaleLength = frequencies.n_elem;
   const int SignalLength = ERPMat.n_cols;
   const int SignalCount = ERPMat.n_rows;
@@ -238,18 +239,22 @@ Rcpp::List WTbatch(arma::mat& ERPMat,
     if(compression) {
       return Rcpp::List::create(Rcpp::Named("Raw") = WTCube.slice(0),
                                 Rcpp::Named("Rho") = arma::sqrt(WTCubeSin%WTCubeSin+WTCubeCos%WTCubeCos),
-                                Rcpp::Named("Mean") = arma::atan2(WTCubeSin, WTCubeCos));
+                                Rcpp::Named("MeanPhase") = arma::atan2(WTCubeSin, WTCubeCos),
+                                Rcpp::Named("Frequencies") = Rcpp::NumericVector(frequencies.begin(),frequencies.end()));
     } else {
       return Rcpp::List::create(Rcpp::Named("Raw") = WTCube,
                                 Rcpp::Named("Rho") = arma::sqrt(WTCubeSin%WTCubeSin+WTCubeCos%WTCubeCos),
-                                Rcpp::Named("Mean") = arma::atan2(WTCubeSin, WTCubeCos));
+                                Rcpp::Named("MeanPhase") = arma::atan2(WTCubeSin, WTCubeCos),
+                                Rcpp::Named("Frequencies") = Rcpp::NumericVector(frequencies.begin(),frequencies.end()));
     }
     
-      } else {
+  } else {
     if(compression) {
-      return Rcpp::List::create(Rcpp::Named("Raw") = WTCube.slice(0));
+      return Rcpp::List::create(Rcpp::Named("Raw") = WTCube.slice(0),
+                                Rcpp::Named("Frequencies") = Rcpp::NumericVector(frequencies.begin(),frequencies.end()));
     } else {
-      return Rcpp::List::create(Rcpp::Named("Raw") = WTCube);
+      return Rcpp::List::create(Rcpp::Named("Raw") = WTCube,
+                                Rcpp::Named("Frequencies") = Rcpp::NumericVector(frequencies.begin(),frequencies.end()));
     }
   }
 }
@@ -299,10 +304,10 @@ arma::mat PowerMat(const arma::cube& x,
 //' @export
 // [[Rcpp::export]]
 arma::cx_mat WTSqueeze(const arma::cx_mat& WT,
-                  const arma::vec& frequencies,
-                  const double& samplingfrequency = 1e3,
-                  double sigma = 6,
-                  const int& CORES = 1) {
+                       const arma::vec& frequencies,
+                       const double& samplingfrequency = 1e3,
+                       double sigma = 6,
+                       const int& CORES = 1) {
   const int DIM_X =  WT.n_cols;
   const int DIM_Y =  WT.n_rows;
   omp_set_num_threads(CORES);
@@ -340,7 +345,7 @@ arma::cx_mat WTSqueeze(const arma::cx_mat& WT,
   arma::mat wabAbs = arma::abs(wab / x * samplingfrequency);
   arma::inplace_strans(wabAbs);
   arma::inplace_strans(x);
-
+  
   // allocating space for output matrix
   arma::cx_mat Ts = arma::cx_mat(DIM_Y, DIM_X, arma::fill::zeros);
 #pragma omp parallel for shared(x, Ts, wabAbs, wFreq, wDeltaHalf, wDeltaInv, scalePower) schedule(static)
@@ -385,11 +390,11 @@ arma::cx_mat CxCubeCollapse(const arma::cx_cube& x) {
 //' @export
 // [[Rcpp::export]]
 Rcpp::List WTCoherence(arma::cx_mat& WT1,
-                         arma::cx_mat& WT2,
-                         arma::vec& frequencies,
-                         const double& samplingfrequency = 1e3,
-                         const double& tKernelWidth = 0.01,
-                         const double& sKernelWidth = 0.6) {
+                       arma::cx_mat& WT2,
+                       arma::vec& frequencies,
+                       const double& samplingfrequency = 1e3,
+                       const double& tKernelWidth = 0.01,
+                       const double& sKernelWidth = 0.6) {
   arma::vec tKernel = arma::normpdf(arma::regspace(0,1/samplingfrequency,WT1.n_rows/samplingfrequency), 0, tKernelWidth);
   arma::vec sKernel = arma::zeros<arma::vec>(frequencies.n_elem);
   for(unsigned int i = 0; i < frequencies.n_elem; ++i) {
