@@ -1,6 +1,6 @@
 // Function to detect stimulus times, frequencies, types, and blocks using the raw stimulus input and a filtered version.
 // Output of function is a list of two matrices including the single pulse information and the block information.
-
+#define ARMA_64BIT_WORD
 #include <RcppArmadillo.h>
 #include <omp.h>
 #define ARMA_NO_DEBUG
@@ -16,52 +16,66 @@
 //' @param ORDER An int as filtering order (default = 2).
 //' @param f0 A double as cutoff frequency (default = 10).
 //' @param type A string indicating the filter type ("low", "high"). The default is "low".
+//' @param BatchSize An integer indicating the batch size for FFT (default = 4e4).
 //' @param CORES An int indicating the number of threads used (default = 1).
 //' @return Filtered signal as numeric vector.
 //' @export
 // [[Rcpp::export]]
-Rcpp::NumericVector BWFiltCpp(arma::vec& InputSignal,
-                              const double& SamplingFrequency,
-                              const int& ORDER = 2,
-                              const double& f0 = 10,
-                              const std::string type = "low",
-                              const int& CORES = 1) {
+Rcpp::NumericVector BWFiltCpp(const arma::vec& InputSignal,
+                                     const double& SamplingFrequency,
+                                     const int& ORDER = 2,
+                                     const double& f0 = 1000,
+                                     const std::string type = "low",
+                                     int BatchSize = 4e4,
+                                     const int& CORES = 1) {
   omp_set_num_threads(CORES);
-  int InputLength = std::pow(2, std::ceil(std::log2(InputSignal.size())));
-  arma::vec InputSignalPadded = arma::zeros<arma::vec>(InputLength);
-  int signalLength = InputSignal.size();
-  int startSignal = (InputLength-signalLength)*0.5;
-  InputSignalPadded.subvec(startSignal, size(InputSignal)) = InputSignal;
-  arma::cx_mat InputFFT = arma::fft(InputSignalPadded);
+  int ChunkLength = std::pow(2, std::ceil(std::log2(BatchSize*1.5)));
+  int startSignal = (ChunkLength-BatchSize)*0.5;
   int OrderTerm = ORDER*2;
-  int SignalLength = InputFFT.size();
-  if (f0 > 0) {
-    int HalfLength = SignalLength*0.5;
-    double BinWidth = SamplingFrequency/SignalLength;
-    if(type.compare("low") == 0) {
-      BinWidth = BinWidth/f0;
-#pragma omp parallel for shared(f0, HalfLength, InputFFT, BinWidth, OrderTerm, SignalLength) schedule(dynamic) default(none)
-      for (int i=0; i<HalfLength; ++i) {
-        double gain = 1/std::sqrt(1+std::pow((BinWidth * i), OrderTerm));
-        InputFFT.at(i) *= gain;
-        InputFFT.at(SignalLength-(i)) *= gain;
-      } 
-    } if(type.compare("high") == 0) {
-      BinWidth = f0/BinWidth;
-#pragma omp parallel for shared(f0, HalfLength, InputFFT, BinWidth, OrderTerm, SignalLength) schedule(dynamic) default(none)
-      for (int i=0; i<HalfLength; ++i) {
-        double gain = 1/std::sqrt(1+std::pow(f0/(BinWidth * (i+1)), OrderTerm));
-        InputFFT.at(i) *= gain;
-        InputFFT.at(SignalLength-(i)) *= gain;
+  arma::vec OutPutVec = arma::zeros<arma::vec>(InputSignal.size());
+#pragma omp parallel for shared(OutPutVec, InputSignal, OrderTerm, type, f0, SamplingFrequency, BatchSize, ChunkLength, startSignal) schedule(dynamic) default(none)
+  for(unsigned long int i = 0; i<InputSignal.size(); i += BatchSize) { 
+    if(i+BatchSize > InputSignal.size()) {
+      BatchSize = InputSignal.size()-i;
+    }
+    arma::vec InputSignalPadded = arma::zeros<arma::vec>(ChunkLength);
+    InputSignalPadded.subvec(startSignal, startSignal+BatchSize-1) = InputSignal.subvec(i, i+BatchSize-1);
+    arma::cx_mat InputFFT = arma::fft(InputSignalPadded);
+    int SignalLength = InputFFT.size();
+    if (f0 > 0) {
+      int HalfLength = SignalLength*0.5;
+      double BinWidth = SamplingFrequency/SignalLength;
+      if(type.compare("low") == 0) {
+        BinWidth = BinWidth/f0;
+        for (int j=0; j<HalfLength; ++j) {
+          double gain = 1/std::sqrt(1+std::pow((BinWidth * j), OrderTerm));
+          InputFFT.at(j) *= gain;
+          InputFFT.at(SignalLength-(j)) *= gain;
+        } 
+      } if(type.compare("high") == 0) {
+        BinWidth = f0/BinWidth;
+        for (int j=0; j<HalfLength; ++j) {
+          double gain = 1/std::sqrt(1+std::pow(f0/(BinWidth * (j+1)), OrderTerm));
+          InputFFT.at(j) *= gain;
+          InputFFT.at(SignalLength-(j)) *= gain;
+        }
+      } if((type.compare("low") != 0) and (type.compare("high") != 0)) {
+        Rcpp::stop("No valid type parameter.");
       }
-    } if((type.compare("low") != 0) and (type.compare("high") != 0)) {
-      Rcpp::stop("No valid type parameter.");
+    }
+    InputSignalPadded = arma::real(arma::ifft(InputFFT));
+#pragma omp critical
+    if((i>0) & ((i+BatchSize+1)<OutPutVec.size())) {
+      OutPutVec.subvec(i-startSignal, size(InputSignalPadded)) += InputSignalPadded;
+    } else if(i == 0) {
+      OutPutVec.subvec(i, (i+InputSignalPadded.size()-startSignal-1)) += InputSignalPadded.tail(InputSignalPadded.size()-startSignal);
+    } else if((i+BatchSize+1)<OutPutVec.size()) {
+      OutPutVec.subvec(i-startSignal, (i+InputSignalPadded.size()-startSignal-1)) += InputSignalPadded.subvec(startSignal, startSignal+BatchSize-1);
     }
   }
-  InputSignalPadded = arma::real(arma::ifft(InputFFT));
-  InputSignalPadded = InputSignalPadded.subvec(startSignal, size(InputSignal));
-  return Rcpp::NumericVector(InputSignalPadded.begin(),InputSignalPadded.end());
+  return Rcpp::NumericVector(OutPutVec.begin(),OutPutVec.end());
 }
+
 
 // housekeeping functions
 // function for median calculation (faster than R implementation)
@@ -90,9 +104,9 @@ double cpp_med(Rcpp::NumericVector xx) {
 Rcpp::List StimulusSequence(Rcpp::NumericVector& raw,
                             int& sampling_frequency,
                             double& threshold,
-                            const double& max_time_gap) {
-  arma::vec rawArma = Rcpp::as<arma::vec>(raw);
-  Rcpp::NumericVector filt = BWFiltCpp(rawArma, sampling_frequency, 2, 1000, "low", 1);
+                            const double& max_time_gap,
+                            const int CORES = 1) {
+  Rcpp::NumericVector filt = BWFiltCpp(Rcpp::as<arma::vec>(raw), sampling_frequency, 2, 1000, "low", 4e4, CORES);
   // thresholding of raw, filtered stimulus trace & finding primary onsets and ends of stimuli
   int CorrectionCount = 1;
   new_try:
@@ -121,7 +135,6 @@ Rcpp::List StimulusSequence(Rcpp::NumericVector& raw,
   Rcpp::IntegerVector stim_pulse_start = Rcpp::wrap(out_vec_onset_filt);
   Rcpp::IntegerVector stim_pulse_end_raw = Rcpp::wrap(out_vec_end_raw);
   Rcpp::IntegerVector stim_pulse_end = Rcpp::wrap(out_vec_end_filt);
-  
   int l_stim_pulse_start(stim_pulse_start.size());
   Rcpp::NumericMatrix stim_mat(l_stim_pulse_start, 18); // initialising output matrix
   // Matrix: rows: left, right; cols: including 0 (zero_threshold), 25, 50, 75, 95 (Peak)
@@ -193,7 +206,7 @@ Rcpp::List StimulusSequence(Rcpp::NumericVector& raw,
         forward_run = peak_loc_tmp+sampling_frequency*2;
       }
     }
-    
+
     // reset for backwards run
     found0 = false, found25 = false, found50 = false, found75 = false, found95 = false;
     for(R_xlen_t back_run = peak_loc_tmp; back_run > peak_loc_tmp-sampling_frequency*2; --back_run) {
@@ -222,7 +235,7 @@ Rcpp::List StimulusSequence(Rcpp::NumericVector& raw,
         back_run = peak_loc_tmp-sampling_frequency*2;
       }
     }  
-    
+
     found0 = false, found25 = false, found50 = false, found75 = false, found95 = false;
     
     // compute time point differences and slope to find pulse (fast changes)
