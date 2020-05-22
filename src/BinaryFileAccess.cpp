@@ -1,7 +1,8 @@
+#define ARMA_64BIT_WORD
 #include <RcppArmadillo.h>
 #include <fstream>
 #include <iostream>
-#define ARMA_NO_DEBUG
+
 
 // [[Rcpp::depends(RcppArmadillo)]]
 //' Binary file access
@@ -89,7 +90,7 @@ Rcpp::NumericVector StimFileRead(const std::string& FILENAME,
   f.open(FILENAME.c_str(), std::ios::binary | std::ios::in);
   // determine size
   f.seekg (0, std::ios::end);
-  int length = f.tellg();
+  unsigned long long int length = f.tellg();
   f.seekg (0, std::ios::beg);
   // generate vector and read unsigned integers
   std::vector<unsigned short> val(length/sizeof(unsigned short));
@@ -102,7 +103,8 @@ Rcpp::NumericVector StimFileRead(const std::string& FILENAME,
     Rcpp::NumericVector Output = Rcpp::wrap(val);
     return Output;
   } else {
-    return Rcpp::wrap(val); 
+    Rcpp::NumericVector Output = Rcpp::wrap(val);
+    return Output*0.000050354; 
   }
 }
 
@@ -115,26 +117,63 @@ Rcpp::NumericVector StimFileRead(const std::string& FILENAME,
 //' @return Returns an armadillo matrix (rows = ChannelNumber, columns = time).
 //' @export
 // [[Rcpp::export]]
-arma::mat AmpFileRead(const std::string& FILENAME,
+Rcpp::NumericMatrix AmpFileRead(const std::string& FILENAME,
                       const int ChannelNumber = 32){
   // open stream
   std::ifstream f;
   f.open(FILENAME.c_str(), std::ios::binary | std::ios::in);
   // determine size
   f.seekg (0, std::ios::end);
-  int length = f.tellg();
+  unsigned long int length = f.tellg();
   f.seekg (0, std::ios::beg);
   // generate vector and read unsigned integers
-  std::vector<unsigned short> val(length/sizeof(unsigned short));
+  std::vector<short> val(length/sizeof(short));
   f.read((char*)&val[0], length);
   // close stream
   f.close();
   // convert std::vector to arma::mat with channels as rows
-  arma::mat outMat = arma::conv_to<arma::mat>::from(val);
-  outMat.reshape(ChannelNumber,length/sizeof(unsigned short)/ChannelNumber);
+  //arma::vec outMat = arma::conv_to<arma::vec>::from(val);
+  //outMat.reshape(length/sizeof(short)/ChannelNumber,ChannelNumber);
+  Rcpp::NumericMatrix outMat = Rcpp::NumericMatrix(ChannelNumber, length/sizeof(short)/ChannelNumber,val.begin());
   return outMat*0.195; 
 }
 
+
+// [[Rcpp::export]]
+arma::mat AmpFileReadMerge(const std::string& FILENAME1,
+                           const std::string& FILENAME2,
+                           const int ChannelNumber = 32){
+  // open stream
+  std::ifstream f;
+  f.open(FILENAME1.c_str(), std::ios::binary | std::ios::in);
+  // determine size
+  f.seekg (0, std::ios::end);
+  unsigned long long int length = f.tellg();
+  f.seekg (0, std::ios::beg);
+  // generate vector and read unsigned integers
+  std::vector<short> val(length/sizeof(short));
+  f.read((char*)&val[0], length);
+  // close stream
+  f.close();
+  arma::mat outMat1 = arma::conv_to<arma::mat>::from(val);
+  outMat1.reshape(ChannelNumber,length/sizeof(short)/ChannelNumber);
+  
+  f.open(FILENAME2.c_str(), std::ios::binary | std::ios::in);
+  // determine size
+  f.seekg (0, std::ios::end);
+  length = f.tellg();
+  f.seekg (0, std::ios::beg);
+  // generate vector and read unsigned integers
+  f.read((char*)&val[0], length);
+  // close stream
+  f.close();
+  
+  // convert std::vector to arma::mat with channels as rows
+  arma::mat outMat2 = arma::conv_to<arma::mat>::from(val);
+  outMat2.reshape(ChannelNumber,length/sizeof(short)/ChannelNumber);
+  
+  return arma::join_rows(outMat1,outMat2)*0.195; 
+}
 
 // working armadillo implementation of decimal to binary --> for multiple digital intan inputs
 // [[Rcpp::export]]
@@ -175,6 +214,9 @@ Rcpp::List convertToBinary(arma::vec x){
   return Rcpp::List::create(Rcpp::Named("Output") = Output,
                             Rcpp::Named("ActiveChannels") = ChannelsUsed);
 }
+
+
+
 
 // work on Rcpp implementation to have logical matrix output (memory efficient)
 //// [[Rcpp::export]]
