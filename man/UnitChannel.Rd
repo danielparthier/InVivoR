@@ -4,7 +4,7 @@
 \alias{UnitChannel}
 \title{Spike location channel}
 \usage{
-UnitChannel(SpikeIdx, Units, AmpMatrix)
+UnitChannel(SpikeIdx, Units, AmpMatrix, WINDOW = 20L)
 }
 \arguments{
 \item{SpikeIdx}{A numeric vector with spike indices.}

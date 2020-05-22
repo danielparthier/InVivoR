@@ -8,8 +8,9 @@ BWFiltCpp(
   InputSignal,
   SamplingFrequency,
   ORDER = 2L,
-  f0 = 10,
+  f0 = 1000,
   type = "low",
+  BatchSize = 40000L,
   CORES = 1L
 )
 }
@@ -23,6 +24,8 @@ BWFiltCpp(
 \item{f0}{A double as cutoff frequency (default = 10).}
 
 \item{type}{A string indicating the filter type ("low", "high"). The default is "low".}
+
+\item{BatchSize}{An integer indicating the batch size for FFT (default = 4e4).}
 
 \item{CORES}{An int indicating the number of threads used (default = 1).}
 }

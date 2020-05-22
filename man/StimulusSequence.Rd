@@ -4,7 +4,7 @@
 \alias{StimulusSequence}
 \title{Stimulus sequence}
 \usage{
-StimulusSequence(raw, sampling_frequency, threshold, max_time_gap)
+StimulusSequence(raw, sampling_frequency, threshold, max_time_gap, CORES = 1L)
 }
 \arguments{
 \item{raw}{A numeric vector which is the stimulation over time as continues series.}

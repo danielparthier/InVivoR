@@ -35,7 +35,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // AmpFileRead
-arma::mat AmpFileRead(const std::string& FILENAME, const int ChannelNumber);
+Rcpp::NumericMatrix AmpFileRead(const std::string& FILENAME, const int ChannelNumber);
 RcppExport SEXP _InVivoR_AmpFileRead(SEXP FILENAMESEXP, SEXP ChannelNumberSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -43,6 +43,19 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const std::string& >::type FILENAME(FILENAMESEXP);
     Rcpp::traits::input_parameter< const int >::type ChannelNumber(ChannelNumberSEXP);
     rcpp_result_gen = Rcpp::wrap(AmpFileRead(FILENAME, ChannelNumber));
+    return rcpp_result_gen;
+END_RCPP
+}
+// AmpFileReadMerge
+arma::mat AmpFileReadMerge(const std::string& FILENAME1, const std::string& FILENAME2, const int ChannelNumber);
+RcppExport SEXP _InVivoR_AmpFileReadMerge(SEXP FILENAME1SEXP, SEXP FILENAME2SEXP, SEXP ChannelNumberSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const std::string& >::type FILENAME1(FILENAME1SEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type FILENAME2(FILENAME2SEXP);
+    Rcpp::traits::input_parameter< const int >::type ChannelNumber(ChannelNumberSEXP);
+    rcpp_result_gen = Rcpp::wrap(AmpFileReadMerge(FILENAME1, FILENAME2, ChannelNumber));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -58,12 +71,12 @@ BEGIN_RCPP
 END_RCPP
 }
 // decimate
-Rcpp::NumericVector decimate(arma::vec& SIGNAL, const arma::vec& FIR_FILTER, const int& M);
+Rcpp::NumericVector decimate(const arma::vec& SIGNAL, const arma::vec& FIR_FILTER, const int& M);
 RcppExport SEXP _InVivoR_decimate(SEXP SIGNALSEXP, SEXP FIR_FILTERSEXP, SEXP MSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::vec& >::type SIGNAL(SIGNALSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type SIGNAL(SIGNALSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type FIR_FILTER(FIR_FILTERSEXP);
     Rcpp::traits::input_parameter< const int& >::type M(MSEXP);
     rcpp_result_gen = Rcpp::wrap(decimate(SIGNAL, FIR_FILTER, M));
@@ -159,6 +172,38 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// FirFilteringOverlap
+Rcpp::NumericVector FirFilteringOverlap(const arma::colvec& SIGNAL, const arma::colvec& FIR_FILTER, bool FiltFilt, unsigned int BatchSize, const int& CORES);
+RcppExport SEXP _InVivoR_FirFilteringOverlap(SEXP SIGNALSEXP, SEXP FIR_FILTERSEXP, SEXP FiltFiltSEXP, SEXP BatchSizeSEXP, SEXP CORESSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::colvec& >::type SIGNAL(SIGNALSEXP);
+    Rcpp::traits::input_parameter< const arma::colvec& >::type FIR_FILTER(FIR_FILTERSEXP);
+    Rcpp::traits::input_parameter< bool >::type FiltFilt(FiltFiltSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type BatchSize(BatchSizeSEXP);
+    Rcpp::traits::input_parameter< const int& >::type CORES(CORESSEXP);
+    rcpp_result_gen = Rcpp::wrap(FirFilteringOverlap(SIGNAL, FIR_FILTER, FiltFilt, BatchSize, CORES));
+    return rcpp_result_gen;
+END_RCPP
+}
+// BWFiltCppOverlap
+Rcpp::NumericVector BWFiltCppOverlap(const arma::vec& InputSignal, const double& SamplingFrequency, const int& ORDER, const double& f0, const std::string type, int BatchSize, const int& CORES);
+RcppExport SEXP _InVivoR_BWFiltCppOverlap(SEXP InputSignalSEXP, SEXP SamplingFrequencySEXP, SEXP ORDERSEXP, SEXP f0SEXP, SEXP typeSEXP, SEXP BatchSizeSEXP, SEXP CORESSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type InputSignal(InputSignalSEXP);
+    Rcpp::traits::input_parameter< const double& >::type SamplingFrequency(SamplingFrequencySEXP);
+    Rcpp::traits::input_parameter< const int& >::type ORDER(ORDERSEXP);
+    Rcpp::traits::input_parameter< const double& >::type f0(f0SEXP);
+    Rcpp::traits::input_parameter< const std::string >::type type(typeSEXP);
+    Rcpp::traits::input_parameter< int >::type BatchSize(BatchSizeSEXP);
+    Rcpp::traits::input_parameter< const int& >::type CORES(CORESSEXP);
+    rcpp_result_gen = Rcpp::wrap(BWFiltCppOverlap(InputSignal, SamplingFrequency, ORDER, f0, type, BatchSize, CORES));
+    return rcpp_result_gen;
+END_RCPP
+}
 // PhaseListAnalysis
 Rcpp::List PhaseListAnalysis(const arma::cube& x, const int& CORES);
 RcppExport SEXP _InVivoR_PhaseListAnalysis(SEXP xSEXP, SEXP CORESSEXP) {
@@ -198,24 +243,25 @@ BEGIN_RCPP
 END_RCPP
 }
 // BWFiltCpp
-Rcpp::NumericVector BWFiltCpp(arma::vec& InputSignal, const double& SamplingFrequency, const int& ORDER, const double& f0, const std::string type, const int& CORES);
-RcppExport SEXP _InVivoR_BWFiltCpp(SEXP InputSignalSEXP, SEXP SamplingFrequencySEXP, SEXP ORDERSEXP, SEXP f0SEXP, SEXP typeSEXP, SEXP CORESSEXP) {
+Rcpp::NumericVector BWFiltCpp(const arma::vec& InputSignal, const double& SamplingFrequency, const int& ORDER, const double& f0, const std::string type, int BatchSize, const int& CORES);
+RcppExport SEXP _InVivoR_BWFiltCpp(SEXP InputSignalSEXP, SEXP SamplingFrequencySEXP, SEXP ORDERSEXP, SEXP f0SEXP, SEXP typeSEXP, SEXP BatchSizeSEXP, SEXP CORESSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::vec& >::type InputSignal(InputSignalSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type InputSignal(InputSignalSEXP);
     Rcpp::traits::input_parameter< const double& >::type SamplingFrequency(SamplingFrequencySEXP);
     Rcpp::traits::input_parameter< const int& >::type ORDER(ORDERSEXP);
     Rcpp::traits::input_parameter< const double& >::type f0(f0SEXP);
     Rcpp::traits::input_parameter< const std::string >::type type(typeSEXP);
+    Rcpp::traits::input_parameter< int >::type BatchSize(BatchSizeSEXP);
     Rcpp::traits::input_parameter< const int& >::type CORES(CORESSEXP);
-    rcpp_result_gen = Rcpp::wrap(BWFiltCpp(InputSignal, SamplingFrequency, ORDER, f0, type, CORES));
+    rcpp_result_gen = Rcpp::wrap(BWFiltCpp(InputSignal, SamplingFrequency, ORDER, f0, type, BatchSize, CORES));
     return rcpp_result_gen;
 END_RCPP
 }
 // StimulusSequence
-Rcpp::List StimulusSequence(Rcpp::NumericVector& raw, int& sampling_frequency, double& threshold, const double& max_time_gap);
-RcppExport SEXP _InVivoR_StimulusSequence(SEXP rawSEXP, SEXP sampling_frequencySEXP, SEXP thresholdSEXP, SEXP max_time_gapSEXP) {
+Rcpp::List StimulusSequence(Rcpp::NumericVector& raw, int& sampling_frequency, double& threshold, const double& max_time_gap, const int CORES);
+RcppExport SEXP _InVivoR_StimulusSequence(SEXP rawSEXP, SEXP sampling_frequencySEXP, SEXP thresholdSEXP, SEXP max_time_gapSEXP, SEXP CORESSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -223,7 +269,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int& >::type sampling_frequency(sampling_frequencySEXP);
     Rcpp::traits::input_parameter< double& >::type threshold(thresholdSEXP);
     Rcpp::traits::input_parameter< const double& >::type max_time_gap(max_time_gapSEXP);
-    rcpp_result_gen = Rcpp::wrap(StimulusSequence(raw, sampling_frequency, threshold, max_time_gap));
+    Rcpp::traits::input_parameter< const int >::type CORES(CORESSEXP);
+    rcpp_result_gen = Rcpp::wrap(StimulusSequence(raw, sampling_frequency, threshold, max_time_gap, CORES));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -244,12 +291,12 @@ BEGIN_RCPP
 END_RCPP
 }
 // WTbatch
-Rcpp::List WTbatch(arma::mat& ERPMat, const arma::vec& frequencies, const double& samplingfrequency, const double& sigma, const double& LNorm, int CORES, bool compression, bool PhaseAnalysis);
+Rcpp::List WTbatch(arma::mat ERPMat, const arma::vec& frequencies, const double& samplingfrequency, const double& sigma, const double& LNorm, int CORES, bool compression, bool PhaseAnalysis);
 RcppExport SEXP _InVivoR_WTbatch(SEXP ERPMatSEXP, SEXP frequenciesSEXP, SEXP samplingfrequencySEXP, SEXP sigmaSEXP, SEXP LNormSEXP, SEXP CORESSEXP, SEXP compressionSEXP, SEXP PhaseAnalysisSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat& >::type ERPMat(ERPMatSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type ERPMat(ERPMatSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type frequencies(frequenciesSEXP);
     Rcpp::traits::input_parameter< const double& >::type samplingfrequency(samplingfrequencySEXP);
     Rcpp::traits::input_parameter< const double& >::type sigma(sigmaSEXP);
@@ -316,61 +363,62 @@ BEGIN_RCPP
 END_RCPP
 }
 // SpikeCut
-arma::cube SpikeCut(const arma::mat AmpMatrix, arma::vec& SpikeIdx, const int& WINDOW);
+arma::cube SpikeCut(const arma::mat& AmpMatrix, const arma::vec& SpikeIdx, const int& WINDOW);
 RcppExport SEXP _InVivoR_SpikeCut(SEXP AmpMatrixSEXP, SEXP SpikeIdxSEXP, SEXP WINDOWSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::mat >::type AmpMatrix(AmpMatrixSEXP);
-    Rcpp::traits::input_parameter< arma::vec& >::type SpikeIdx(SpikeIdxSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type AmpMatrix(AmpMatrixSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type SpikeIdx(SpikeIdxSEXP);
     Rcpp::traits::input_parameter< const int& >::type WINDOW(WINDOWSEXP);
     rcpp_result_gen = Rcpp::wrap(SpikeCut(AmpMatrix, SpikeIdx, WINDOW));
     return rcpp_result_gen;
 END_RCPP
 }
 // SpikeMed
-arma::mat SpikeMed(const arma::cube SpikeCube);
+arma::mat SpikeMed(const arma::cube& SpikeCube);
 RcppExport SEXP _InVivoR_SpikeMed(SEXP SpikeCubeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::cube >::type SpikeCube(SpikeCubeSEXP);
+    Rcpp::traits::input_parameter< const arma::cube& >::type SpikeCube(SpikeCubeSEXP);
     rcpp_result_gen = Rcpp::wrap(SpikeMed(SpikeCube));
     return rcpp_result_gen;
 END_RCPP
 }
 // MaxChannel
-arma::rowvec MaxChannel(arma::mat MedianSpikeMat);
+arma::rowvec MaxChannel(const arma::mat& MedianSpikeMat);
 RcppExport SEXP _InVivoR_MaxChannel(SEXP MedianSpikeMatSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type MedianSpikeMat(MedianSpikeMatSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type MedianSpikeMat(MedianSpikeMatSEXP);
     rcpp_result_gen = Rcpp::wrap(MaxChannel(MedianSpikeMat));
     return rcpp_result_gen;
 END_RCPP
 }
 // ChannelFromList
-Rcpp::List ChannelFromList(Rcpp::List SpikeCubeList);
+Rcpp::List ChannelFromList(const Rcpp::List& SpikeCubeList);
 RcppExport SEXP _InVivoR_ChannelFromList(SEXP SpikeCubeListSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::List >::type SpikeCubeList(SpikeCubeListSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type SpikeCubeList(SpikeCubeListSEXP);
     rcpp_result_gen = Rcpp::wrap(ChannelFromList(SpikeCubeList));
     return rcpp_result_gen;
 END_RCPP
 }
 // UnitChannel
-Rcpp::List UnitChannel(arma::vec SpikeIdx, arma::vec Units, arma::mat AmpMatrix);
-RcppExport SEXP _InVivoR_UnitChannel(SEXP SpikeIdxSEXP, SEXP UnitsSEXP, SEXP AmpMatrixSEXP) {
+Rcpp::List UnitChannel(const arma::vec& SpikeIdx, const arma::vec& Units, const arma::mat& AmpMatrix, const int& WINDOW);
+RcppExport SEXP _InVivoR_UnitChannel(SEXP SpikeIdxSEXP, SEXP UnitsSEXP, SEXP AmpMatrixSEXP, SEXP WINDOWSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::vec >::type SpikeIdx(SpikeIdxSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type Units(UnitsSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type AmpMatrix(AmpMatrixSEXP);
-    rcpp_result_gen = Rcpp::wrap(UnitChannel(SpikeIdx, Units, AmpMatrix));
+    Rcpp::traits::input_parameter< const arma::vec& >::type SpikeIdx(SpikeIdxSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type Units(UnitsSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type AmpMatrix(AmpMatrixSEXP);
+    Rcpp::traits::input_parameter< const int& >::type WINDOW(WINDOWSEXP);
+    rcpp_result_gen = Rcpp::wrap(UnitChannel(SpikeIdx, Units, AmpMatrix, WINDOW));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -391,14 +439,17 @@ BEGIN_RCPP
 END_RCPP
 }
 // FirFiltering
-Rcpp::NumericVector FirFiltering(const arma::colvec& SIGNAL, const arma::colvec& FIR_FILTER);
-RcppExport SEXP _InVivoR_FirFiltering(SEXP SIGNALSEXP, SEXP FIR_FILTERSEXP) {
+Rcpp::NumericVector FirFiltering(const arma::colvec& SIGNAL, const arma::colvec& FIR_FILTER, bool FiltFilt, unsigned int BatchSize, const int& CORES);
+RcppExport SEXP _InVivoR_FirFiltering(SEXP SIGNALSEXP, SEXP FIR_FILTERSEXP, SEXP FiltFiltSEXP, SEXP BatchSizeSEXP, SEXP CORESSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const arma::colvec& >::type SIGNAL(SIGNALSEXP);
     Rcpp::traits::input_parameter< const arma::colvec& >::type FIR_FILTER(FIR_FILTERSEXP);
-    rcpp_result_gen = Rcpp::wrap(FirFiltering(SIGNAL, FIR_FILTER));
+    Rcpp::traits::input_parameter< bool >::type FiltFilt(FiltFiltSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type BatchSize(BatchSizeSEXP);
+    Rcpp::traits::input_parameter< const int& >::type CORES(CORESSEXP);
+    rcpp_result_gen = Rcpp::wrap(FirFiltering(SIGNAL, FIR_FILTER, FiltFilt, BatchSize, CORES));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -471,6 +522,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_InVivoR_BinaryFileAccess", (DL_FUNC) &_InVivoR_BinaryFileAccess, 6},
     {"_InVivoR_StimFileRead", (DL_FUNC) &_InVivoR_StimFileRead, 2},
     {"_InVivoR_AmpFileRead", (DL_FUNC) &_InVivoR_AmpFileRead, 2},
+    {"_InVivoR_AmpFileReadMerge", (DL_FUNC) &_InVivoR_AmpFileReadMerge, 3},
     {"_InVivoR_convertToBinary", (DL_FUNC) &_InVivoR_convertToBinary, 1},
     {"_InVivoR_decimate", (DL_FUNC) &_InVivoR_decimate, 3},
     {"_InVivoR_ERPMat", (DL_FUNC) &_InVivoR_ERPMat, 7},
@@ -478,11 +530,13 @@ static const R_CallMethodDef CallEntries[] = {
     {"_InVivoR_FiringRate", (DL_FUNC) &_InVivoR_FiringRate, 10},
     {"_InVivoR_FiringRateSparse", (DL_FUNC) &_InVivoR_FiringRateSparse, 4},
     {"_InVivoR_MI", (DL_FUNC) &_InVivoR_MI, 10},
+    {"_InVivoR_FirFilteringOverlap", (DL_FUNC) &_InVivoR_FirFilteringOverlap, 5},
+    {"_InVivoR_BWFiltCppOverlap", (DL_FUNC) &_InVivoR_BWFiltCppOverlap, 7},
     {"_InVivoR_PhaseListAnalysis", (DL_FUNC) &_InVivoR_PhaseListAnalysis, 2},
     {"_InVivoR_PhaseListAnalysisShuffle", (DL_FUNC) &_InVivoR_PhaseListAnalysisShuffle, 3},
     {"_InVivoR_PhaseListAnalysisResample", (DL_FUNC) &_InVivoR_PhaseListAnalysisResample, 3},
-    {"_InVivoR_BWFiltCpp", (DL_FUNC) &_InVivoR_BWFiltCpp, 6},
-    {"_InVivoR_StimulusSequence", (DL_FUNC) &_InVivoR_StimulusSequence, 4},
+    {"_InVivoR_BWFiltCpp", (DL_FUNC) &_InVivoR_BWFiltCpp, 7},
+    {"_InVivoR_StimulusSequence", (DL_FUNC) &_InVivoR_StimulusSequence, 5},
     {"_InVivoR_WT", (DL_FUNC) &_InVivoR_WT, 6},
     {"_InVivoR_WTbatch", (DL_FUNC) &_InVivoR_WTbatch, 8},
     {"_InVivoR_PowerMat", (DL_FUNC) &_InVivoR_PowerMat, 2},
@@ -493,9 +547,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_InVivoR_SpikeMed", (DL_FUNC) &_InVivoR_SpikeMed, 1},
     {"_InVivoR_MaxChannel", (DL_FUNC) &_InVivoR_MaxChannel, 1},
     {"_InVivoR_ChannelFromList", (DL_FUNC) &_InVivoR_ChannelFromList, 1},
-    {"_InVivoR_UnitChannel", (DL_FUNC) &_InVivoR_UnitChannel, 3},
+    {"_InVivoR_UnitChannel", (DL_FUNC) &_InVivoR_UnitChannel, 4},
     {"_InVivoR_BWFilterCpp", (DL_FUNC) &_InVivoR_BWFilterCpp, 6},
-    {"_InVivoR_FirFiltering", (DL_FUNC) &_InVivoR_FirFiltering, 2},
+    {"_InVivoR_FirFiltering", (DL_FUNC) &_InVivoR_FirFiltering, 5},
     {"_InVivoR_ConfIntPoisson", (DL_FUNC) &_InVivoR_ConfIntPoisson, 5},
     {"_InVivoR_SpikeCCF", (DL_FUNC) &_InVivoR_SpikeCCF, 11},
     {"_InVivoR_spike_stim_properties", (DL_FUNC) &_InVivoR_spike_stim_properties, 5},

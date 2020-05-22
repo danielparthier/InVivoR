@@ -42,6 +42,10 @@ AmpFileRead <- function(FILENAME, ChannelNumber = 32L) {
     .Call('_InVivoR_AmpFileRead', PACKAGE = 'InVivoR', FILENAME, ChannelNumber)
 }
 
+AmpFileReadMerge <- function(FILENAME1, FILENAME2, ChannelNumber = 32L) {
+    .Call('_InVivoR_AmpFileReadMerge', PACKAGE = 'InVivoR', FILENAME1, FILENAME2, ChannelNumber)
+}
+
 convertToBinary <- function(x) {
     .Call('_InVivoR_convertToBinary', PACKAGE = 'InVivoR', x)
 }
@@ -157,6 +161,38 @@ MI <- function(PowerMatRaw, PhaseMatRaw, PowerPeriods, PhasePeriods, BIN_NUMBER,
     .Call('_InVivoR_MI', PACKAGE = 'InVivoR', PowerMatRaw, PhaseMatRaw, PowerPeriods, PhasePeriods, BIN_NUMBER, PHASE_FREQ_START, PHASE_FREQ_END, POWER_FREQ_START, POWER_FREQ_END, CORES)
 }
 
+#' FIR filtering
+#' 
+#' This function applies an FIR filter to a signal an returns the filtered trace.
+#'
+#' @param SIGNAL A numeric vector.
+#' @param FIR_FILTER A numeric vector which can be used as FIR filter.
+#' @param FiltFilt A bool indicating if "filtfilt" mode should be used.
+#' @param BatchSize An integer indicating the starting batchsize of the trace (chunk size will be optimised for FFT).
+#' @param CORES An integer indicating what number of cores should be used.
+#' @return Returns numeric vector which is the FIR filtered original signal.
+#' @export
+FirFilteringOverlap <- function(SIGNAL, FIR_FILTER, FiltFilt = TRUE, BatchSize = 1e4L, CORES = 1L) {
+    .Call('_InVivoR_FirFilteringOverlap', PACKAGE = 'InVivoR', SIGNAL, FIR_FILTER, FiltFilt, BatchSize, CORES)
+}
+
+#' Butterworth filter c++
+#' 
+#' This function returns a filtered Signal.
+#'
+#' @param InputSignal A complex matrix from FFTW.
+#' @param SamplingFrequency A double indicating sampling frequency.
+#' @param ORDER An int as filtering order (default = 2).
+#' @param f0 A double as cutoff frequency (default = 10).
+#' @param type A string indicating the filter type ("low", "high"). The default is "low".
+#' @param BatchSize An integer indicating the batch size for FFT (default = 4e4).
+#' @param CORES An int indicating the number of threads used (default = 1).
+#' @return Filtered signal as numeric vector.
+#' @export
+BWFiltCppOverlap <- function(InputSignal, SamplingFrequency, ORDER = 2L, f0 = 10, type = "low", BatchSize = 4e4L, CORES = 1L) {
+    .Call('_InVivoR_BWFiltCppOverlap', PACKAGE = 'InVivoR', InputSignal, SamplingFrequency, ORDER, f0, type, BatchSize, CORES)
+}
+
 #' Phase lock analysis
 #' 
 #' This function computes the phase lock using the Rho vector length 
@@ -210,11 +246,12 @@ PhaseListAnalysisResample <- function(x, SHUFFLES = 200L, CORES = 1L) {
 #' @param ORDER An int as filtering order (default = 2).
 #' @param f0 A double as cutoff frequency (default = 10).
 #' @param type A string indicating the filter type ("low", "high"). The default is "low".
+#' @param BatchSize An integer indicating the batch size for FFT (default = 4e4).
 #' @param CORES An int indicating the number of threads used (default = 1).
 #' @return Filtered signal as numeric vector.
 #' @export
-BWFiltCpp <- function(InputSignal, SamplingFrequency, ORDER = 2L, f0 = 10, type = "low", CORES = 1L) {
-    .Call('_InVivoR_BWFiltCpp', PACKAGE = 'InVivoR', InputSignal, SamplingFrequency, ORDER, f0, type, CORES)
+BWFiltCpp <- function(InputSignal, SamplingFrequency, ORDER = 2L, f0 = 1000, type = "low", BatchSize = 4e4L, CORES = 1L) {
+    .Call('_InVivoR_BWFiltCpp', PACKAGE = 'InVivoR', InputSignal, SamplingFrequency, ORDER, f0, type, BatchSize, CORES)
 }
 
 #' Stimulus sequence
@@ -229,8 +266,8 @@ BWFiltCpp <- function(InputSignal, SamplingFrequency, ORDER = 2L, f0 = 10, type 
 #' @param max_time_gap A double indicating the maximum time between blocks.
 #' @return Returns a list with a matrix showing single pulse properperties and a matrix with block properties.
 #' @export
-StimulusSequence <- function(raw, sampling_frequency, threshold, max_time_gap) {
-    .Call('_InVivoR_StimulusSequence', PACKAGE = 'InVivoR', raw, sampling_frequency, threshold, max_time_gap)
+StimulusSequence <- function(raw, sampling_frequency, threshold, max_time_gap, CORES = 1L) {
+    .Call('_InVivoR_StimulusSequence', PACKAGE = 'InVivoR', raw, sampling_frequency, threshold, max_time_gap, CORES)
 }
 
 #' Morlet wavelet (time domain)
@@ -463,8 +500,8 @@ ChannelFromList <- function(SpikeCubeList) {
 #' @param AmpMatrix A matrix with signal from the amplifier (rows = channels, columns = time).
 #' @return Returns a list inlcuding the channel number, amplitude and unit number.
 #' @export
-UnitChannel <- function(SpikeIdx, Units, AmpMatrix) {
-    .Call('_InVivoR_UnitChannel', PACKAGE = 'InVivoR', SpikeIdx, Units, AmpMatrix)
+UnitChannel <- function(SpikeIdx, Units, AmpMatrix, WINDOW = 20L) {
+    .Call('_InVivoR_UnitChannel', PACKAGE = 'InVivoR', SpikeIdx, Units, AmpMatrix, WINDOW)
 }
 
 #' Butterworth filter
@@ -489,10 +526,13 @@ BWFilterCpp <- function(InputFFT, SamplingFrequency, ORDER = 2L, f0 = 10, type =
 #'
 #' @param SIGNAL A numeric vector.
 #' @param FIR_FILTER A numeric vector which can be used as FIR filter.
+#' @param FiltFilt A bool indicating if "filtfilt" mode should be used.
+#' @param BatchSize An integer indicating the starting batchsize of the trace (chunk size will be optimised for FFT).
+#' @param CORES An integer indicating what number of cores should be used.
 #' @return Returns numeric vector which is the FIR filtered original signal.
 #' @export
-FirFiltering <- function(SIGNAL, FIR_FILTER) {
-    .Call('_InVivoR_FirFiltering', PACKAGE = 'InVivoR', SIGNAL, FIR_FILTER)
+FirFiltering <- function(SIGNAL, FIR_FILTER, FiltFilt = TRUE, BatchSize = 1e4L, CORES = 1L) {
+    .Call('_InVivoR_FirFiltering', PACKAGE = 'InVivoR', SIGNAL, FIR_FILTER, FiltFilt, BatchSize, CORES)
 }
 
 #' Confidence interval for poisson train

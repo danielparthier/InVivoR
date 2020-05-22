@@ -64,7 +64,7 @@ Rcpp::NumericVector FirFiltering(const arma::colvec& SIGNAL,
     }
   }
   if(FiltFilt) {
-    OutPutVec = FirFilteringOverlap(arma::reverse(OutPutVec), FIR_FILTER, false, BatchSize, CORES);
+    OutPutVec = FirFiltering(arma::reverse(OutPutVec), FIR_FILTER, false, BatchSize, CORES);
     OutPutVec = arma::reverse(OutPutVec);
     return Rcpp::NumericVector(OutPutVec.begin(),OutPutVec.end());
   }
