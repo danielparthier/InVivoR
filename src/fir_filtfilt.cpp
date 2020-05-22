@@ -43,7 +43,6 @@ Rcpp::NumericVector FirFiltering(const arma::colvec& SIGNAL,
   int startSignal = (ChunkLength-BatchSize)*0.5;
   arma::vec FilterPadded = arma::zeros<arma::vec>(ChunkLength);
   FilterPadded.subvec(0, size(FIR_FILTER)) = FIR_FILTER;
-  Rcpp::Rcout << "1" << std::endl;
   arma::cx_mat Filter_FFT = arma::fft(FilterPadded);
   int BatchJump = BatchSize;
 #pragma omp parallel for shared(OutPutVec, SIGNAL,BatchSize, ChunkLength, startSignal, Filter_FFT, BatchJump) schedule(dynamic) default(none)
