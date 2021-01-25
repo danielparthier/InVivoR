@@ -1,16 +1,17 @@
 // Function to detect stimulus times, frequencies, types, and blocks using the raw stimulus input and a filtered version.
 // Output of function is a list of two matrices including the single pulse information and the block information.
-#define ARMA_64BIT_WORD
+//#define ARMA_64BIT_WORD
 #include <RcppArmadillo.h>
 #include <omp.h>
 #define ARMA_NO_DEBUG
 
 // [[Rcpp::depends(RcppArmadillo)]]
 
-//' Butterworth filter c++
+//' @title Butterworth filter
 //' 
-//' This function returns a filtered Signal.
+//' @description This function returns a filtered Signal.
 //'
+//' @name BWFiltering
 //' @param InputSignal A complex matrix from FFTW.
 //' @param SamplingFrequency A double indicating sampling frequency.
 //' @param ORDER An int as filtering order (default = 2).
@@ -18,14 +19,15 @@
 //' @param type A string indicating the filter type ("low", "high"). The default is "low".
 //' @param BatchSize An integer indicating the batch size for FFT (default = 4e4).
 //' @param CORES An int indicating the number of threads used (default = 1).
+//' 
 //' @return Filtered signal as numeric vector.
 //' @export
 // [[Rcpp::export]]
-Rcpp::NumericVector BWFiltCpp(const arma::vec& InputSignal,
+Rcpp::NumericVector BWFiltering(const arma::vec& InputSignal,
                                      const double& SamplingFrequency,
                                      const int& ORDER = 2,
                                      const double& f0 = 1000,
-                                     const std::string type = "low",
+                                     std::string type = "low",
                                      int BatchSize = 4e4,
                                      const int& CORES = 1) {
   omp_set_num_threads(CORES);
@@ -88,16 +90,20 @@ double cpp_med(Rcpp::NumericVector xx) {
   return (x[n] + *std::max_element(x.begin(), x.begin() + n)) / 2.;
 }
 
-//' Stimulus sequence
+//' @title Stimulus sequence
 //' 
 //' This function analyses stimulus time series and extracts features which 
 //' are returned in a list. Part of the output is the single stimulus feature
 //' and the second part is a stimulus block summary.
 //'
+//' @name StimulusSequence
 //' @param raw A numeric vector which is the stimulation over time as continues series.
 //' @param sampling_frequency An integer indicating the sampling frequency.
 //' @param threshold A double indicating the threshold of stimulus detection.
 //' @param max_time_gap A double indicating the maximum time between blocks.
+//' @param digital A bool indicating if input is binary (no filtering is required).
+//' @param CORES An int indicating the number of threads used (default = 1).
+//' 
 //' @return Returns a list with a matrix showing single pulse properperties and a matrix with block properties.
 //' @export
 // [[Rcpp::export]]
@@ -105,8 +111,14 @@ Rcpp::List StimulusSequence(Rcpp::NumericVector& raw,
                             int& sampling_frequency,
                             double& threshold,
                             const double& max_time_gap,
+                            const bool digital = false,
                             const int CORES = 1) {
-  Rcpp::NumericVector filt = BWFiltCpp(Rcpp::as<arma::vec>(raw), sampling_frequency, 2, 1000, "low", 4e4, CORES);
+  Rcpp::NumericVector filt;
+  if(digital) {
+    filt = raw;
+  } else {
+    filt = BWFiltering(Rcpp::as<arma::vec>(raw), sampling_frequency, 2, 1000, "low", 4e4, CORES);
+  }
   // thresholding of raw, filtered stimulus trace & finding primary onsets and ends of stimuli
   int CorrectionCount = 1;
   new_try:
@@ -131,6 +143,7 @@ Rcpp::List StimulusSequence(Rcpp::NumericVector& raw,
       }
     }
   }
+  
   Rcpp::IntegerVector stim_pulse_start_raw = Rcpp::wrap(out_vec_onset_raw);
   Rcpp::IntegerVector stim_pulse_start = Rcpp::wrap(out_vec_onset_filt);
   Rcpp::IntegerVector stim_pulse_end_raw = Rcpp::wrap(out_vec_end_raw);
@@ -156,7 +169,6 @@ Rcpp::List StimulusSequence(Rcpp::NumericVector& raw,
   bool front_pulse = false, back_pulse = false;
   bool plateau_phase = false;
   bool ramp_front = false, ramp_end = false;
-  
   // loop through "pulses" and detect type of pulse and start- and endpoint
   for (R_xlen_t i = 0; i < l_stim_pulse_start; ++i) {
     corr_start = stim_pulse_start_raw[which_min(abs(stim_pulse_start_raw-stim_pulse_start[i]))];
@@ -206,7 +218,6 @@ Rcpp::List StimulusSequence(Rcpp::NumericVector& raw,
         forward_run = peak_loc_tmp+sampling_frequency*2;
       }
     }
-
     // reset for backwards run
     found0 = false, found25 = false, found50 = false, found75 = false, found95 = false;
     for(R_xlen_t back_run = peak_loc_tmp; back_run > peak_loc_tmp-sampling_frequency*2; --back_run) {
@@ -235,7 +246,6 @@ Rcpp::List StimulusSequence(Rcpp::NumericVector& raw,
         back_run = peak_loc_tmp-sampling_frequency*2;
       }
     }  
-
     found0 = false, found25 = false, found50 = false, found75 = false, found95 = false;
     
     // compute time point differences and slope to find pulse (fast changes)
@@ -245,7 +255,6 @@ Rcpp::List StimulusSequence(Rcpp::NumericVector& raw,
     Rcpp::NumericVector slope_backward = diff_point_collect_y/diff_backward;
     corr_start = shape_mat(1,0);
     corr_end = shape_mat(2,0);
-    
     if(is_true(any(diff_backward == 0))){
       front_pulse = true;
     } else {
@@ -256,7 +265,6 @@ Rcpp::List StimulusSequence(Rcpp::NumericVector& raw,
     } else {
       back_pulse = false;
     }
-    
     double slope_forward_rmse = ::sqrt(sum((slope_forward-mean(slope_forward))*(slope_forward-mean(slope_forward)))/4);
     double slope_backward_rmse = ::sqrt(sum((slope_backward-mean(slope_backward))*(slope_backward-mean(slope_backward)))/4);
     if((front_pulse & back_pulse) == true) {
@@ -264,12 +272,31 @@ Rcpp::List StimulusSequence(Rcpp::NumericVector& raw,
       corr_start = shape_mat(1,1);
       corr_end = shape_mat(2,1);
       peak_loc = corr_start;
-      peak_amp = cpp_med(raw[Rcpp::seq(corr_start, corr_end)]);
+      if(peak_loc<corr_end) {
+        peak_amp = cpp_med(raw[Rcpp::seq(corr_start, corr_end)]);
+      } else {
+        for(R_xlen_t endsearch = peak_loc; endsearch < end_p; ++endsearch) {
+          if(raw[endsearch]<tmp_25) {
+            for(R_xlen_t backendsearch = endsearch+100; backendsearch > endsearch; --backendsearch) {
+              if(raw[backendsearch]>tmp_25) {
+                corr_end=backendsearch;
+              } else {
+                corr_end=endsearch;
+              }
+            }
+            std::string WarningString = "Unexpected pulse length: Pulse " + std::to_string(i);
+            Rcpp::warning(WarningString);
+           break;
+          }
+        }
+        peak_amp = raw[peak_loc];
+      }
       pulse =true;
       sine = false;
       ramp_front = false;
       ramp_end = false;
       plateau_phase = true;
+
       //ramp detection is experimental and needs further testing (slope rmse approach)
     } else if(((front_pulse & back_pulse) == false) & (slope_forward_rmse > 0.0001) & (slope_backward_rmse > 0.0001)) {
       for(R_xlen_t back_run = shape_mat(1,1); back_run > shape_mat(1,1)-sampling_frequency*2; --back_run) {
@@ -377,9 +404,12 @@ Rcpp::List StimulusSequence(Rcpp::NumericVector& raw,
           } else {
             freq_out = round(stim_freq_post*100)/100;
           }
+        }
+        if(((stim_mat(i,4)!= stim_mat(i-1,4)) | (stim_mat(i,5)!= stim_mat(i-1,5)) | (stim_mat(i,6)*0.05 < abs(stim_mat(i,6)-stim_mat(i-1,6))) | (stim_mat(i,9)!= stim_mat(i-1,9)) | (round(stim_mat(i,3)*10) != round(stim_mat(i-1,3)*10)) | (freq_out != stim_mat(i-1,10)))) {
           ++block_number;
           pulse_number_block_intern = 0;
         }
+        
       } else if(fabs((stim_freq_pre2-stim_freq_pre)/(stim_freq_pre2+stim_freq_pre)) > 0.05 and fabs((stim_freq_pre-stim_freq_post)/(stim_freq_pre+stim_freq_post)) < 0.05) {
         //pre2!=pre==post
         if(stim_freq_post > 10) {
@@ -389,7 +419,7 @@ Rcpp::List StimulusSequence(Rcpp::NumericVector& raw,
         } else {
           freq_out = round(stim_freq_post*100)/100;
         }
-         if((stim_mat(i,4)!= stim_mat(i-1,4)) | (stim_mat(i,5)!= stim_mat(i-1,5)) | (stim_mat(i,6)*0.05 < abs(stim_mat(i,6)-stim_mat(i-1,6))) |(stim_mat(i,9)!= stim_mat(i-1,9)) | (round(stim_mat(i,3)*10) != round(stim_mat(i-1,3)*10)) | (freq_out != stim_mat(i-1,10))) {
+         if(((stim_mat(i,4)!= stim_mat(i-1,4)) | (stim_mat(i,5)!= stim_mat(i-1,5)) | (stim_mat(i,6)*0.05 < abs(stim_mat(i,6)-stim_mat(i-1,6))) | (stim_mat(i,9)!= stim_mat(i-1,9)) | (round(stim_mat(i,3)*10) != round(stim_mat(i-1,3)*10)) | (freq_out != stim_mat(i-1,10)))) {
            ++block_number;
            pulse_number_block_intern = 0;
          }
@@ -413,7 +443,7 @@ Rcpp::List StimulusSequence(Rcpp::NumericVector& raw,
         } else {
           freq_out = round(stim_freq_post*100)/100;
         }
-        if((stim_mat(i,4)!= stim_mat(i-1,4)) | (stim_mat(i,5)!= stim_mat(i-1,5)) | (stim_mat(i,6)*0.05 < abs(stim_mat(i,6)-stim_mat(i-1,6))) |(stim_mat(i,9)!= stim_mat(i-1,9)) | (round(stim_mat(i,3)*10) != round(stim_mat(i-1,3)*10)) | (freq_out != stim_mat(i-1,10))) {
+        if(((stim_mat(i,4)!= stim_mat(i-1,4)) | (stim_mat(i,5)!= stim_mat(i-1,5)) | (stim_mat(i,6)*0.05 < abs(stim_mat(i,6)-stim_mat(i-1,6))) | (stim_mat(i,9)!= stim_mat(i-1,9)) | (round(stim_mat(i,3)*10) != round(stim_mat(i-1,3)*10)) | (freq_out != stim_mat(i-1,10)))) {
           ++block_number;
           pulse_number_block_intern = 0;
         }
@@ -440,7 +470,7 @@ Rcpp::List StimulusSequence(Rcpp::NumericVector& raw,
           } else {
             freq_out = round((stim_freq_post+start_stim_freq_post)*50)/100;
           }
-          if((stim_mat(i,4)!= stim_mat(i-1,4)) | (stim_mat(i,5)!= stim_mat(i-1,5)) | (stim_mat(i,6)*0.05 < abs(stim_mat(i,6)-stim_mat(i-1,6))) |(stim_mat(i,9)!= stim_mat(i-1,9)) | (round(stim_mat(i,3)*10) != round(stim_mat(i-1,3)*10)) | (freq_out != stim_mat(i-1,10))) {
+          if(((stim_mat(i,4)!= stim_mat(i-1,4)) | (stim_mat(i,5)!= stim_mat(i-1,5)) | (stim_mat(i,6)*0.05 < abs(stim_mat(i,6)-stim_mat(i-1,6))) | (stim_mat(i,9)!= stim_mat(i-1,9)) | (round(stim_mat(i,3)*10) != round(stim_mat(i-1,3)*10)) | (freq_out != stim_mat(i-1,10)))) {
             ++block_number;
             pulse_number_block_intern = 0;
           }        
@@ -457,7 +487,7 @@ Rcpp::List StimulusSequence(Rcpp::NumericVector& raw,
         } else {
           freq_out = round(stim_freq_pre*100)/100;
         }
-        if((stim_mat(i,4)!= stim_mat(i-1,4)) | (stim_mat(i,5)!= stim_mat(i-1,5)) | (stim_mat(i,6)*0.05 < abs(stim_mat(i,6)-stim_mat(i-1,6))) |(stim_mat(i,9)!= stim_mat(i-1,9)) | (round(stim_mat(i,3)*10) != round(stim_mat(i-1,3)*10)) | (freq_out != stim_mat(i-1,10))) {
+        if(((stim_mat(i,4) != stim_mat(i-1,4)) | (stim_mat(i,5) != stim_mat(i-1,5)) | (stim_mat(i,6)*0.05 < abs(stim_mat(i,6)-stim_mat(i-1,6))) | (stim_mat(i,9) != stim_mat(i-1,9)) | (round(stim_mat(i,3)*10) != round(stim_mat(i-1,3)*10)) | (freq_out != stim_mat(i-1,10)))) {
           ++block_number;
           pulse_number_block_intern = 0;
         }
@@ -471,7 +501,7 @@ Rcpp::List StimulusSequence(Rcpp::NumericVector& raw,
       stim_mat(i-1, 10) = freq_out;
     }
     if(i > l_stim_pulse_start-3){
-      stim_mat(i-1, 14) = (stim_mat(i-1, 12)==stim_mat(i, 12));
+      stim_mat(i-1, 14) = (stim_mat(i-1, 12)==stim_mat(i, 12))or((stim_mat(i-1, 12)==stim_mat(i, 12)));
       if(i == l_stim_pulse_start-1 and stim_mat(i, 12)==1) {
         stim_mat(i, 14) = 1;
       }

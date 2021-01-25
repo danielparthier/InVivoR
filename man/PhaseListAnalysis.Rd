@@ -2,7 +2,11 @@
 % Please edit documentation in R/RcppExports.R
 \name{PhaseListAnalysis}
 \alias{PhaseListAnalysis}
-\title{Phase lock analysis}
+\title{Phase lock analysis
+
+This function computes the phase lock using the Rho vector length 
+(strength of the locking) and the circular mean phase from a cube containing 
+wavelet transforms of epochs.}
 \usage{
 PhaseListAnalysis(x, CORES = 1L)
 }
@@ -15,6 +19,8 @@ PhaseListAnalysis(x, CORES = 1L)
 Returns a list containing a matrix with Rho vector lengths and a matrix with the corresponding circular mean.
 }
 \description{
+Phase lock analysis
+
 This function computes the phase lock using the Rho vector length 
 (strength of the locking) and the circular mean phase from a cube containing 
 wavelet transforms of epochs.

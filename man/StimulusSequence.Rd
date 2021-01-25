@@ -2,9 +2,20 @@
 % Please edit documentation in R/RcppExports.R
 \name{StimulusSequence}
 \alias{StimulusSequence}
-\title{Stimulus sequence}
+\title{Stimulus sequence
+
+This function analyses stimulus time series and extracts features which 
+are returned in a list. Part of the output is the single stimulus feature
+and the second part is a stimulus block summary.}
 \usage{
-StimulusSequence(raw, sampling_frequency, threshold, max_time_gap, CORES = 1L)
+StimulusSequence(
+  raw,
+  sampling_frequency,
+  threshold,
+  max_time_gap,
+  digital = FALSE,
+  CORES = 1L
+)
 }
 \arguments{
 \item{raw}{A numeric vector which is the stimulation over time as continues series.}
@@ -14,11 +25,17 @@ StimulusSequence(raw, sampling_frequency, threshold, max_time_gap, CORES = 1L)
 \item{threshold}{A double indicating the threshold of stimulus detection.}
 
 \item{max_time_gap}{A double indicating the maximum time between blocks.}
+
+\item{digital}{A bool indicating if input is binary (no filtering is required).}
+
+\item{CORES}{An int indicating the number of threads used (default = 1).}
 }
 \value{
 Returns a list with a matrix showing single pulse properperties and a matrix with block properties.
 }
 \description{
+Stimulus sequence
+
 This function analyses stimulus time series and extracts features which 
 are returned in a list. Part of the output is the single stimulus feature
 and the second part is a stimulus block summary.

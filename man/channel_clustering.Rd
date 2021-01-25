@@ -9,7 +9,7 @@ channel_clustering(channel_map, channel_cluster_dist)
 \arguments{
 \item{channel_map}{Data.frame with with x, y coordinates and channel numbers.}
 
-\item{channel_cluster_dist}{Double indicating minimal istance between clusters.}
+\item{channel_cluster_dist}{Double indicating minimal distance between clusters.}
 }
 \value{
 Returns a list which includes the number of channels, sampling rate, number of spike groups, and spike groups, number of anatomical groups, and anatomical groups.

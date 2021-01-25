@@ -1,21 +1,60 @@
-#define ARMA_64BIT_WORD
+//#define ARMA_64BIT_WORD
 #include <RcppArmadillo.h>
 #include <fstream>
 #include <iostream>
 
-
 // [[Rcpp::depends(RcppArmadillo)]]
-//' Binary file access
+
+
+// Armadillo implementation to convert digital input to binary output matrix(n,channels).
+//' @title Convert digital inputs.
 //' 
-//' This function extracts data points from a binary file based on time points and a window
+//' @description This function converts digital inputs of the intan system and separates the channels into a matrix.
+//' 
+//' @name convertToBinary
+//' @param StimTrace  vector. 
+//' @return Returns a list with the matrix, the channel ID and the label "Digital".
+//' @export
+// [[Rcpp::export]]
+Rcpp::List convertToBinary(const arma::vec StimTrace){
+  unsigned long long int StimLength = StimTrace.size();
+  arma::vec UniqueValues = arma::nonzeros(arma::unique(StimTrace));
+  arma::vec Stim = StimTrace;
+  arma::vec DigIn = arma::sort(arma::intersect(arma::log2(UniqueValues), arma::floor(arma::log2(UniqueValues))), "descend");
+  if(DigIn.size()>16) {
+    Rcpp::stop("Found more than 16 digital signatures. Please Check if file is digital input.");
+  }
+  int upperIdx = DigIn.n_elem-1;
+  arma::imat Output(StimTrace.size(), DigIn.size(), arma::fill::zeros);
+  for(unsigned int i = 0; i<DigIn.n_elem; ++i) {
+    int twoPow = std::pow(2, DigIn.at(i));
+    arma::uvec rowtmp = arma::find(Stim>=twoPow);
+    Stim.elem(rowtmp) -= twoPow;
+    if((upperIdx-i)>0) {
+      rowtmp += (upperIdx-i)*StimLength;
+    }
+    Output.elem(rowtmp).ones();
+    Stim(arma::find(Stim<0)).zeros();
+  }
+  return Rcpp::List::create(Rcpp::Named("Output") = arma::conv_to<arma::dmat>::from(Output),
+                            Rcpp::Named("ActiveChannels") = arma::sort(DigIn)+1,
+                            Rcpp::Named("Type") = "Digital");
+}
+
+
+//' @title Binary file access
+//' 
+//' @description This function extracts data points from a binary file based on time points and a window
 //' which will cut out the data of and concatenates them based on the channels.
 //' 
+//' @name BinaryFileAccess
 //' @param FILENAME A string as path to file with single "/".
 //' @param spikePoints An integer vector for time points which correspond to sampling points.
 //' @param WINDOW An integer indicating points taken before and after time point (default = 40).
 //' @param CHANNELCOUNT An integer indicating number of channels in recording (default = 32).
 //' @param CACHESIZE An integer indicating the size of cache used for buffering file in bytes (default = 512000).
 //' @param BYTECODE An integer indicating number of bytes coding for bit rate (8bit = 1, 16bit = 2 etc.) (default = 2).
+//' 
 //' @return Returns an armadillo cube with extracted spikes.
 //' @export
 // [[Rcpp::export]]
@@ -31,10 +70,10 @@ arma::cube BinaryFileAccess(const std::string& FILENAME,
   //get file size
   f.seekg(0, std::ios::end);
   bool lastRun = false; 
-  const long unsigned int FILESIZE = f.tellg();
+  const long long unsigned int FILESIZE = f.tellg();
   //find time points with intact WINDOW
   arma::vec spikePointsUse = spikePoints(arma::find(spikePoints>WINDOW and spikePoints<(FILESIZE/2-WINDOW)));
-  long unsigned int spikePos = 0;
+  long long unsigned int spikePos = 0;
   const int& TOTALWINDOW = WINDOW*2+1;
   //compute BUFFERSIZE (multiple of channel count to assure intact time index for every channel)
   const unsigned int& BUFFERSIZE = CACHESIZE;//round(CACHESIZE/CHANNELCOUNT)*CHANNELCOUNT;//TOTALWINDOW*CHANNELCOUNT;
@@ -43,8 +82,8 @@ arma::cube BinaryFileAccess(const std::string& FILENAME,
   //initiate output vector
   arma::cube outCube(CHANNELCOUNT, TOTALWINDOW, spikePointsUse.size(), arma::fill::zeros);
   //set start and end of first buffer
-  long unsigned int bufferStart = spikePointsUse.at(0)-WINDOW;
-  long unsigned int bufferEnd = bufferStart+BUFFERSIZE/CHANNELCOUNT;
+  long long unsigned int bufferStart = spikePointsUse.at(0)-WINDOW;
+  long long unsigned int bufferEnd = bufferStart+BUFFERSIZE/CHANNELCOUNT;
   //run through file
   while(bufferEnd*BYTECODE*CHANNELCOUNT<FILESIZE and spikePos < spikePointsUse.size() and lastRun == false) {
     //buffer
@@ -54,7 +93,7 @@ arma::cube BinaryFileAccess(const std::string& FILENAME,
       int onset = (spikePointsUse.at(spikePos)-WINDOW)-bufferStart;
       //write from buffer to vector
       int windowIdx = 0;
-      for(long unsigned int i = onset*CHANNELCOUNT; i < (onset+TOTALWINDOW)*CHANNELCOUNT; i+=CHANNELCOUNT) {
+      for(long long unsigned int i = onset*CHANNELCOUNT; i < (onset+TOTALWINDOW)*CHANNELCOUNT; i+=CHANNELCOUNT) {
         for(unsigned int channelRun = 0; channelRun < CHANNELCOUNT; ++channelRun) {
           outCube.at(channelRun, windowIdx,spikePos) = fileBuf[i+channelRun]*0.195;
         }
@@ -74,16 +113,18 @@ arma::cube BinaryFileAccess(const std::string& FILENAME,
   return outCube;
 }
 
-//' Load stimulation file
+//' @title Load stimulation file
 //' 
-//' This function extracts data points from a binary file either the analogin.dat or digitalin.dat generated intan system.
+//' @description This function extracts data points from a binary file either the analogin.dat or digitalin.dat generated intan system.
 //' 
+//' @name StimFileRead
 //' @param FILENAME A string as path to file with single "/".
 //' @param digital A bool indicating whether the file is a digital or analogin input (default = false).
+//' 
 //' @return Returns an armadillo cube with extracted spikes.
 //' @export
 // [[Rcpp::export]]
-Rcpp::NumericVector StimFileRead(const std::string& FILENAME,
+Rcpp::List StimFileRead(const std::string& FILENAME,
                                  const bool digital = false){
   // open stream
   std::ifstream f;
@@ -99,26 +140,29 @@ Rcpp::NumericVector StimFileRead(const std::string& FILENAME,
   f.close();
   // convert std::vector to Rcpp::NumericVector
   if(digital) {
-    
-    Rcpp::NumericVector Output = Rcpp::wrap(val);
-    return Output;
+   // Rcpp::NumericVector Output = Rcpp::wrap(val);
+    return convertToBinary(arma::conv_to<arma::vec>::from(val));
   } else {
     Rcpp::NumericVector Output = Rcpp::wrap(val);
-    return Output*0.000050354; 
+    return Rcpp::List::create(Rcpp::Named("Output") = Output,
+                              Rcpp::Named("ActiveChannels") = 1,
+                              Rcpp::Named("Type") = "Analog"); 
   }
 }
 
-//' Load amplifier amplitude file
+//' @title Load amplifier amplitude file
 //' 
-//' This function extracts data points from a binary file (amplifier.dat) generated by the intan system.
+//' @description This function extracts data points from a binary file (amplifier.dat) generated by the intan system.
 //' 
+//' @name AmpFileRead
 //' @param FILENAME A string as path to file with single "/".
 //' @param ChannelNumber An integer indicating number of channels in recording (default = 32).
+//' 
 //' @return Returns an armadillo matrix (rows = ChannelNumber, columns = time).
 //' @export
 // [[Rcpp::export]]
 Rcpp::NumericMatrix AmpFileRead(const std::string& FILENAME,
-                      const int ChannelNumber = 32){
+                                const int ChannelNumber = 32){
   // open stream
   std::ifstream f;
   f.open(FILENAME.c_str(), std::ios::binary | std::ios::in);
@@ -139,7 +183,7 @@ Rcpp::NumericMatrix AmpFileRead(const std::string& FILENAME,
 }
 
 
-// [[Rcpp::export]]
+
 arma::mat AmpFileReadMerge(const std::string& FILENAME1,
                            const std::string& FILENAME2,
                            const int ChannelNumber = 32){
@@ -175,47 +219,53 @@ arma::mat AmpFileReadMerge(const std::string& FILENAME1,
   return arma::join_rows(outMat1,outMat2)*0.195; 
 }
 
-// working armadillo implementation of decimal to binary --> for multiple digital intan inputs
-// [[Rcpp::export]]
-Rcpp::List convertToBinary(arma::vec x){
-  int activeChannels = 0;
-  int startBit = std::floor(std::log2(arma::max(x)));
-  arma::vec DigIn = arma::linspace(0,15,16);
-  arma::vec BitCheck = arma::zeros<arma::vec>(16);
-  arma::vec DigUsed = arma::zeros<arma::vec>(16);
-  for(unsigned int i = 0; i<DigIn.n_elem; ++i) {
-    BitCheck.at(i) = std::pow(2, DigIn.at(i));
-  }
-  arma::vec UniqueChannels = arma::unique(x);
-  for(int i = startBit; i>-1; --i) {
-    arma::vec remainder = arma::floor(UniqueChannels/BitCheck.at(i)-1);
-    arma::uvec foundIdx = arma::find(remainder == 0);
-    if(foundIdx.n_elem > 0) {
-      ++activeChannels;
-      DigUsed.at(i) = 1;
-    }
-    UniqueChannels.elem(foundIdx) -= BitCheck.at(i);
-  }
-  arma::uvec ChannelsUsed = arma::find(DigUsed>0);
-  arma::mat Output = arma::mat(x.n_elem, activeChannels, arma::fill::zeros);
-  arma::uvec ActiveTimes = arma::find(x>0);
-  for(int i = activeChannels-1; i>-1; --i) {
-    arma::vec remainder = arma::floor(x/BitCheck.at(ChannelsUsed.at(i))-1);
-    arma::vec tmp = arma::zeros<arma::vec>(x.n_elem);
-    arma::uvec foundIdx = arma::find(remainder == 0);
-    if(foundIdx.n_elem > 0) {
-      ++activeChannels;
-      DigUsed.at(i) = 1;
-    }
-    tmp.elem(foundIdx).ones();
-    x.elem(foundIdx) -= BitCheck.at(ChannelsUsed.at(i));
-    Output.col(i) = tmp;
-  }
-  return Rcpp::List::create(Rcpp::Named("Output") = Output,
-                            Rcpp::Named("ActiveChannels") = ChannelsUsed);
-}
 
-
+// Rcpp::List convertToBinary(arma::vec x){
+//   int activeChannels = 0;
+//   int startBit = std::floor(std::log2(arma::max(x)));
+//   arma::vec DigIn = arma::linspace(0,15,16);
+//   arma::vec BitCheck = arma::zeros<arma::vec>(16);
+//   arma::vec DigUsed = arma::zeros<arma::vec>(16);
+//   for(unsigned int i = 0; i<DigIn.n_elem; ++i) {
+//     BitCheck.at(i) = std::pow(2, DigIn.at(i));
+//   }
+//   arma::vec UniqueChannels = arma::unique(x);
+//   for(int i = startBit; i>-1; --i) {
+//     arma::vec remainder = arma::floor(UniqueChannels/BitCheck.at(i)-1);
+//     arma::uvec foundIdx = arma::find(remainder == 0);
+//     if(foundIdx.n_elem > 0) {
+//       ++activeChannels;
+//       DigUsed.at(i) = 1;
+//     }
+//     UniqueChannels.elem(foundIdx) -= BitCheck.at(i);
+//   }
+//   arma::uvec ChannelsUsed = arma::find(DigUsed>0);
+//   arma::mat Output = arma::mat(x.n_elem, activeChannels, arma::fill::zeros);
+//   arma::uvec ActiveTimes = arma::find(x>0);
+//   for(int i = activeChannels-1; i>-1; --i) {
+//     arma::vec remainder = arma::floor(x/BitCheck.at(ChannelsUsed.at(i))-1);
+//     arma::vec tmp = arma::zeros<arma::vec>(x.n_elem);
+//     arma::uvec foundIdx = arma::find(remainder == 0);
+//     if(foundIdx.n_elem > 0) {
+//       ++activeChannels;
+//       DigUsed.at(i) = 1;
+//     }
+//     tmp.elem(foundIdx).ones();
+//     x.elem(foundIdx) -= BitCheck.at(ChannelsUsed.at(i));
+//     Output.col(i) = tmp;
+//   }
+//   return Rcpp::List::create(Rcpp::Named("Output") = Output,
+//                             Rcpp::Named("ActiveChannels") = ChannelsUsed);
+// }
+// 
+// 
+// // [[Rcpp::export]]
+// arma::mat MatCheck(){
+//   arma::mat outMat(10,2);
+//   arma::uvec ind = arma::regspace<arma::uvec>(0,19);
+//   outMat.elem(ind) = arma::regspace(0,19);
+//   return outMat;
+// }
 
 
 // work on Rcpp implementation to have logical matrix output (memory efficient)

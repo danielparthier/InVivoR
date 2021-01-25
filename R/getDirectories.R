@@ -1,6 +1,8 @@
-#' Get Directory
+#' @title Get Directory
 #'
-#' This function will get the directory for any given label by opening a user interaction.
+#' @description This function will get the directory for any given label by opening a user interaction.
+#' 
+#' @name getDirectory
 #' @param mainDirectory A string locating the path.
 #' @param Labels A vector of strings including the label names.
 #'
@@ -16,14 +18,16 @@ getDirectory <- function(mainDirectory, Labels) {
   return(directoryFrame)
 }
 
-#' Get Data Directory
+#' @title Get Data Directory
 #'
-#' This function will get the directory for any given label by opening a user interaction.
+#' @description This function will get the directory for any given label by opening a user interaction.
+#' 
+#' @name getDataDirectory
 #' @param mainDirectory A string locating the path.
 #' @param recLabels A vector of strings including the recording label names.
 #' @param stimLabels A vector of strings including the stimulation label names.
 #' @param stimRecIdentical A bool indicating whether stimulation and recording directory are identical.
-#'
+#' 
 #' @return Returns a data.frame which includes the labels and the directory to the folders.
 #' @export
 getDataDirectory <- function(mainDirectory = NULL, recLabels = NULL, stimLabels = NULL, stimRecIdentical = NULL) {

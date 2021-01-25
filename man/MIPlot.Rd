@@ -2,7 +2,7 @@
 % Please edit documentation in R/MITable.R
 \name{MIPlot}
 \alias{MIPlot}
-\title{Plot modulation index from table}
+\title{Modulation Index Plot}
 \usage{
 MIPlot(MITab, Colour = "magma", VLine = NULL, HLine = NULL)
 }

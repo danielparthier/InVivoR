@@ -2,16 +2,19 @@
 % Please edit documentation in R/RcppExports.R
 \name{WTSqueeze}
 \alias{WTSqueeze}
-\title{Synchrosqueezed wavelet power matrix (from wavelet power matrix)}
+\title{Synchrosqueezed wavelet power matrix (from wavelet power matrix)
+
+This function computes the synchrosqueezed wavelet transform as proposed by Daubechies and Maes (1996). Wavelet 
+coefficients of the wavelet will be reassigned according to the instantaneous frequency in the transform.}
 \usage{
-WTSqueeze(WT, frequencies, samplingfrequency = 1000, sigma = 6, CORES = 1L)
+WTSqueeze(WT, frequencies, SamplingRate = 1000, sigma = 6, CORES = 1L)
 }
 \arguments{
 \item{WT}{A complex matrix representing the wavelet transform.}
 
 \item{frequencies}{A vector indicating the frequencies which should be analysed.}
 
-\item{samplingfrequency}{A double indicating the sampling frequency in Hz (default = 1000).}
+\item{SamplingRate}{A double indicating the sampling frequency in Hz (default = 1000).}
 
 \item{sigma}{A double indicating the shape parameter of the wavelet (default = 6).}
 
@@ -21,6 +24,8 @@ WTSqueeze(WT, frequencies, samplingfrequency = 1000, sigma = 6, CORES = 1L)
 A complex matrix representing the synchrosqueezed wavelet transform.
 }
 \description{
+Synchrosqueezed wavelet power matrix (from wavelet power matrix)
+
 This function computes the synchrosqueezed wavelet transform as proposed by Daubechies and Maes (1996). Wavelet 
 coefficients of the wavelet will be reassigned according to the instantaneous frequency in the transform.
 }

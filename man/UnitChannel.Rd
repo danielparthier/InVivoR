@@ -2,7 +2,11 @@
 % Please edit documentation in R/RcppExports.R
 \name{UnitChannel}
 \alias{UnitChannel}
-\title{Spike location channel}
+\title{Spike location channel
+
+This function is a wrapper to extract the channel location for any given unit based on the spike timings. It uses the spike 
+indices, unit numbers, and the amplifier matrix (row = channels, Columns = time). It avoids using an apply function and 
+directly accesses the data matrix.}
 \usage{
 UnitChannel(SpikeIdx, Units, AmpMatrix, WINDOW = 20L)
 }
@@ -12,11 +16,15 @@ UnitChannel(SpikeIdx, Units, AmpMatrix, WINDOW = 20L)
 \item{Units}{A numeric vector unit numbers.}
 
 \item{AmpMatrix}{A matrix with signal from the amplifier (rows = channels, columns = time).}
+
+\item{WINDOW}{An integer indicating the size of the cutting window.}
 }
 \value{
 Returns a list inlcuding the channel number, amplitude and unit number.
 }
 \description{
+Spike location channel
+
 This function is a wrapper to extract the channel location for any given unit based on the spike timings. It uses the spike 
 indices, unit numbers, and the amplifier matrix (row = channels, Columns = time). It avoids using an apply function and 
 directly accesses the data matrix.

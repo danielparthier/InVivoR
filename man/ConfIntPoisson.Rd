@@ -2,7 +2,12 @@
 % Please edit documentation in R/RcppExports.R
 \name{ConfIntPoisson}
 \alias{ConfIntPoisson}
-\title{Confidence interval for poisson train}
+\title{Confidence interval for poisson train
+
+Computes the confidence interval of a poisson train using an inverted gaussian
+distribution. Based on the weighted average with the given distribution lamda
+can be estimated. The confidence interval is then estimated by estimation through
+Chisq-distribution.}
 \usage{
 ConfIntPoisson(
   CountVector,
@@ -27,6 +32,8 @@ ConfIntPoisson(
 Returns a list containing counts per bin, axis, random bin count, confidence-intervals with counts per bin.
 }
 \description{
+Confidence interval for poisson train
+
 Computes the confidence interval of a poisson train using an inverted gaussian
 distribution. Based on the weighted average with the given distribution lamda
 can be estimated. The confidence interval is then estimated by estimation through

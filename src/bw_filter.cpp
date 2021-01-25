@@ -1,20 +1,22 @@
-#define ARMA_64BIT_WORD
+//#define ARMA_64BIT_WORD
 #include <RcppArmadillo.h>
 #include <omp.h>
 #define ARMA_NO_DEBUG
 
 // [[Rcpp::depends(RcppArmadillo)]]
 
-//' Butterworth filter
+//' @title Butterworth filter
 //' 
-//' This function returns a modified FFT.
+//' @description This function returns a modified FFT.
 //'
+//' @name BWFilterCpp
 //' @param InputFFT A complex matrix from FFTW.
 //' @param SamplingFrequency A double indicating sampling frequency.
 //' @param ORDER An int as filtering order (default = 2).
 //' @param f0 A double as cutoff frequency.
 //' @param type A string indicating the filter type ("low", "high"). The default is "low".
 //' @param CORES An int indicating the number of threads used (default = 1).
+//' 
 //' @return Complex armadillo column vector.
 //' @export
 // [[Rcpp::export]]

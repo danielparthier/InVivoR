@@ -2,8 +2,7 @@
 % Please edit documentation in R/GetChanMap.R
 \name{loadChanMap}
 \alias{loadChanMap}
-\title{Load channel map
-Function to load channel}
+\title{Load channel map}
 \usage{
 loadChanMap(FileName)
 }
@@ -14,6 +13,5 @@ loadChanMap(FileName)
 Returns a data frame containing the coordinates of the channels.
 }
 \description{
-Load channel map
-Function to load channel
+Function to load channel.
 }

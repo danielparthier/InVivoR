@@ -2,7 +2,10 @@
 % Please edit documentation in R/RcppExports.R
 \name{MaxChannel}
 \alias{MaxChannel}
-\title{Maximum amplitude channel}
+\title{Maximum amplitude channel
+
+This function uses the median spike shape to find channel with maximum amplitude.
+As input the function requires the previously computed median spike matrix with dimensions of n.row = clusters and n.col = channel count}
 \usage{
 MaxChannel(MedianSpikeMat)
 }
@@ -13,6 +16,8 @@ MaxChannel(MedianSpikeMat)
 Returns a vector with position of maximum amplitude and amplitude itself.
 }
 \description{
+Maximum amplitude channel
+
 This function uses the median spike shape to find channel with maximum amplitude.
 As input the function requires the previously computed median spike matrix with dimensions of n.row = clusters and n.col = channel count
 }

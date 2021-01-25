@@ -8,7 +8,7 @@ WTCoherence(
   WT1,
   WT2,
   frequencies,
-  samplingfrequency = 1000,
+  SamplingRate = 1000,
   tKernelWidth = 0.01,
   sKernelWidth = 0.6
 )
@@ -20,7 +20,7 @@ WTCoherence(
 
 \item{frequencies}{A vector indicating the frequencies which should be analysed.}
 
-\item{samplingfrequency}{A double indicating the sampling frequency in Hz (default = 1000).}
+\item{SamplingRate}{A double indicating the sampling frequency in Hz (default = 1000).}
 
 \item{tKernelWidth}{A double indicating the sd as smoothing factor in the time domain (default = 0.01).}
 

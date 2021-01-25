@@ -1,10 +1,13 @@
 ### function to cluster channels of the channel map
 ### input: channel_map which includes the x/y coordinates, channel_numbers starting at 0, channel_cluster dist which is the distance in µm used to cluster channels
-#' Channel clustering
+#' @title Channel clustering
 #' 
-#' Function to extract electrode clusters from channel map.
+#' @description Function to extract electrode clusters from channel map.
+#' 
+#' @name channel_clustering
 #' @param channel_map Data.frame with with x, y coordinates and channel numbers.
-#' @param channel_cluster_dist Double indicating minimal istance between clusters.
+#' @param channel_cluster_dist Double indicating minimal distance between clusters.
+#' 
 #' @return Returns a list which includes the number of channels, sampling rate, number of spike groups, and spike groups, number of anatomical groups, and anatomical groups.
 #' @export
 channel_clustering <- function(channel_map, channel_cluster_dist) {

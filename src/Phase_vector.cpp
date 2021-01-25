@@ -1,17 +1,19 @@
-#define ARMA_64BIT_WORD
+//#define ARMA_64BIT_WORD
 #include <RcppArmadillo.h>
 #include <omp.h>
 #define ARMA_NO_DEBUG
 
 // [[Rcpp::depends(RcppArmadillo)]]
-//' Phase lock analysis
+//' @title Phase lock analysis
 //' 
 //' This function computes the phase lock using the Rho vector length 
 //' (strength of the locking) and the circular mean phase from a cube containing 
 //' wavelet transforms of epochs.
 //' 
+//' @name PhaseListAnalysis
 //' @param x A cube of phases (radians) with slices as different ERPs.
 //' @param CORES An int indicating the number of threads used (default = 1).
+//' 
 //' @return Returns a list containing a matrix with Rho vector lengths and a matrix with the corresponding circular mean.
 //' @export
 // [[Rcpp::export]]
@@ -37,16 +39,18 @@ Rcpp::List PhaseListAnalysis(const arma::cube& x,
                             Rcpp::Named("Mean") = OutputMean);
 }
 
-// [[Rcpp::depends(RcppArmadillo)]]
-//' Matrix shuffle
+
+//' @title Matrix shuffle
 //' 
 //' This function shuffles the data independently of dimensions without 
 //' resampling from a input matrix. It returns the probability for a any 
 //' given value in a matrix to be larger than a random sample.
 //' 
+//' @name PhaseListAnalysisShuffle
 //' @param x A matrix.
 //' @param SHUFFLES An int indicating the number of shuffles.
 //' @param CORES An int indicating the number of threads used (default = 1).
+//' 
 //' @return Returns a matrix indicating the probability of value being larger than shuffled data.
 //' @export
 // [[Rcpp::export]]
@@ -64,16 +68,17 @@ arma::mat PhaseListAnalysisShuffle(arma::mat& x,
   return OutputSig/SHUFFLES;
 }
 
-// [[Rcpp::depends(RcppArmadillo)]]
-//' Matrix resample
+//' @title Matrix resample
 //' 
 //' This function shuffles the data independently of dimensions with 
 //' resampling from a input matrix. It returns the probability for a any 
 //' given value in a matrix to be larger than a random sample.
 //' 
+//' @name PhaseListAnalysisResample
 //' @param x A matrix.
 //' @param SHUFFLES An int indicating the number of shuffles.
 //' @param CORES An int indicating the number of threads used (default = 1).
+//' 
 //' @return Returns a matrix indicating the probability of value being larger than shuffled data.
 //' @export
 // [[Rcpp::export]]

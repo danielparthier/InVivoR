@@ -10,12 +10,13 @@
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::plugins(openmp)]]
 
-//' Modulation index analysis
+//' @title Modulation index analysis
 //' 
 //' This function returns a list including a modulation index matrix, the phase frequency and the power frequency.
 //' there are leading NA, marking the leadings NA as TRUE and
 //' everything else as FALSE.
 //'
+//' @name MI 
 //' @param PowerMatRaw A matrix with power.
 //' @param PhaseMatRaw A matrix with phase.
 //' @param PowerPeriods A double vector with unique periods (1/Frequency) for power matrix.
@@ -26,6 +27,7 @@
 //' @param POWER_FREQ_START A double indicating starting frequency (1/period) for power.
 //' @param POWER_FREQ_END A A double indicating end frequency (1/period) for power.
 //' @param CORES An integer indicating number of threads used (multicore support).
+//' 
 //' @return Returns a list containing the modulation index matrix and vectors containing its axis (Powerfrequency and Phasefrequency)
 //' @export
 // [[Rcpp::export]]
@@ -56,7 +58,7 @@ Rcpp::List MI(arma::mat& PowerMatRaw,
   arma::mat MIMat = arma::mat(POWER_DIM, PHASE_DIM, arma::fill::zeros);
   arma::vec PiSeq = arma::vec(END_I, arma::fill::zeros);
   MeanPower = arma::zeros<arma::vec>(BIN_NUMBER);
-  #pragma omp parallel for shared(MIMat, PowerMat, PhaseMat, BIN_NUMBER) private(MeanPower, PiSeq) schedule(static) default(none)
+  #pragma omp parallel for shared(MIMat, PowerMat, PhaseMat) private(MeanPower, PiSeq) schedule(static) //default(none)
   for(int i=PHASE_START; i<PHASE_END+1; ++i) {
     MeanPower = arma::zeros<arma::vec>(BIN_NUMBER);
     PiSeq = arma::round(PhaseMat.unsafe_col(i)/arma::datum::pi*BIN_NUMBER/2)+BIN_NUMBER/2;

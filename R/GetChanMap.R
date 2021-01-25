@@ -1,10 +1,12 @@
 # load chanMap from directory and convert it to  x,y only data.frame
-#' Get channel map
+#' @title Get channel map
 #' 
-#' Function wrapper to load channel map from a given directory.
+#' @description Function wrapper to load channel map from a given directory.
+#' 
+#' @name GetChanMap
 #' @param directory String to input directory.
 #' @param FileName Name of file without ".mat".
-#'
+#' 
 #' @return Returns a data frame containing the coordinates of the channels.
 #' @export
 GetChanMap <- function(directory, FileName = "chanMap") {
@@ -13,10 +15,13 @@ GetChanMap <- function(directory, FileName = "chanMap") {
   return(OutputFrame)
 }
 
-#' Load channel map
-#' Function to load channel
+#' @title Load channel map
+#' 
+#' @description Function to load channel.
+#' 
+#' @name loadChanMap
 #' @param FileName Complete filename including path and file ending.
-#'
+#' 
 #' @return Returns a data frame containing the coordinates of the channels.
 #' @export
 loadChanMap <- function(FileName) {

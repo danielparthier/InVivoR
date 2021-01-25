@@ -1,9 +1,9 @@
-#define ARMA_64BIT_WORD
+//#define ARMA_64BIT_WORD
 #include <RcppArmadillo.h>
 #define ARMA_NO_DEBUG
 
 // [[Rcpp::depends(RcppArmadillo)]]
-//' ERP (event-related potential) extraction
+//' @title ERP (event-related potential) extraction
 //' 
 //' This function returns a matrix with extracted traces for any given range. 
 //' The range is has to be provided in form of onset indeces and end indeces. 
@@ -11,6 +11,7 @@
 //' between range points and trace sampling frequency. If required the window 
 //' is proportionally elongated to include Pre/Post times.
 //'
+//' @name ERPMat
 //' @param Trace A numeric vector which is used for extraction.
 //' @param Onset An integer vector with onset sample indeces.
 //' @param End An integer vector with end sample indeces.
@@ -18,6 +19,7 @@
 //' @param SamplingFreqTrace A double indicating the sampling frequency of the trace.
 //' @param PrePhase A bool indicating if pre-onset timings should be included (default = false).
 //' @param PostPhase A bool indicating if post-end timings should be included (default = false).
+//' 
 //' @return Returns a matrix with extracted ERPs.
 //' @export
 // [[Rcpp::export]]
@@ -83,7 +85,7 @@ arma::mat ERPMat(const arma::vec& Trace,
   return OutputMat.t();
 }
 
-//' Wrapper for ERP (event-related potential) extraction
+//' @title Wrapper for ERP (event-related potential) extraction
 //' 
 //' This function returns a list which includes the frequencies and matrices 
 //' with extracted traces for any given range. The range is has to be provided
@@ -92,6 +94,7 @@ arma::mat ERPMat(const arma::vec& Trace,
 //' sampling frequency. If required the window is proportionally elongated to 
 //' include Pre/Post times.
 //'
+//' @name ERPList
 //' @param Trace A numeric vector which is used for extraction.
 //' @param BlockMat The stimulation block matrix from StimulusSequence() including onset and end timings.
 //' @param SamplingFreqStim A double indicating the sampling frequency of onset/end indeces.
@@ -100,6 +103,7 @@ arma::mat ERPMat(const arma::vec& Trace,
 //' @param PostPhase A bool indicating if post-end timings should be included (default = true).
 //' @param FixStartLength A double indicating the starting length when fixed window is used (default = 0).
 //' @param WindowLength A double indicating the time block in seconds (default = 0).
+//' 
 //' @return Returns a list which includes stimulation frequencies for hyperblocks and the corresponding ERP matrices.
 //' @export
 // [[Rcpp::export]]

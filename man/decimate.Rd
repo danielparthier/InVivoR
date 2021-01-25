@@ -4,14 +4,16 @@
 \alias{decimate}
 \title{Decimate}
 \usage{
-decimate(SIGNAL, FIR_FILTER, M)
+decimate(SIGNAL, FIR_FILTER, M = 20L, CORES = 1L)
 }
 \arguments{
 \item{SIGNAL}{A numeric vector with length N.}
 
 \item{FIR_FILTER}{A predefined FIR filter as numeric vector (low-pass filter for <= target frequency).}
 
-\item{M}{An int representing downsampling factor.}
+\item{M}{An int representing downsampling factor (default = 20).}
+
+\item{CORES}{An integer indicating number of threads used (default = 1).}
 }
 \value{
 Returns a numeric vector with length N/M.

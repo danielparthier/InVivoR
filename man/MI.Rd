@@ -2,7 +2,11 @@
 % Please edit documentation in R/RcppExports.R
 \name{MI}
 \alias{MI}
-\title{Modulation index analysis}
+\title{Modulation index analysis
+
+This function returns a list including a modulation index matrix, the phase frequency and the power frequency.
+there are leading NA, marking the leadings NA as TRUE and
+everything else as FALSE.}
 \usage{
 MI(
   PowerMatRaw,
@@ -42,6 +46,8 @@ MI(
 Returns a list containing the modulation index matrix and vectors containing its axis (Powerfrequency and Phasefrequency)
 }
 \description{
+Modulation index analysis
+
 This function returns a list including a modulation index matrix, the phase frequency and the power frequency.
 there are leading NA, marking the leadings NA as TRUE and
 everything else as FALSE.

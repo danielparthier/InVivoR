@@ -17,11 +17,10 @@ Imports: Rcpp (>= 1.0.2),
     ggplot2,
     R.matlab,
     dbscan,
-    fftw,
     reshape2,
     viridis,
     xml2
 LinkingTo: Rcpp,
     RcppArmadillo
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.1
 Encoding: UTF-8

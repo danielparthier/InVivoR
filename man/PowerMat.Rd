@@ -2,7 +2,11 @@
 % Please edit documentation in R/RcppExports.R
 \name{PowerMat}
 \alias{PowerMat}
-\title{Wavelet power matrix (from wavelet power cube)}
+\title{Wavelet power matrix (from wavelet power cube)
+
+This function computes the average power of several WT which can be returned as raw power
+or as z-score. If the z-score is returned then every slice of the cube is z-transformed 
+independently and the average is calculated in z-direction.}
 \usage{
 PowerMat(x, ZScore = FALSE)
 }
@@ -15,6 +19,8 @@ PowerMat(x, ZScore = FALSE)
 An average power matrix (raw or as z-score).
 }
 \description{
+Wavelet power matrix (from wavelet power cube)
+
 This function computes the average power of several WT which can be returned as raw power
 or as z-score. If the z-score is returned then every slice of the cube is z-transformed 
 independently and the average is calculated in z-direction.

@@ -1,10 +1,11 @@
-#' Extract meta data from ND-Manager xml file
+#' @title Extract meta data from ND-Manager xml file
 #' 
-#' Function to extract meta data from xml file provided by the ND-Manager. Includes channel number,
-#' sampling rate, spike groups.
+#' @description Function to extract meta data from xml file provided by the ND-Manager. Includes channel number, sampling rate, spike groups.
 #' 
+#' @name MetaData
 #' @useDynLib InVivoR
 #' @param FileName String to input directory including complete file name.
+#' 
 #' @return Returns a list which includes the number of channels, sampling rate, number of spike groups, and spike groups, number of anatomical groups, and anatomical groups.
 #' @export
 MetaData <- function(FileName) {

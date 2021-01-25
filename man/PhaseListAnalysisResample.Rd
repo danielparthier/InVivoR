@@ -2,7 +2,11 @@
 % Please edit documentation in R/RcppExports.R
 \name{PhaseListAnalysisResample}
 \alias{PhaseListAnalysisResample}
-\title{Matrix resample}
+\title{Matrix resample
+
+This function shuffles the data independently of dimensions with 
+resampling from a input matrix. It returns the probability for a any 
+given value in a matrix to be larger than a random sample.}
 \usage{
 PhaseListAnalysisResample(x, SHUFFLES = 200L, CORES = 1L)
 }
@@ -17,6 +21,8 @@ PhaseListAnalysisResample(x, SHUFFLES = 200L, CORES = 1L)
 Returns a matrix indicating the probability of value being larger than shuffled data.
 }
 \description{
+Matrix resample
+
 This function shuffles the data independently of dimensions with 
 resampling from a input matrix. It returns the probability for a any 
 given value in a matrix to be larger than a random sample.

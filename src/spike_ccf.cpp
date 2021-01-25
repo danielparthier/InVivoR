@@ -1,4 +1,4 @@
-#define ARMA_64BIT_WORD
+//#define ARMA_64BIT_WORD
 #include <RcppArmadillo.h>
 
 // [[Rcpp::depends(RcppArmadillo)]]
@@ -87,18 +87,20 @@ Rcpp::IntegerVector spike_ccf(const Rcpp::NumericVector&  x,
   return hist_out;
 }
 
-//' Confidence interval for poisson train
+//' @title Confidence interval for poisson train
 //' 
 //' Computes the confidence interval of a poisson train using an inverted gaussian
 //' distribution. Based on the weighted average with the given distribution lamda
 //' can be estimated. The confidence interval is then estimated by estimation through
 //' Chisq-distribution.
 //'
+//' @name ConfIntPoisson
 //' @param CountVector An integer vector of counts estimated by Spike CCF.
 //' @param CONFLEVEL A double indicating the confidence-level (default = 0.95).
 //' @param SD A double as standard deviation for a gaussian shape parameter (default = 0.6).
 //' @param CENTREMIN A double as shape parameter determining the strength of centre exclusion (default = 0.6).
 //' @param KERNELSIZE A double as length parameter for gaussian kernel (2*KERNELSIZE+1, default = 20).
+//' 
 //' @return Returns a list containing counts per bin, axis, random bin count, confidence-intervals with counts per bin.
 //' @export
 // [[Rcpp::export]]
@@ -289,7 +291,7 @@ Rcpp::List SpikeCCFSingle(const Rcpp::NumericVector&  x,
 }
 
 
-//' Spike cross-correlation function
+//' @title Spike cross-correlation function
 //' 
 //' The function will calculate the cross-correlation for spikes of the same or a different cell. 
 //' The input arguments can be a vector containg timpoints (in seconds), two different vectors 
@@ -298,6 +300,7 @@ Rcpp::List SpikeCCFSingle(const Rcpp::NumericVector&  x,
 //' CCF for all combinations in a matrix. Additional options include the computation of the confidence 
 //' interval and the baseline activity.
 //' 
+//' @name SpikeCCF
 //' @param x A numeric vector of times which has to be sorted in ascending order.
 //' @param y A numeric vector of times which has to be sorted in ascending order.
 //' @param UnitNr An integer vector containing the unit numbers in order of time occurence.
@@ -309,6 +312,7 @@ Rcpp::List SpikeCCFSingle(const Rcpp::NumericVector&  x,
 //' @param SD A double as standard deviation for a gaussian shape parameter (default = 0.6).
 //' @param CENTREMIN A double as shape parameter determining the strength of centre exclusion (default = 0.6).
 //' @param KERNELSIZE A double as length parameter for gaussian kernel (2*KERNELSIZE+1, default = 20).
+//' 
 //' @return Returns a list containing counts per bin, axis, random bin count, confidence-intervals with counts per bin.
 //' @export
 // [[Rcpp::export]]

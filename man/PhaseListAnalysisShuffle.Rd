@@ -2,7 +2,11 @@
 % Please edit documentation in R/RcppExports.R
 \name{PhaseListAnalysisShuffle}
 \alias{PhaseListAnalysisShuffle}
-\title{Matrix shuffle}
+\title{Matrix shuffle
+
+This function shuffles the data independently of dimensions without 
+resampling from a input matrix. It returns the probability for a any 
+given value in a matrix to be larger than a random sample.}
 \usage{
 PhaseListAnalysisShuffle(x, SHUFFLES = 200L, CORES = 1L)
 }
@@ -17,6 +21,8 @@ PhaseListAnalysisShuffle(x, SHUFFLES = 200L, CORES = 1L)
 Returns a matrix indicating the probability of value being larger than shuffled data.
 }
 \description{
+Matrix shuffle
+
 This function shuffles the data independently of dimensions without 
 resampling from a input matrix. It returns the probability for a any 
 given value in a matrix to be larger than a random sample.

@@ -2,7 +2,14 @@
 % Please edit documentation in R/RcppExports.R
 \name{ERPList}
 \alias{ERPList}
-\title{Wrapper for ERP (event-related potential) extraction}
+\title{Wrapper for ERP (event-related potential) extraction
+
+This function returns a list which includes the frequencies and matrices 
+with extracted traces for any given range. The range is has to be provided
+in form of onset indeces and end indeces. Additional information can be 
+provided to adjust for sampling differences between range points and trace 
+sampling frequency. If required the window is proportionally elongated to 
+include Pre/Post times.}
 \usage{
 ERPList(
   Trace,
@@ -36,6 +43,8 @@ ERPList(
 Returns a list which includes stimulation frequencies for hyperblocks and the corresponding ERP matrices.
 }
 \description{
+Wrapper for ERP (event-related potential) extraction
+
 This function returns a list which includes the frequencies and matrices 
 with extracted traces for any given range. The range is has to be provided
 in form of onset indeces and end indeces. Additional information can be 

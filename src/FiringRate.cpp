@@ -1,4 +1,4 @@
-#define ARMA_64BIT_WORD
+//#define ARMA_64BIT_WORD
 #include <RcppArmadillo.h>
 #include <omp.h>
 #define ARMA_NO_DEBUG
@@ -70,7 +70,7 @@ arma::vec FiringGaussian(arma::vec SpikeTimings,
   arma::vec FiringRate  = arma::zeros((timeEnd-timeStart)*SamplingRate+1);
 #pragma omp parallel for
   for(unsigned int i = 0; i < SpikeTimings.size(); ++i) {
-    arma::vec tmp = arma::normpdf(arma::linspace(-SpikeTimings.at(i),timeEnd-SpikeTimings.at(i), FiringRate.size()), 0, sigma);
+    arma::vec tmp = arma::normpdf(arma::linspace(timeStart-SpikeTimings.at(i),timeEnd-SpikeTimings.at(i), FiringRate.size()), 0, sigma);
 #pragma omp critical   
     FiringRate += tmp;
   }
@@ -79,14 +79,12 @@ arma::vec FiringGaussian(arma::vec SpikeTimings,
 
 
 
-//' ERP (event-related potential) extraction
+//' @title Firing Rate of Neuron
 //' 
-//' This function returns a matrix with extracted traces for any given range. 
-//' The range is has to be provided in form of onset indeces and end indeces. 
-//' Additional information can be provided to adjust for sampling differences 
-//' between range points and trace sampling frequency. If required the window 
-//' is proportionally elongated to include Pre/Post times.
+//' @description This function computes the firing rate based on different possible algorithms such as convolution with 
+//' gaussian kernel, convolution with gamma distribution, or the Bayesian Adaptive Kernel Smoother.
 //'
+//' @name FiringRate
 //' @param SpikeTimes A numeric vector with spike times in seconds.
 //' @param timeStart A double for the start time for which the rate should be computed.
 //' @param timeEnd A double for the end time for which the rate should be computed.
@@ -97,6 +95,7 @@ arma::vec FiringGaussian(arma::vec SpikeTimings,
 //' @param BAKSbeta A double indicating the prior for beta in BAKS (default = 4).
 //' @param SamplingRate A double indicating the sampling rate (default = 1000).
 //' @param CORES An integer indicating how many core should be used (default = 4).
+//' 
 //' @return Returns a vector with firing rate.
 //' @export
 // [[Rcpp::export]]
@@ -126,18 +125,30 @@ Rcpp::NumericVector FiringRate(arma::vec& SpikeTimes,
     } else {
       sd = Rcpp::as<double>(sigma);
     }
-    FreqOut = FiringGaussian(SpikeTimes, sd, timeStarttmp, timeEndtmp,SamplingRate, CORES);
+    FreqOut = FiringGaussian(SpikeTimes, sd, timeStarttmp, timeEndtmp, SamplingRate, CORES);
   } else if(alpha.isNotNull() && (useBAKS == false)) {
     double alphatmp = Rcpp::as<double>(alpha);
-    FreqOut = FiringGamma(SpikeTimes, alphatmp, timeStarttmp, timeEndtmp,SamplingRate, CORES);
+    FreqOut = FiringGamma(SpikeTimes, alphatmp, timeStarttmp, timeEndtmp, SamplingRate, CORES);
   } else if(useBAKS) {
     FreqOut = BAKS(SpikeTimes, BAKSalpha, BAKSbeta, timeStarttmp, timeEndtmp, SamplingRate, CORES);
   }
   return Rcpp::NumericVector(FreqOut.begin(),FreqOut.end());
 }
 
-
-// [[Rcpp::depends(RcppArmadillo)]]
+//' @title Firing Rate of Neuron (as sparse vector)
+//' 
+//' This function computes the firing rate based on convolution with gaussian kernel and the 
+//' convolution with gamma distribution. The output is a sparse vector which returns the rate 
+//' for the position of the SpikeTime.
+//'
+//' @name FiringRateSparse
+//' @param SpikeTimes A numeric vector with spike times in seconds.
+//' @param sigma A double indicating sigma of the gausian kernel in seconds.
+//' @param alpha A double indicating alpha of the gamma kernel in seconds.
+//' @param SamplingRate A double indicating the sampling rate (default = 1000).
+//' 
+//' @return Returns a vector with firing rate.
+//' @export
 // [[Rcpp::export]]
 Rcpp::NumericVector FiringRateSparse(arma::vec& SpikeTimes,
                                Rcpp::Nullable<double> sigma = R_NilValue,

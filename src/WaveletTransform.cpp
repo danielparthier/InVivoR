@@ -1,17 +1,18 @@
-#define ARMA_64BIT_WORD
+//#define ARMA_64BIT_WORD
 #include <RcppArmadillo.h>
 #include <omp.h>
 #define ARMA_NO_DEBUG
-#define ARMA_USE_MKL
 
 // [[Rcpp::depends(RcppArmadillo)]]
-//' Morlet wavelet (time domain)
+//' @title Morlet wavelet (time domain)
 //' 
 //' This function returns a complex morlet wavelet in the time domain. It can be 
 //' used for convolution.
-//'
+//' 
+//' @name morletWavlet
 //' @param t A numeric sequence of time (-t/2 to t/2) with steps of sampling frequency.
 //' @param sigma A double indicating the shape parameter of the wavelet.
+//' 
 //' @return Morlet wavelet as complex vector.
 arma::cx_vec morletWavlet(arma::vec& t,
                           const double& sigma) {
@@ -30,13 +31,14 @@ arma::cx_vec morletWavlet(arma::vec& t,
 
 
 
-//' Morlet wavelet (frequency domain)
+//' @title Morlet wavelet (frequency domain)
 //' 
-//' This function returns a morlet wavelet in the frequency domain. It can be 
-//' used for implementation via inverse FFT.
+//' @description This function returns a morlet wavelet in the frequency domain. It can be used for implementation via inverse FFT.
 //'
+//' @name morletWaveletFFT
 //' @param angFreq A numeric sequence of angular frequency (0 to 2pi).
 //' @param sigma A double indicating the shape parameter of the wavelet.
+//' 
 //' @return Morlet wavelet as numeric vector.
 arma::vec morletWaveletFFT(const arma::vec& angFreq,
                            const double& sigma) {
@@ -47,13 +49,16 @@ arma::vec morletWaveletFFT(const arma::vec& angFreq,
 }
 
 
-// Application of morlet wavelet (frequency domain)
-// This function returns the convolution of a complex morlet daughter wavelet with the signal.
+//' @title Application of morlet wavelet (frequency domain)
+//'
+//' @description This function returns the convolution of a complex morlet daughter wavelet with the signal.
 //' 
+//' @name morletWT
 //' @param SignalFFT A complex vector of the signal FFT.
 //' @param scale A double indicating the scale parameter of daughter wavelet.
 //' @param morletFFT A vector of wavelet in frequency domain.
 //' @param LNorm A double indicating the L normalisation (power of 1/LNorm, default = 2).
+//' 
 //' @return Morlet wavelet as numeric vector.
 arma::cx_vec morletWT(const arma::cx_vec& SignalFFT,
                       const double& scale, arma::vec morletFFT,
@@ -62,44 +67,26 @@ arma::cx_vec morletWT(const arma::cx_vec& SignalFFT,
 }
 
 
-//' Wavelet transform
+//' @title Wavelet transform
 //' 
 //' This function performs a wavelet transform of a signal for different scales 
 //' and returns a complex matrix from the convolution with a complex wavelet in 
 //' the frequency domain.
 //' 
+//' @name WT
 //' @param Signal A numeric vector.
 //' @param frequencies A vector indicating the frequencies which should be analysed.
-//' @param samplingfrequency A double indicating the sampling frequency in Hz (default = 1000).
+//' @param SamplingRate A double indicating the sampling frequency in Hz (default = 1000).
 //' @param sigma A double indicating the shape parameter of the wavelet (default = 6).
 //' @param LNorm A double indicating the L normalisation (power of 1/LNorm, default = 2).
 //' @param CORES An integer indicating number of threads used (default = 1). 
+//' 
 //' @return Wavelet transform as complex matrix.
-//' 
-//' @examples # test signal
-//' testSignal <- sin(seq(0,32*pi, length.out = 4000))*6
-//' testSignal <- testSignal+sin(seq(0,84*pi, length.out = 4000))*10
-//' 
-//' # apply wavelet tranform
-//' WTmat <- WT(Signal = testSignal, frequencies = seq(from = 0.2,to = 20, by = 0.1),
-//' samplingfrequency = 1e3, sigma = 12, LNorm = 2, CORES = 1)
-//' 
-//' # plot real part of WT
-//' image(x = Re(WTmat), col = hcl.colors(n = 1000), useRaster = TRUE)
-//' 
-//' # plot power of WT
-//' image(x = abs(WTmat)^2, col = hcl.colors(n = 1000), useRaster = TRUE)
-//' 
-//' # plot phase
-//' image(x = atan2(y = Im(WTmat), x = Re(WTmat)),
-//'       col = hcl.colors(n = 1000),
-//'       useRaster = TRUE)
-//' 
 //' @export
 // [[Rcpp::export]]
 arma::cx_mat WT(const arma::vec& Signal,
                 const arma::vec& frequencies,
-                const double& samplingfrequency = 1e3,
+                const double& SamplingRate = 1e3,
                 const double& sigma = 6,
                 const double& LNorm = 2,
                 int CORES = 1) {
@@ -109,10 +96,9 @@ arma::cx_mat WT(const arma::vec& Signal,
   //newly added padding
   int paddingLength = std::pow(2, std::ceil(std::log2(SignalLength*2)));
   int SignalStart = std::floor(paddingLength/2);
-  //arma::vec SignalPadded = arma::zeros<arma::vec>(SignalLength*3);
   arma::vec SignalPadded = arma::zeros<arma::vec>(paddingLength);
   SignalPadded.subvec(SignalStart,size(Signal)) = Signal;
-  arma::vec scale = samplingfrequency/arma::vec(frequencies.memptr(), scaleLength)/((4*arma::datum::pi)/(sigma+std::sqrt(2+sigma*sigma)));
+  arma::vec scale = SamplingRate/arma::vec(frequencies.memptr(), scaleLength)/((4*arma::datum::pi)/(sigma+std::sqrt(2+sigma*sigma)));
   arma::vec angFreq = arma::linspace<arma::vec>(0, 2*arma::datum::pi, SignalPadded.n_elem);
   arma::cx_vec SignalFFT = arma::fft(SignalPadded);
   arma::cx_mat WTMat = arma::zeros<arma::cx_mat>(SignalLength, scaleLength);
@@ -124,53 +110,29 @@ arma::cx_mat WT(const arma::vec& Signal,
   return WTMat;
 }
 
-//' Wavelet transform (from ERP matrix)
+//' @title Wavelet transform (from ERP matrix)
 //' 
 //' This function performs a wavelet transform of a signal for different scales 
 //' and returns a complex matrix from the convolution with a complex wavelet in 
 //' the frequency domain.
 //' 
+//' @name WTbatch
 //' @param ERPMat A numeric matrix with rows for ERP signals and columns as time domain.
 //' @param frequencies A vector indicating the frequencies which should be analysed.
-//' @param samplingfrequency A double indicating the sampling frequency in Hz (default = 1000).
+//' @param SamplingRate A double indicating the sampling frequency in Hz (default = 1000).
 //' @param sigma A double indicating the shape parameter of the wavelet (default = 6).
 //' @param LNorm A double indicating the L normalisation (power of 1/LNorm, default = 2).
 //' @param CORES An integer indicating number of threads used (default = 1).
 //' @param compression An integer indicating number of threads used (default = 1).
 //' @param PhaseAnalysis An integer indicating number of threads used (default = 1) 
+//' 
 //' @return List with wavelet transform as complex cube (each slice is from one ERP or when compressed one matrix), 
 //' rho vector length and mean phase.
-//' 
-//' @examples # Generate test signal
-//' testSignal <- sin(seq(0,32*pi, length.out = 4000))*6
-//' testSignal <- testSignal+sin(seq(0,84*pi, length.out = 4000))*10
-//' 
-//' # Generate ERP matrix
-//' ERPmat <- ERPMat(Trace = testSignal, Onset = (1:10)*200, End = (1:10)*400)
-//'   
-//' # Apply WT to all ERPs
-//' WTCube <- WTbatch(ERPMat = ERPmat,
-//'                   frequencies = seq(0.2,20, 0.2),
-//'                   samplingfrequency = 1000,
-//'                   sigma = 6, LNorm = 2,
-//'                   CORES = 1,
-//'                   compression = TRUE,
-//'                   PhaseAnalysis = TRUE)
-//'     
-//' # Cube dimensions
-//' length(WTCube)
-//' dim(WTCube[[1]])
-//'       
-//' # Real part of wavelet transform for different ERPs
-//' image(x = abs(WTCube$Raw)^2, col = hcl.colors(n = 1000), useRaster = TRUE)
-//' image(x = WTCube$Rho, col = hcl.colors(n = 1000), useRaster = TRUE, zlim = c(0,1))
-//' image(x = WTCube$Mean, col = hcl.colors(n = 1000), useRaster = TRUE)
-//' 
 //' @export
 // [[Rcpp::export]]
 Rcpp::List WTbatch(arma::mat ERPMat,
                    const arma::vec& frequencies,
-                   const double& samplingfrequency = 1e3,
+                   const double& SamplingRate = 1e3,
                    const double& sigma = 6,
                    const double& LNorm = 2,
                    int CORES = 1L,
@@ -187,7 +149,7 @@ Rcpp::List WTbatch(arma::mat ERPMat,
   arma::mat WTCubeSin;
   inplace_trans(ERPMat);
   omp_set_num_threads(CORES);
-  arma::vec scale = samplingfrequency/arma::vec(frequencies.memptr(), scaleLength)/((4*arma::datum::pi)/(sigma+std::sqrt(2+sigma*sigma)));
+  arma::vec scale = SamplingRate/arma::vec(frequencies.memptr(), scaleLength)/((4*arma::datum::pi)/(sigma+std::sqrt(2+sigma*sigma)));
   int paddingLength = std::pow(2, std::ceil(std::log2(SignalLength*2)));
   int SignalStart = std::floor(paddingLength/2);
   arma::vec angFreq = arma::linspace<arma::vec>(0, 2*arma::datum::pi, paddingLength);
@@ -213,7 +175,6 @@ Rcpp::List WTbatch(arma::mat ERPMat,
 #pragma omp parallel for shared(ERPMat, ScaleMat, scale, sigma, LNorm) schedule(static) 
   for(int j = 0; j < SignalCount; ++j) {
     arma::cx_mat WTMat = arma::zeros<arma::cx_mat>(SignalLength, scaleLength);
-    //arma::vec SignalPadded = arma::zeros<arma::vec>(SignalLength*3);
     arma::vec SignalPadded = arma::zeros<arma::vec>(paddingLength);
     SignalPadded.subvec(SignalStart,size(ERPMat.col(j))) = ERPMat.col(j);
     arma::cx_vec SignalFFT = arma::fft(SignalPadded);
@@ -259,14 +220,16 @@ Rcpp::List WTbatch(arma::mat ERPMat,
   }
 }
 
-//' Wavelet power matrix (from wavelet power cube)
+//' @title Wavelet power matrix (from wavelet power cube)
 //' 
 //' This function computes the average power of several WT which can be returned as raw power
 //' or as z-score. If the z-score is returned then every slice of the cube is z-transformed 
 //' independently and the average is calculated in z-direction.
 //' 
+//' @name PowerMat
 //' @param x A cube with power matrices each slice representing ERP.
 //' @param ZScore A bool indicating if Z-score should be computed.
+//' 
 //' @return An average power matrix (raw or as z-score).
 //' @export
 // [[Rcpp::export]]
@@ -289,23 +252,25 @@ arma::mat PowerMat(const arma::cube& x,
   return arma::mean(Cube, 2);
 }
 
-//' Synchrosqueezed wavelet power matrix (from wavelet power matrix)
+//' @title Synchrosqueezed wavelet power matrix (from wavelet power matrix)
 //' 
 //' This function computes the synchrosqueezed wavelet transform as proposed by Daubechies and Maes (1996). Wavelet 
 //' coefficients of the wavelet will be reassigned according to the instantaneous frequency in the transform.
 //' 
+//' @name WTSqueeze
 //' @param WT A complex matrix representing the wavelet transform.
 //' @param frequencies A vector indicating the frequencies which should be analysed.
-//' @param samplingfrequency A double indicating the sampling frequency in Hz (default = 1000).
+//' @param SamplingRate A double indicating the sampling frequency in Hz (default = 1000).
 //' @param sigma A double indicating the shape parameter of the wavelet (default = 6).
 //' @param CORES An integer indicating number of threads used (default = 1). 
+//' 
 //' @return A complex matrix representing the synchrosqueezed wavelet transform.
 //' 
 //' @export
 // [[Rcpp::export]]
 arma::cx_mat WTSqueeze(const arma::cx_mat& WT,
                        const arma::vec& frequencies,
-                       const double& samplingfrequency = 1e3,
+                       const double& SamplingRate = 1e3,
                        double sigma = 6,
                        const int& CORES = 1) {
   const int DIM_X =  WT.n_cols;
@@ -315,14 +280,14 @@ arma::cx_mat WTSqueeze(const arma::cx_mat& WT,
   arma::cx_mat x = arma::cx_mat(WT.memptr(), DIM_Y, DIM_X);
   
   // scale calculation, delta and useful transformations
-  arma::vec scale = samplingfrequency/frequencies/((4*arma::datum::pi)/(sigma+std::sqrt(2+sigma*sigma)));
+  arma::vec scale = SamplingRate/frequencies/((4*arma::datum::pi)/(sigma+std::sqrt(2+sigma*sigma)));
   arma::vec scaleDelta = arma::zeros<arma::vec>(scale.n_elem+1);
   scaleDelta.at(0) = frequencies.at(0)+(frequencies.at(0)-frequencies.at(1));
   scaleDelta.subvec(1,size(scale)) = frequencies;
   if(scaleDelta.at(0)==0) {
     scaleDelta.at(0) = scaleDelta.at(1)*2;
   }
-  scaleDelta = samplingfrequency/scaleDelta;
+  scaleDelta = SamplingRate/scaleDelta;
   scaleDelta /= (4*arma::datum::pi)/(sigma+std::sqrt(2+sigma*sigma));
   scaleDelta = arma::abs(arma::diff(scaleDelta));
   arma::vec scalePower = arma::pow(scale, -1.5);
@@ -342,7 +307,7 @@ arma::cx_mat WTSqueeze(const arma::cx_mat& WT,
   wab.fill(arma::cx_double(0,-1));
   wab.col(0) = arma::zeros<arma::cx_vec>(x.n_rows);
   wab.submat(1, 0, x.n_rows-1, x.n_cols-1) %= arma::diff(x, 1);
-  arma::mat wabAbs = arma::abs(wab / x * samplingfrequency);
+  arma::mat wabAbs = arma::abs(wab / x * SamplingRate);
   arma::inplace_strans(wabAbs);
   arma::inplace_strans(x);
   
@@ -363,11 +328,13 @@ arma::cx_mat WTSqueeze(const arma::cx_mat& WT,
   return Ts;
 }
 
-//' Average complex matrix (from wavelet power cube)
+//' @title Average complex matrix (from wavelet power cube)
 //' 
-//' This function computes the average complex matrix of a complex cube.
+//' @description This function computes the average complex matrix of a complex cube.
 //' 
+//' @name CxCubeCollapse
 //' @param x A cube with complex matrices each slice representing ERP.
+//' 
 //' @return An average complex matrix.
 //' 
 //' @export
@@ -376,26 +343,28 @@ arma::cx_mat CxCubeCollapse(const arma::cx_cube& x) {
   return arma::mean(x, 2);
 }
 
-//' Coherence/Coherency/Phase Difference function
+//' @title Coherence/Coherency/Phase Difference function
 //' 
-//' This function computes the coherence, coherency, and the phase difference between two wavelet transforms.
+//' @description This function computes the coherence, coherency, and the phase difference between two wavelet transforms.
 //' 
+//' @name WTCoherence
 //' @param WT1 A complex matrix representing the wavelet transform.
 //' @param WT2 A complex matrix representing the wavelet transform.
 //' @param frequencies A vector indicating the frequencies which should be analysed.
-//' @param samplingfrequency A double indicating the sampling frequency in Hz (default = 1000).
+//' @param SamplingRate A double indicating the sampling frequency in Hz (default = 1000).
 //' @param tKernelWidth A double indicating the sd as smoothing factor in the time domain (default = 0.01).
 //' @param sKernelWidth A double indicating the smoothing factor in the scale domain (default = 0.6).
+//' 
 //' @return A list containing the coherency, coherence, and phase difference of the two wavelet transforms.
 //' @export
 // [[Rcpp::export]]
 Rcpp::List WTCoherence(arma::cx_mat& WT1,
                        arma::cx_mat& WT2,
                        arma::vec& frequencies,
-                       const double& samplingfrequency = 1e3,
+                       const double& SamplingRate = 1e3,
                        const double& tKernelWidth = 0.01,
                        const double& sKernelWidth = 0.6) {
-  arma::vec tKernel = arma::normpdf(arma::regspace(0,1/samplingfrequency,WT1.n_rows/samplingfrequency), 0, tKernelWidth);
+  arma::vec tKernel = arma::normpdf(arma::regspace(0,1/SamplingRate,WT1.n_rows/SamplingRate), 0, tKernelWidth);
   arma::vec sKernel = arma::zeros<arma::vec>(frequencies.n_elem);
   for(unsigned int i = 0; i < frequencies.n_elem; ++i) {
     sKernel.at(i) = std::pow(sKernelWidth, frequencies.at(i));

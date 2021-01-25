@@ -2,7 +2,13 @@
 % Please edit documentation in R/RcppExports.R
 \name{ERPMat}
 \alias{ERPMat}
-\title{ERP (event-related potential) extraction}
+\title{ERP (event-related potential) extraction
+
+This function returns a matrix with extracted traces for any given range. 
+The range is has to be provided in form of onset indeces and end indeces. 
+Additional information can be provided to adjust for sampling differences 
+between range points and trace sampling frequency. If required the window 
+is proportionally elongated to include Pre/Post times.}
 \usage{
 ERPMat(
   Trace,
@@ -33,6 +39,8 @@ ERPMat(
 Returns a matrix with extracted ERPs.
 }
 \description{
+ERP (event-related potential) extraction
+
 This function returns a matrix with extracted traces for any given range. 
 The range is has to be provided in form of onset indeces and end indeces. 
 Additional information can be provided to adjust for sampling differences 

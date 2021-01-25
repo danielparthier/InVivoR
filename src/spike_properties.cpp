@@ -1,45 +1,47 @@
 #include <Rcpp.h>
 
-//' Spike stimulation properties
+//' @title Spike stimulation properties
 //' 
-//' This function assigns stimulation properties to every spike so that it can be incorporated in a table.
+//' @description This function assigns stimulation properties to every spike so that it can be incorporated in a table.
 //' 
-//' @param spike_idx An integer vector representing the spike time point as sampling point (index).
-//' @param stim_mat_org A matrix with stimulation properties (from Pulse_Seq_correctrion).
-//' @param block_mat_org A matrix with stimulation block properties..
-//' @param sampling_rate An integer indicating the sampling frequency.
-//' @param include_isolated A bool indicting whether isolated stimulation outside of blocks should be included.
+//' @name SpikeStimProperties
+//' @param SpikeIdx An integer vector representing the spike time point as sampling point (index).
+//' @param StimMat A matrix with stimulation properties (from Pulse_Seq_correction).
+//' @param BlockMat A matrix with stimulation block properties..
+//' @param SamplingRate An integer indicating the sampling frequency.
+//' @param Isolated A bool indicting whether isolated stimulation outside of blocks should be included.
+//' 
 //' @return Returns a matrix with stimulation properties for every spike ("onset", "peak_loc_offset", "peak_amp", "stim_length", "phase", "pulse", "sine", "ramp_front", "ramp_end", "frequency", "burst stim", "pulse_nr_block", "pulse_nr", "stimulation_block", "stimulation_timing", "pre", "post", "hyper_block", "hyper_block_frequency").
 //' @export
 // [[Rcpp::export]]
-Rcpp::NumericMatrix spike_stim_properties(const Rcpp::IntegerVector& spike_idx,
-                                          const Rcpp::NumericMatrix& stim_mat_org,
-                                          const Rcpp::NumericMatrix& block_mat_org,
-                                          const int& sampling_rate,
-                                          const bool include_isolated) {
-  R_xlen_t mat_end = stim_mat_org.nrow();
-  Rcpp::NumericMatrix block_mat = Rcpp::clone(block_mat_org);
+Rcpp::NumericMatrix SpikeStimProperties(const Rcpp::IntegerVector& SpikeIdx,
+                                          const Rcpp::NumericMatrix& StimMat,
+                                          const Rcpp::NumericMatrix& BlockMat,
+                                          const int& SamplingRate,
+                                          const bool Isolated) {
+  R_xlen_t mat_end = StimMat.nrow();
+  Rcpp::NumericMatrix block_mat = Rcpp::clone(BlockMat);
   int actual_stim_count = 0;
   for(R_xlen_t j = 0; j < mat_end; ++j) {
-    if((stim_mat_org(j, 12) == 1 and stim_mat_org(j, 10) != stim_mat_org(j, 15)) or stim_mat_org(j, 10) == stim_mat_org(j, 15)) {
+    if((StimMat(j, 12) == 1 and StimMat(j, 10) != StimMat(j, 15)) or StimMat(j, 10) == StimMat(j, 15)) {
       ++actual_stim_count;
     }
   }
   
   // construct new matrix 
-  Rcpp::NumericMatrix stim_mat(actual_stim_count,stim_mat_org.ncol());
+  Rcpp::NumericMatrix stim_mat(actual_stim_count,StimMat.ncol());
   int actual_stim_count_tmp = 0;
   int stim_count = 1;
   for(R_xlen_t j = 0; j < mat_end; ++j) {
-    if((stim_mat_org(j, 12) == 1 and stim_mat_org(j, 10) != stim_mat_org(j, 15)) or stim_mat_org(j, 10) == stim_mat_org(j, 15)) {
-      if(j > 0 and stim_mat_org(j, 16) != stim_mat_org(j-1, 16)) {
+    if((StimMat(j, 12) == 1 and StimMat(j, 10) != StimMat(j, 15)) or StimMat(j, 10) == StimMat(j, 15)) {
+      if(j > 0 and StimMat(j, 16) != StimMat(j-1, 16)) {
         stim_count = 1;
-        block_mat(stim_mat_org(j, 16)-1, 2) = actual_stim_count_tmp+1;
-        block_mat(stim_mat_org(j, 16)-2, 3) = stim_mat(actual_stim_count_tmp-1, 13);
-      } else if(j ==  mat_end-1 and stim_mat_org(j, 16) == stim_mat_org(j-1, 16)) {
-        block_mat(stim_mat_org(j, 16)-1, 3) = actual_stim_count_tmp+1;
+        block_mat(StimMat(j, 16)-1, 2) = actual_stim_count_tmp+1;
+        block_mat(StimMat(j, 16)-2, 3) = stim_mat(actual_stim_count_tmp-1, 13);
+      } else if(j ==  mat_end-1 and StimMat(j, 16) == StimMat(j-1, 16)) {
+        block_mat(StimMat(j, 16)-1, 3) = actual_stim_count_tmp+1;
       }
-      stim_mat.row(actual_stim_count_tmp) = stim_mat_org.row(j);
+      stim_mat.row(actual_stim_count_tmp) = StimMat.row(j);
       stim_mat(actual_stim_count_tmp, 12) = stim_count;
       stim_mat(actual_stim_count_tmp, 13) = actual_stim_count_tmp+1;
       ++stim_count;
@@ -47,7 +49,7 @@ Rcpp::NumericMatrix spike_stim_properties(const Rcpp::IntegerVector& spike_idx,
     }
   }
   
-  R_xlen_t spike_idx_end = spike_idx.size();
+  R_xlen_t SpikeIdx_end = SpikeIdx.size();
   R_xlen_t stim_mat_end = stim_mat.nrow();
   R_xlen_t block_end = block_mat.nrow();
   R_xlen_t new_i = 0;
@@ -55,11 +57,11 @@ Rcpp::NumericMatrix spike_stim_properties(const Rcpp::IntegerVector& spike_idx,
   int start_phase = 0;
   int end_phase = 0;
   
-  Rcpp::NumericMatrix output_mat(spike_idx_end,20);
-  for(R_xlen_t j = 0; j < spike_idx_end; ++j) {
+  Rcpp::NumericMatrix output_mat(SpikeIdx_end,20);
+  for(R_xlen_t j = 0; j < SpikeIdx_end; ++j) {
     block_end = block_mat.nrow();
     for(R_xlen_t block_i = new_block_i; block_i < block_end; ++block_i) {
-      if(block_mat(block_i, 5) <= spike_idx[j] and block_mat(block_i, 6) >= spike_idx[j]) {
+      if(block_mat(block_i, 5) <= SpikeIdx[j] and block_mat(block_i, 6) >= SpikeIdx[j]) {
         //spike is in block
         //put block information to spike
         //stim_length
@@ -79,11 +81,11 @@ Rcpp::NumericMatrix spike_stim_properties(const Rcpp::IntegerVector& spike_idx,
         //stimulation_block
         output_mat(j, 14) = 1;
         //stimulation_timing
-        output_mat(j, 15) = (spike_idx[j]-block_mat(block_i, 0))/sampling_rate;
-        if(spike_idx[j] < block_mat(block_i, 0)) {
+        output_mat(j, 15) = (SpikeIdx[j]-block_mat(block_i, 0))/SamplingRate;
+        if(SpikeIdx[j] < block_mat(block_i, 0)) {
           //pre
           output_mat(j, 16) = 1;
-        } else if(spike_idx[j] > block_mat(block_i, 1)){
+        } else if(SpikeIdx[j] > block_mat(block_i, 1)){
           //post
           output_mat(j, 17) = 1;
         } 
@@ -97,7 +99,7 @@ Rcpp::NumericMatrix spike_stim_properties(const Rcpp::IntegerVector& spike_idx,
             //cases for first pulse and not last or isolated pulses
             start_phase = block_mat(block_i, 0);
             end_phase = stim_mat(i, 0)+(stim_mat(i+1, 0)-stim_mat(i, 0))/2;
-            if(spike_idx[j] >= start_phase and spike_idx[j] <= end_phase) {
+            if(SpikeIdx[j] >= start_phase and SpikeIdx[j] <= end_phase) {
               new_i = i;
               goto data_entry;
             }
@@ -105,7 +107,7 @@ Rcpp::NumericMatrix spike_stim_properties(const Rcpp::IntegerVector& spike_idx,
             //first and isolated pulse or last
             start_phase = block_mat(block_i, 0);
             end_phase = block_mat(block_i, 1);
-            if(spike_idx[j] >= start_phase and spike_idx[j] <= end_phase) {
+            if(SpikeIdx[j] >= start_phase and SpikeIdx[j] <= end_phase) {
               new_i = i;
               goto data_entry;
             }
@@ -113,7 +115,7 @@ Rcpp::NumericMatrix spike_stim_properties(const Rcpp::IntegerVector& spike_idx,
             //following pulses
             start_phase = stim_mat(i, 0)-(stim_mat(i, 0)-stim_mat(i-1, 0))/2;
             end_phase = stim_mat(i, 0)+(stim_mat(i+1, 0)-stim_mat(i, 0))/2;
-            if(spike_idx[j] >= start_phase and spike_idx[j] <= end_phase) {
+            if(SpikeIdx[j] >= start_phase and SpikeIdx[j] <= end_phase) {
               new_i = i;
               goto data_entry;
             }
@@ -121,7 +123,7 @@ Rcpp::NumericMatrix spike_stim_properties(const Rcpp::IntegerVector& spike_idx,
             //last puls in block but not last in total
             start_phase = stim_mat(i, 0)-(stim_mat(i, 0)-stim_mat(i-1, 0))/2;
             end_phase = block_mat(block_i, 1);
-            if(spike_idx[j] >= start_phase and spike_idx[j] <= end_phase) {
+            if(SpikeIdx[j] >= start_phase and SpikeIdx[j] <= end_phase) {
               new_i = i;
               goto data_entry;
             }
@@ -132,9 +134,9 @@ Rcpp::NumericMatrix spike_stim_properties(const Rcpp::IntegerVector& spike_idx,
             //onset
             output_mat(j, 1) = stim_mat(new_i, 0);
             //time to peak
-            output_mat(j, 2) = (spike_idx[j]-stim_mat(new_i, 0))/sampling_rate;
+            output_mat(j, 2) = (SpikeIdx[j]-stim_mat(new_i, 0))/SamplingRate;
             //phase
-            output_mat(j, 5) = 360.0*(spike_idx[j]-start_phase)/(end_phase-start_phase);
+            output_mat(j, 5) = 360.0*(SpikeIdx[j]-start_phase)/(end_phase-start_phase);
             // pulse number block
             output_mat(j, 12) = stim_mat(new_i, 12);
             // pulse number
@@ -143,7 +145,7 @@ Rcpp::NumericMatrix spike_stim_properties(const Rcpp::IntegerVector& spike_idx,
           //peak amp
           output_mat(j, 3) = stim_mat(new_i, 3);
           break;
-      } else if(block_mat(block_i, 6) < spike_idx[j]){
+      } else if(block_mat(block_i, 6) < SpikeIdx[j]){
         new_block_i = block_i+1;
         if(block_i+1 == block_end) {
           break;
@@ -151,7 +153,7 @@ Rcpp::NumericMatrix spike_stim_properties(const Rcpp::IntegerVector& spike_idx,
         break;
       }
     }
-    output_mat(j, 0) = spike_idx[j];
+    output_mat(j, 0) = SpikeIdx[j];
   }
   colnames(output_mat) = Rcpp::CharacterVector::create("time_stamp",
            "onset",

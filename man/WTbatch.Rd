@@ -2,12 +2,16 @@
 % Please edit documentation in R/RcppExports.R
 \name{WTbatch}
 \alias{WTbatch}
-\title{Wavelet transform (from ERP matrix)}
+\title{Wavelet transform (from ERP matrix)
+
+This function performs a wavelet transform of a signal for different scales 
+and returns a complex matrix from the convolution with a complex wavelet in 
+the frequency domain.}
 \usage{
 WTbatch(
   ERPMat,
   frequencies,
-  samplingfrequency = 1000,
+  SamplingRate = 1000,
   sigma = 6,
   LNorm = 2,
   CORES = 1L,
@@ -20,7 +24,7 @@ WTbatch(
 
 \item{frequencies}{A vector indicating the frequencies which should be analysed.}
 
-\item{samplingfrequency}{A double indicating the sampling frequency in Hz (default = 1000).}
+\item{SamplingRate}{A double indicating the sampling frequency in Hz (default = 1000).}
 
 \item{sigma}{A double indicating the shape parameter of the wavelet (default = 6).}
 
@@ -37,34 +41,9 @@ List with wavelet transform as complex cube (each slice is from one ERP or when 
 rho vector length and mean phase.
 }
 \description{
+Wavelet transform (from ERP matrix)
+
 This function performs a wavelet transform of a signal for different scales 
 and returns a complex matrix from the convolution with a complex wavelet in 
 the frequency domain.
-}
-\examples{
-# Generate test signal
-testSignal <- sin(seq(0,32*pi, length.out = 4000))*6
-testSignal <- testSignal+sin(seq(0,84*pi, length.out = 4000))*10
-
-# Generate ERP matrix
-ERPmat <- ERPMat(Trace = testSignal, Onset = (1:10)*200, End = (1:10)*400)
-  
-# Apply WT to all ERPs
-WTCube <- WTbatch(ERPMat = ERPmat,
-                  frequencies = seq(0.2,20, 0.2),
-                  samplingfrequency = 1000,
-                  sigma = 6, LNorm = 2,
-                  CORES = 1,
-                  compression = TRUE,
-                  PhaseAnalysis = TRUE)
-    
-# Cube dimensions
-length(WTCube)
-dim(WTCube[[1]])
-      
-# Real part of wavelet transform for different ERPs
-image(x = abs(WTCube$Raw)^2, col = hcl.colors(n = 1000), useRaster = TRUE)
-image(x = WTCube$Rho, col = hcl.colors(n = 1000), useRaster = TRUE, zlim = c(0,1))
-image(x = WTCube$Mean, col = hcl.colors(n = 1000), useRaster = TRUE)
-
 }

@@ -2,23 +2,20 @@
 % Please edit documentation in R/RcppExports.R
 \name{WT}
 \alias{WT}
-\title{Wavelet transform}
+\title{Wavelet transform
+
+This function performs a wavelet transform of a signal for different scales 
+and returns a complex matrix from the convolution with a complex wavelet in 
+the frequency domain.}
 \usage{
-WT(
-  Signal,
-  frequencies,
-  samplingfrequency = 1000,
-  sigma = 6,
-  LNorm = 2,
-  CORES = 1L
-)
+WT(Signal, frequencies, SamplingRate = 1000, sigma = 6, LNorm = 2, CORES = 1L)
 }
 \arguments{
 \item{Signal}{A numeric vector.}
 
 \item{frequencies}{A vector indicating the frequencies which should be analysed.}
 
-\item{samplingfrequency}{A double indicating the sampling frequency in Hz (default = 1000).}
+\item{SamplingRate}{A double indicating the sampling frequency in Hz (default = 1000).}
 
 \item{sigma}{A double indicating the shape parameter of the wavelet (default = 6).}
 
@@ -30,28 +27,9 @@ WT(
 Wavelet transform as complex matrix.
 }
 \description{
+Wavelet transform
+
 This function performs a wavelet transform of a signal for different scales 
 and returns a complex matrix from the convolution with a complex wavelet in 
 the frequency domain.
-}
-\examples{
-# test signal
-testSignal <- sin(seq(0,32*pi, length.out = 4000))*6
-testSignal <- testSignal+sin(seq(0,84*pi, length.out = 4000))*10
-
-# apply wavelet tranform
-WTmat <- WT(Signal = testSignal, frequencies = seq(from = 0.2,to = 20, by = 0.1),
-samplingfrequency = 1e3, sigma = 12, LNorm = 2, CORES = 1)
-
-# plot real part of WT
-image(x = Re(WTmat), col = hcl.colors(n = 1000), useRaster = TRUE)
-
-# plot power of WT
-image(x = abs(WTmat)^2, col = hcl.colors(n = 1000), useRaster = TRUE)
-
-# plot phase
-image(x = atan2(y = Im(WTmat), x = Re(WTmat)),
-      col = hcl.colors(n = 1000),
-      useRaster = TRUE)
-
 }
