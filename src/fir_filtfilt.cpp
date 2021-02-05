@@ -1,29 +1,32 @@
+
 // function to apply FIR filter to data using convolution and zero-padding
 #include <RcppArmadillo.h>
 #include <omp.h>
 #define ARMA_NO_DEBUG
 
 // [[Rcpp::depends(RcppArmadillo)]]
-arma::vec FirFilteringInternal(const arma::colvec& SIGNAL,
-                                         const arma::colvec& FIR_FILTER,
-                                         bool FiltFilt = true,
-                                         unsigned int BatchSize = 1e4,
-                                         bool padding = true,
-                                         const int& CORES = 1) {
+arma::vec FirFilteringInternalNew(const arma::colvec& SIGNAL,
+                                  const arma::colvec& FIR_FILTER,
+                                  bool FiltFilt = true,
+                                  unsigned int BatchSize = 1e4,
+                                  bool padding = true,
+                                  const int& CORES = 1) {
   omp_set_num_threads(CORES);
   unsigned int ChunkLength;
-  if(BatchSize > FIR_FILTER.size()) {
-    ChunkLength = std::pow(2, std::ceil(std::log2(BatchSize*1.5)));
-    BatchSize = ChunkLength/2;
+  if(BatchSize< 6*FIR_FILTER.n_elem) {
+    BatchSize = 6*FIR_FILTER.n_elem;
+    ChunkLength = std::pow(2, std::ceil(std::log2(BatchSize)));
+    BatchSize = ChunkLength-FIR_FILTER.n_elem*4;
   } else {
-    BatchSize = FIR_FILTER.size();
-    ChunkLength = std::pow(2, std::ceil(std::log2(BatchSize*1.5)));
-    BatchSize = ChunkLength/2;
+    ChunkLength = std::pow(2, std::ceil(std::log2(BatchSize)));
+    BatchSize = ChunkLength-FIR_FILTER.n_elem*4;
   }
   if(ChunkLength>SIGNAL.size()) {
-  } else if(ChunkLength < 3*FIR_FILTER.size()) {
-    ChunkLength = std::pow(2, std::ceil(std::log2(3*FIR_FILTER.size())));
-    BatchSize = ChunkLength/2;
+    ChunkLength = SIGNAL.n_elem+FIR_FILTER.n_elem*6;
+    BatchSize = SIGNAL.n_elem;
+  } else if(ChunkLength < 6*FIR_FILTER.size()) {
+    ChunkLength = std::pow(2, std::ceil(std::log2(6*FIR_FILTER.size())));
+    BatchSize = ChunkLength-FIR_FILTER.n_elem*4;
   }
   arma::vec OutPutVec;
   if(padding) {
@@ -36,46 +39,50 @@ arma::vec FirFilteringInternal(const arma::colvec& SIGNAL,
   arma::cx_mat Filter_FFT = arma::fft(FilterPadded);
   unsigned int BatchJump = BatchSize;
   //index for padding end at beginning
-  unsigned int prePaddingArea = 5*FIR_FILTER.size()-1;
+  unsigned int prePaddingArea=(ChunkLength-BatchSize)/2;//prePaddingArea = 5*FIR_FILTER.size()-1;
 #pragma omp parallel for shared(padding, prePaddingArea, OutPutVec, SIGNAL,BatchSize, ChunkLength, Filter_FFT, BatchJump) schedule(dynamic) default(none)
   for(unsigned long int i = 0; i<OutPutVec.size(); i += BatchJump) {
     arma::vec InputSignalPadded = arma::zeros<arma::vec>(ChunkLength);
-    unsigned long int sig_i = i-prePaddingArea;
-    if(i < prePaddingArea) {
-      if((i+BatchSize) < prePaddingArea) {
-        //do nothing
-      } else if((i+BatchSize) > prePaddingArea){
-        InputSignalPadded.subvec(prePaddingArea-i, size(SIGNAL.subvec(0, sig_i+BatchSize))) = SIGNAL.subvec(0, sig_i+BatchSize);
-      }
-    } else if((i>prePaddingArea) & (sig_i < SIGNAL.size())) {
-      if(SIGNAL.size() < (sig_i+BatchSize)) {
-        BatchSize = SIGNAL.size()-sig_i;
-      } 
-      InputSignalPadded.subvec(0, size(SIGNAL.subvec(sig_i, sig_i+BatchSize-1))) = SIGNAL.subvec(sig_i, sig_i+BatchSize-1);
+    unsigned long int subBegin;
+    unsigned long int subEnd;
+    unsigned long int padBegin;
+    if((i>prePaddingArea) & (i<(SIGNAL.n_elem-BatchSize-1))) {
+      // outside padding area (begin and end)
+      subBegin = i-prePaddingArea;
+      subEnd = i+BatchSize-prePaddingArea;
+      padBegin = prePaddingArea-1;
+    } else if(((i+BatchSize)>prePaddingArea) & (i<(SIGNAL.n_elem-BatchSize-1))) {
+      // still in padding beginning
+      subBegin = 0;
+      subEnd = i+BatchSize-prePaddingArea;
+      padBegin = ChunkLength-prePaddingArea-subEnd;
+    } else if(((i+BatchSize+prePaddingArea)>SIGNAL.n_elem) & ((i-prePaddingArea)<(SIGNAL.n_elem-1))) {
+      // end of chunk in padding area
+      subBegin = i-prePaddingArea;
+      subEnd = SIGNAL.n_elem-1;
+      padBegin = prePaddingArea-1;
+    } else {
+      continue;
     }
+    InputSignalPadded.subvec(padBegin,size(SIGNAL.subvec(subBegin, subEnd))) = SIGNAL.subvec(subBegin, subEnd);
     InputSignalPadded = arma::real(arma::ifft(arma::fft(InputSignalPadded)%Filter_FFT));
 #pragma omp critical
-    if((i+ChunkLength-1) < OutPutVec.size()) {
-      OutPutVec.subvec(i, size(InputSignalPadded)) += InputSignalPadded; 
-    } else if((i+ChunkLength-1) >= OutPutVec.size()) {
-      if(!padding) {
-      }
-      OutPutVec.subvec(i, OutPutVec.size()-1) += InputSignalPadded.subvec(0, OutPutVec.size()-1-i);
+    if((InputSignalPadded.n_elem+i)>OutPutVec.n_elem) {
+      // if overshoot trace
+      OutPutVec.subvec(i, OutPutVec.n_elem-1) += InputSignalPadded.subvec(0,(OutPutVec.n_elem-1-i));
+    } else {
+      OutPutVec.subvec(i, size(InputSignalPadded)) += InputSignalPadded;  
     }
   }
   if(FiltFilt) {
-    OutPutVec = FirFilteringInternal(arma::reverse(OutPutVec), FIR_FILTER, false, BatchSize, false, CORES);
+    OutPutVec = FirFilteringInternalNew(arma::reverse(OutPutVec), FIR_FILTER, false, BatchSize, false, CORES);
     OutPutVec = arma::reverse(OutPutVec);
     return OutPutVec.subvec(0,size(SIGNAL));
-   // return Rcpp::NumericVector(OutPutVec.subvec(0,size(SIGNAL)).begin(),OutPutVec.subvec(0,size(SIGNAL)).end());
   }
   if(!padding) {
     return OutPutVec; 
-    //return Rcpp::NumericVector(OutPutVec.begin(),OutPutVec.end());   
   } else {
     return OutPutVec.subvec(prePaddingArea, size(SIGNAL));
-    
-//    return Rcpp::NumericVector(OutPutVec.subvec(prePaddingArea, size(SIGNAL)).begin(),OutPutVec.subvec(prePaddingArea,size(SIGNAL)).end());
   }
 }
 
@@ -93,13 +100,15 @@ arma::vec FirFilteringInternal(const arma::colvec& SIGNAL,
 //' @return Returns numeric vector which is the FIR filtered original signal.
 //' @export
 // [[Rcpp::export]]
-arma::vec FirFiltering(const arma::colvec& SIGNAL,
-                                 const arma::colvec& FIR_FILTER,
-                                 bool FiltFilt = true,
-                                 unsigned int BatchSize = 1e4,
-                                 const int& CORES = 1) {
-  if(SIGNAL.size()>BatchSize) {
+arma::vec FirFilteringNew(const arma::colvec& SIGNAL,
+                          const arma::colvec& FIR_FILTER,
+                          bool FiltFilt = true,
+                          unsigned int BatchSize = 1e4,
+                          const int& CORES = 1) {
+  if(SIGNAL.size()<BatchSize) {
     BatchSize = SIGNAL.size();
   }
-  return FirFilteringInternal(SIGNAL, FIR_FILTER, FiltFilt, BatchSize, true, CORES);
+  
+  //  return Rcpp::NumericVector(OutPutVec.subvec(prePaddingArea, size(SIGNAL)).begin(),OutPutVec.subvec(prePaddingArea,size(SIGNAL)).end());
+  return FirFilteringInternalNew(SIGNAL, FIR_FILTER, FiltFilt, BatchSize, true, CORES);
 }
