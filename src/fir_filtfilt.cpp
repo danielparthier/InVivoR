@@ -5,7 +5,7 @@
 #define ARMA_NO_DEBUG
 
 // [[Rcpp::depends(RcppArmadillo)]]
-arma::vec FirFilteringInternalNew(const arma::colvec& SIGNAL,
+arma::vec FirFilteringInternal(const arma::colvec& SIGNAL,
                                   const arma::colvec& FIR_FILTER,
                                   bool FiltFilt = true,
                                   unsigned int BatchSize = 1e4,
@@ -75,7 +75,7 @@ arma::vec FirFilteringInternalNew(const arma::colvec& SIGNAL,
     }
   }
   if(FiltFilt) {
-    OutPutVec = FirFilteringInternalNew(arma::reverse(OutPutVec), FIR_FILTER, false, BatchSize, false, CORES);
+    OutPutVec = FirFilteringInternal(arma::reverse(OutPutVec), FIR_FILTER, false, BatchSize, false, CORES);
     OutPutVec = arma::reverse(OutPutVec);
     return OutPutVec.subvec(0,size(SIGNAL));
   }
@@ -100,7 +100,7 @@ arma::vec FirFilteringInternalNew(const arma::colvec& SIGNAL,
 //' @return Returns numeric vector which is the FIR filtered original signal.
 //' @export
 // [[Rcpp::export]]
-arma::vec FirFilteringNew(const arma::colvec& SIGNAL,
+arma::vec FirFiltering(const arma::colvec& SIGNAL,
                           const arma::colvec& FIR_FILTER,
                           bool FiltFilt = true,
                           unsigned int BatchSize = 1e4,
@@ -110,5 +110,5 @@ arma::vec FirFilteringNew(const arma::colvec& SIGNAL,
   }
   
   //  return Rcpp::NumericVector(OutPutVec.subvec(prePaddingArea, size(SIGNAL)).begin(),OutPutVec.subvec(prePaddingArea,size(SIGNAL)).end());
-  return FirFilteringInternalNew(SIGNAL, FIR_FILTER, FiltFilt, BatchSize, true, CORES);
+  return FirFilteringInternal(SIGNAL, FIR_FILTER, FiltFilt, BatchSize, true, CORES);
 }
